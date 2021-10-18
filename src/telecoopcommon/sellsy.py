@@ -167,7 +167,7 @@ class TcSellsyConnector:
     result = []
     params = { 'search': { 'thirds': [clientId] } }
     opportunities = sellsyClient.api(method="Opportunities.getList", params=params)
-    for opp in opportunities.values();
+    for opp in opportunities.values():
       o = SellsyOpportunity(opp['id'])
       o.loadWithValues(opp)
       result.append(o)
