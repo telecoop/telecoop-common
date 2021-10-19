@@ -107,6 +107,25 @@ class TcSellsyConnector:
         break
     return optinDate
 
+  def getClientFromRef(self, ref):
+    params = {
+      'search': {
+        'ident': ref
+      }
+    }
+    clients = self.api(method='Client.getList', params=params)
+    client = None
+    for id, cli in clients['result'].items():
+      if (cli['ident'] == 'CLI00001001'):
+        # Référence ayant servie de test lors de la mise en prod du parcours souscription
+        continue
+
+      client = SellsyClient(id)
+      client.loadWithValues(cli)
+      break
+
+    return client
+
   def getClients(self):
     result = {}
     params = {
@@ -115,7 +134,7 @@ class TcSellsyConnector:
         'pagenum': 1
       }
     }
-    clients = sellsyClient.api(method='Client.getList', params=params)
+    clients = self.api(method='Client.getList', params=params)
     infos = clients["infos"]
     nbPages = infos["nbpages"]
     currentPage = 1
@@ -143,6 +162,7 @@ class TcSellsyConnector:
     return result
 
   def getOpportunity(self, id):
+    parisTZ = pytz.timezone('Europe/Paris')
     opp = self.api(method="Opportunities.getOne", params={'id': id})
     result = {
       'linkedid': opp['linkedid'],
@@ -233,6 +253,16 @@ class TcSellsyConnector:
 class SellsyClient:
   def __init__(self, id):
     self.id = id
+    self.reference = None
+    self.name = None
+    self.firstname = None
+    self.email = None
+    self.oneInvoicePerLine = None
+    self.autoValidation = None
+    self.status = None
+
+  def __str__(self):
+    return f"#{id} {self.reference} {self.name} {self.firstname} {self.email} {self.status}"
 
   def loadWithValues(self, cli):
     parisTZ = pytz.timezone('Europe/Paris')
@@ -248,11 +278,11 @@ class SellsyClient:
     self.firstname = cli['people_forename']
     self.email = email
     self.oneInvoicePerLine = False
+    self.autoValidation = True
     self.status = None
     self.lines = [{
       'msisdn': cli['mobile'].replace('+33', '0')
     }]
-    self.autoValidation = True
     for f in cli["customfields"]:
       code = f["code"]
       if (code == "refbazile"):
@@ -276,17 +306,30 @@ class SellsyClient:
         self.refereeCode = f['textval']
 
       elif (code == 'offre-telecommown'):
-        self.optinTeleCommown = parisTZ.localize(datetime.fromtimestamp(f['timestampval']))
+        self.optinTeleCommown = parisTZ.localize(datetime.fromtimestamp(int(f['timestampval'])))
       elif (code == 'telecommown-date-debut'):
-        self.telecommownStart = parisTZ.localize(datetime.fromtimestamp(f['timestampval']))
+        self.telecommownStart = parisTZ.localize(datetime.fromtimestamp(int(f['timestampval'])))
       elif (code == 'telecommown-date-fin'):
-        self.telecommownEnd = parisTZ.localize(datetime.fromtimestamp(f['timestampval']))
+        self.telecommownEnd = parisTZ.localize(datetime.fromtimestamp(int(f['timestampval'])))
       elif (code == 'telecommown-origine'):
         self.telecommownOrigin = f['formatted_value']
 
 class SellsyOpportunity:
   def __init__(self, id):
     self.id = id
+    self.clientId = None
+    self.funnelId = None
+    self.creationDate = None
+    self.steps = None
+    self.nsce = None
+    self.msisdn = None
+    self.rio = None
+    self.plan = None
+    self.achatSimPhysique = None
+    self.dateActivationSimAsked = None
+
+  def __str__(self):
+    return f"#{id} {self.creationDate} {self.msisdn} client #{self.clientId}"
 
   def load(self, connector):
     values = connector.getOpportunity(self.id)
@@ -298,12 +341,6 @@ class SellsyOpportunity:
     self.funnelId = opp['funnelid']
     self.creationDate = opp['created']
     self.steps = { opp['stepid']: parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate'])) }
-    self.nsce = None
-    self.msisdn = None
-    self.rio = None
-    self.plan = None
-    self.achatSimPhysique = False
-    self.dateActivationSimAsked = None
 
     for fieldId, field in opp['customfields'].items():
       if ('code' in field):
