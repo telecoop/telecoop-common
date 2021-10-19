@@ -18,6 +18,12 @@ class TcSellsyConnector:
     self.cfIdTeleCommownOrigine = conf['cfid_telecommown_origine']
     self.cfIdTeleCommownDateDebut = conf['cfid_telecommown_date_debut']
     self.cfIdTeleCommownDateFin = conf['cfid_telecommown_date_fin']
+    self.cfidSponsorCode = conf['cfid_sponsor_code']
+    self.cfidSponsorLink = conf['cfid_sponsor_link']
+    self.cfidSponsorNbUse = conf['cfid_sponsor_nb_use']
+    self.cfidSponsorNbDiscount = conf['cfid_sponsor_nb_discount']
+    self.cfidSponsorRefereeCode = conf['cfid_sponsor_referee_code']
+
     self.funnelIdVdc = conf['funnel_id_vie_du_contrat']
     self.stepNew = conf['step_new']
     self.stepSimToSend = conf['step_sim_to_send']
@@ -79,6 +85,10 @@ class TcSellsyConnector:
     }
     return self.api(method='CustomFields.recordValues', params=params)
 
+  def getClientRef(self, clientId):
+    response = sellsyConnector.api(method="Client.getOne", params={ 'clientid': clientId })
+    return response['ident']
+
   def getTeleCommownOptinDate(self, clientId=None, opportunityId=None):
     if clientId is None and opportunityId is None:
       raise ValueError("Either clientId or opportunityId should be not None")
@@ -129,6 +139,45 @@ class TcSellsyConnector:
         params['pagination']['pagenum'] = currentPage
         clients = sellsyClient.api(method="Client.getList", params=params)
         infos = clients["infos"]
+
+    return result
+
+  def getOpportunity(self, id):
+    opp = self.api(method="Opportunities.getOne", params={'id': id})
+    result = {
+      'linkedid': opp['linkedid'],
+      'funnelid': opp['funnelid'],
+      'created': opp['created'],
+      'stepEnterDate': opp['stepEnterDate'],
+      'stepid': opp['stepid'],
+      'customfields': {
+        'nsce': { 'code': 'nsce', 'textval': '' },
+        'msisdn': { 'code': 'msisdn', 'textval': '' },
+        'rio': { 'code': 'rio', 'textval': '' },
+        'plan': { 'code': 'plan', 'textval': '' },
+        'achatSimPhysique': { 'code': 'achatSimPhysique', 'boolval': '' },
+        'dateActivationSimAsked': { 'code': 'dateActivationSimAsked', 'timestampval': '' },
+      }
+    }
+
+    for id, l in opp['customFields'].items():
+      for fieldId, field in l.items():
+        if ('code' in field):
+          code = field['code']
+          if (code == 'rio'):
+            result['customfields'][code]['textval'] = field['defaultValue']
+          if (code == 'forfait'):
+            result['customfields'][code]['textval'] = field['defaultValue']
+          if (code == 'nsce'):
+            result['customfields'][code]['textval'] = field['defaultValue']
+          if (code == 'numerotelecoop'):
+            result['customfields'][code]['textval'] = field['defaultValue']
+          if (code == 'refbazile'):
+            result['customfields'][code]['textval'] = field['defaultValue']
+          if (code == 'achatsimphysique'):
+            result['customfields'][code]['textval'] = (field["defaultValue"] == "Y")
+          if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field):
+            result['customfields'][code]['textval'] = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d')).timestamp()
 
     return result
 
@@ -219,10 +268,10 @@ class SellsyClient:
         self.sponsorCode = f['textval']
       elif (code == 'parrainage-link'):
         self.sponsorLink = f['textval']
-      #elif (code == 'parrainage-code-nb-use'):
-      #  self.sponsorCodeNb = f['']
-      #elif (code == 'parrainage-nb-discount'):
-      #  self.sponsorNbDiscount = f['']
+      elif (code == 'parrainage-code-nb-use'):
+        self.sponsorCodeNb = f['numericval']
+      elif (code == 'parrainage-nb-discount'):
+        self.sponsorNbDiscount = f['numericval']
       elif (code == 'parrainage-code-parrain'):
         self.refereeCode = f['textval']
 
@@ -239,6 +288,10 @@ class SellsyOpportunity:
   def __init__(self, id):
     self.id = id
 
+  def load(self, connector):
+    values = connector.getOpportunity(self.id)
+    self.loadWithValues(values)
+
   def loadWithValues(self, opp):
     parisTZ = pytz.timezone('Europe/Paris')
     self.clientId = opp['linkedid']
@@ -254,19 +307,20 @@ class SellsyOpportunity:
 
     for fieldId, field in opp['customfields'].items():
       if ('code' in field):
-        if (field['code'] == 'rio'):
+        code = field['code']
+        if (code == 'rio'):
           self.rio = field['textval']
-        if (field['code'] == 'forfait'):
+        if (code == 'forfait'):
           self.plan = field['textval']
-        if (field['code'] == 'nsce'):
+        if (code == 'nsce'):
           self.nsce = field['textval']
-        if (field['code'] == 'numerotelecoop'):
+        if (code == 'numerotelecoop'):
           self.msisdn = field['textval']
-        if (field['code'] == 'refbazile'):
+        if (code == 'refbazile'):
           self.bazileNum = field['textval']
-        if (field['code'] == 'achatsimphysique'):
+        if (code == 'achatsimphysique'):
           self.achatSimPhysique = (field["boolval"] == "Y")
-        if (field['code'] == 'date-activation-sim-souhaitee' and field['timestampval'] is not None and field['timestampval'] > 0):
+        if (code == 'date-activation-sim-souhaitee' and field['timestampval'] is not None and field['timestampval'] > 0):
           timestamp = field['timestampval']
           if (timestamp is not None):
             self.dateActivationSimAsked = parisTZ.localize(datetime.fromtimestamp(timestamp))

@@ -1,0 +1,36 @@
+version: "3.8"
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/app/Dockerfile
+        ports:
+            - 8000:8000
+        volumes:
+            - ./var/log:/var/log/telecoop-common
+            - ./src:/usr/local/telecoop-common
+            - ./conf:/etc/telecoop-common
+        environment:
+            - ENV=DOCKER
+
+    postgres:
+        image: postgres:13
+        ports:
+            - 5438:5432
+        environment:
+            - POSTGRES_USER=common
+            - POSTGRES_DB=common
+            - POSTGRES_PASSWORD=common
+        volumes:
+          - ./docker/postgres/initdb:/docker-entrypoint-initdb.d
+
+    testDb:
+        image: postgres:13
+        ports:
+            - 5439:5432
+        environment:
+            - POSTGRES_USER=common
+            - POSTGRES_DB=common
+            - POSTGRES_PASSWORD=common
+        volumes:
+          - ./docker/postgres/initdb:/docker-entrypoint-initdb.d
