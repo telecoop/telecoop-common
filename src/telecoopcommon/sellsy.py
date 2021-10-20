@@ -245,7 +245,7 @@ class TcSellsyConnector:
     currentPage = 1
     data = {}
     while (currentPage <= nbPages):
-      logger.info("Processing page {}/{}".format(currentPage, nbPages))
+      self.logger.info("Processing page {}/{}".format(currentPage, nbPages))
       for id, client in clients['result'].items():
         if (client['ident'] == 'CLI00001001'):
           # Référence ayant servie de test lors de la mise en prod du parcours souscription
@@ -261,7 +261,7 @@ class TcSellsyConnector:
       currentPage += 1
       if (infos["pagenum"] <= nbPages):
         params['pagination']['pagenum'] = currentPage
-        clients = sellsyClient.api(method="Client.getList", params=params)
+        clients = self.api(method="Client.getList", params=params)
         infos = clients["infos"]
 
     return result

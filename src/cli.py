@@ -23,6 +23,7 @@ def cmdline():
                         'get-opportunity',
                         'get-client',
                         'get-client-from-ref',
+                        'get-clients',
                         'update-client',
                         'get-tc-token',
                         'get-code',
@@ -103,6 +104,11 @@ class Runner():
       ref = self.getArg('Client ref')
       client = self.getSellsyConnector().getClientFromRef(ref)
       print(client)
+
+    if (command == 'get-clients'):
+      clients = self.getSellsyConnector().getClients()
+      print(len(clients))
+      print(next(iter(clients.values())))
 
     if (command == 'update-client'):
       id = self.getArg('Client id')
