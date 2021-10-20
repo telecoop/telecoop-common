@@ -21,6 +21,7 @@ def cmdline():
   parser.add_argument('command', metavar='COMMAND',
                       choices=[
                         'get-opportunity',
+                        'get-client',
                         'get-client-from-ref',
                         'get-tc-token',
                         'get-code',
@@ -92,9 +93,15 @@ class Runner():
       o.load(sellsyConnector)
       print(o)
 
+    if (command == 'get-client'):
+      id = self.getArg('Client id')
+      client = self.getSellsyConnector().getClient(id)
+      print(client)
+
     if (command == 'get-client-from-ref'):
       ref = self.getArg('Client ref')
-      print(self.getSellsyConnector().getClientFromRef(ref))
+      client = self.getSellsyConnector().getClientFromRef(ref)
+      print(client)
 
     if (command == 'get-tc-token'):
       response = self.getTelecoopConnector().getToken()

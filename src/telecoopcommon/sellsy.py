@@ -107,6 +107,81 @@ class TcSellsyConnector:
         break
     return optinDate
 
+  def getClient(self, id):
+    c = SellsyClient(id)
+    c.loadWithValues(self.getClientValues(id))
+    return c
+
+  def getClientValues(self, id):
+    parisTZ = pytz.timezone('Europe/Paris')
+    cli = self.api(method="Client.getOne", params={'clientid': id})
+
+    mainContactId = cli['client']['maincontactid']
+
+    result = {
+      'ident': cli['client']['ident'],
+      'type': cli['client']['type'],
+      'people_name': '',
+      'people_forename': '',
+      'email': '',
+      'mobile': '',
+      'maincontactid':  mainContactId,
+      'contacts': { },
+    }
+    customFields = {
+      'refbazile': { 'code': 'refbazile', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'facturationmanuelle': { 'code': 'facturationmanuelle', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'facture-unique': { 'code': 'facture-unique', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'statut-client-abo-mobile': { 'code': 'statut-client-abo-mobile', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'parrainage-code': { 'code': 'parrainage-code', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'parrainage-link': { 'code': 'parrainage-link', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'parrainage-code-nb-use': { 'code': 'parrainage-code-nb-use', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'parrainage-nb-discount': { 'code': 'parrainage-nb-discount', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'parrainage-code-parrain': { 'code': 'parrainage-code-parrain', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'offre-telecommown': { 'code': 'offre-telecommown', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'telecommown-date-debut': { 'code': 'telecommown-date-debut', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+    }
+    # Name + person data
+    if (cli['client']['type'] == 'person'):
+      contact = cli['contact'] if 'contact' in cli else cli['contacts'][mainContactId]
+      civility = 'M' if contact['civil'] == 'man' else 'Mme'
+      result['name'] = f"{civility} {contact['name']} {contact['forename']}"
+      result['email'] = contact['email']
+      result['mobile'] = contact['mobile']
+      result['people_name'] = contact['name']
+      result['people_forename'] = contact['forename']
+    elif (cli['client']['type'] == 'corporation'):
+      corporation = cli['corporation']
+      result['name'] = corporation['name']
+      result['email'] = corporation['email']
+      result['mobile'] = corporation['mobile']
+    # Contacts
+    if ('contacts' in cli and mainContactId in cli['contacts']):
+      result['contacts'][mainContactId] = cli['contacts'][mainContactId]
+    elif ('contact' in cli):
+      result['contacts'][mainContactId] = cli['contact']
+    # Custom fields
+    for l in cli['customFields']:
+      fields = l['list'].values() if isinstance(l['list'], dict) else l['list']
+      for f in fields:
+        if ('code' in f):
+          code = f['code']
+          if (code in ["refbazile", 'parrainage-code', 'parrainage-link', 'parrainage-code-parrain']):
+            customFields[code]['textval'] = f["defaultValue"]
+          elif (code in ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine'] and 'formatted_value' in f):
+            customFields[code]['formatted_value'] = f["formatted_value"]
+          elif (code == "facture-unique"):
+            customFields[code]['boolval'] = (f["defaultValue"] == 'Y')
+          elif (code in ['parrainage-nb-discount', 'parrainage-code-nb-use']):
+            customFields[code]['numericval'] = int(f['defaultValue'])
+          elif (code in ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin'] and 'formatted_ymd' in f):
+            customFields[code]['timestampval'] = parisTZ.localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d')).timestamp()
+    result['customfields'] = customFields.values()
+
+    return result
+
   def getClientFromRef(self, ref):
     params = {
       'search': {
@@ -162,6 +237,11 @@ class TcSellsyConnector:
     return result
 
   def getOpportunity(self, id):
+    o = SellsyOpportunity(id)
+    o.loadWithValues(self.getOpportunityValues)
+    return o
+
+  def getOpportunityValues(self, id):
     parisTZ = pytz.timezone('Europe/Paris')
     opp = self.api(method="Opportunities.getOne", params={'id': id})
     result = {
@@ -172,32 +252,26 @@ class TcSellsyConnector:
       'stepid': opp['stepid'],
       'customfields': {
         'nsce': { 'code': 'nsce', 'textval': '' },
-        'msisdn': { 'code': 'msisdn', 'textval': '' },
+        'numerotelecoop': { 'code': 'numerotelecoop', 'textval': '' },
         'rio': { 'code': 'rio', 'textval': '' },
-        'plan': { 'code': 'plan', 'textval': '' },
-        'achatSimPhysique': { 'code': 'achatSimPhysique', 'boolval': '' },
-        'dateActivationSimAsked': { 'code': 'dateActivationSimAsked', 'timestampval': '' },
+        'refbazile': { 'code': 'refbazile', 'textval': ''},
+        'forfait': { 'code': 'forfait', 'textval': '' },
+        'achatsimphysique': { 'code': 'achatsimphysique', 'boolval': False },
+        'date-activation-sim-souhaitee': { 'code': 'date-activation-sim-souhaitee', 'timestampval': 0 },
       }
     }
 
-    for id, l in opp['customFields'].items():
-      for fieldId, field in l.items():
+    for l in opp['customFields']:
+      fields = l['list'].values() if isinstance(l['list'], dict) else l['list']
+      for field in fields:
         if ('code' in field):
           code = field['code']
-          if (code == 'rio'):
-            result['customfields'][code]['textval'] = field['defaultValue']
-          if (code == 'forfait'):
-            result['customfields'][code]['textval'] = field['defaultValue']
-          if (code == 'nsce'):
-            result['customfields'][code]['textval'] = field['defaultValue']
-          if (code == 'numerotelecoop'):
-            result['customfields'][code]['textval'] = field['defaultValue']
-          if (code == 'refbazile'):
+          if (code in ['rio', 'forfait', 'nsce', 'numerotelecoop', 'refbazile']):
             result['customfields'][code]['textval'] = field['defaultValue']
           if (code == 'achatsimphysique'):
-            result['customfields'][code]['textval'] = (field["defaultValue"] == "Y")
+            result['customfields'][code]['boolval'] = (field["defaultValue"] == "Y")
           if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field):
-            result['customfields'][code]['textval'] = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d')).timestamp()
+            result['customfields'][code]['timestampval'] = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d')).timestamp()
 
     return result
 
@@ -254,6 +328,8 @@ class SellsyClient:
   def __init__(self, id):
     self.id = id
     self.reference = None
+    self.type = None
+    self.label = None
     self.name = None
     self.firstname = None
     self.email = None
@@ -262,7 +338,10 @@ class SellsyClient:
     self.status = None
 
   def __str__(self):
-    return f"#{id} {self.reference} {self.name} {self.firstname} {self.email} {self.status}"
+    return f"#{self.id} {self.reference} {self.label} {self.email} {self.status}"
+
+  def load(self, connector):
+    self.loadWithValues(connector.getClientValues)
 
   def loadWithValues(self, cli):
     parisTZ = pytz.timezone('Europe/Paris')
@@ -274,9 +353,12 @@ class SellsyClient:
         email = contact['email']
 
     self.reference = cli['ident']
+    self.type = cli['type']
+    self.label = cli['name']
     self.name =  cli['people_name']
     self.firstname = cli['people_forename']
     self.email = email
+    self.msisdn = cli['mobile']
     self.oneInvoicePerLine = False
     self.autoValidation = True
     self.status = None
@@ -329,14 +411,15 @@ class SellsyOpportunity:
     self.dateActivationSimAsked = None
 
   def __str__(self):
-    return f"#{id} {self.creationDate} {self.msisdn} client #{self.clientId}"
+    return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
 
   def load(self, connector):
-    values = connector.getOpportunity(self.id)
+    values = connector.getOpportunityValues(self.id)
     self.loadWithValues(values)
 
   def loadWithValues(self, opp):
     parisTZ = pytz.timezone('Europe/Paris')
+    print(opp)
     self.clientId = opp['linkedid']
     self.funnelId = opp['funnelid']
     self.creationDate = opp['created']
