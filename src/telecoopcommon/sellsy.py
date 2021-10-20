@@ -455,7 +455,6 @@ class SellsyOpportunity:
 
   def loadWithValues(self, opp):
     parisTZ = pytz.timezone('Europe/Paris')
-    print(opp)
     self.clientId = opp['linkedid']
     self.funnelId = opp['funnelid']
     self.creationDate = opp['created']
