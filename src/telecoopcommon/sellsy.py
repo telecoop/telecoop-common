@@ -65,12 +65,42 @@ class TcSellsyConnector:
       raise e
     return result
 
-  def updateClient(self, clientId, values):
+  def updateClientProperty(self, clientId, property, value):
+    client = self.getClient(clientId)
     params = {
       'clientid': clientId,
-      'third': values
+      'third': {
+        'name': client.label,
+      }
     }
-    return self.api(method="Client.update", params=params)
+    response = None
+    if property in ['mobile', 'email']:
+      if client.type == 'person':
+        params = {
+          'clientid': clientId,
+          'third': {
+            'name': client.name,
+            property: value
+          },
+          'contact': {
+            'name': client.name,
+            'forename': client.firstname,
+            property: value
+          }
+        }
+        response = self.api(method="Client.update", params=params)
+      else:
+        params = {
+          'clientid': clientId,
+          'contactid': client.mainContactId,
+          'contact': {
+            'name': client.name,
+            property: value
+          }
+        }
+        response = self.api(method="Client.updateContact", params=params)
+
+    return response
 
   def updateCustomField(self, entity, entityId, cfid, value):
     knownEntities = ['client', 'opportunity']
@@ -333,6 +363,7 @@ class SellsyClient:
     self.name = None
     self.firstname = None
     self.email = None
+    self.mainContactId = None
     self.oneInvoicePerLine = None
     self.autoValidation = None
     self.status = None
@@ -346,19 +377,24 @@ class SellsyClient:
   def loadWithValues(self, cli):
     parisTZ = pytz.timezone('Europe/Paris')
     email = cli['email']
+    name = cli['people_name']
+    firstname = cli['people_forename']
     # recherche du contact principal
     mainContactId = cli['maincontactid']
     for contactId, contact in cli["contacts"].items():
       if (contactId == mainContactId):
         email = contact['email']
+        name = contact['name']
+        firstname = contact['forename']
 
     self.reference = cli['ident']
     self.type = cli['type']
     self.label = cli['name']
-    self.name =  cli['people_name']
-    self.firstname = cli['people_forename']
+    self.name =  name
+    self.firstname = firstname
     self.email = email
     self.msisdn = cli['mobile']
+    self.mainContactId = mainContactId
     self.oneInvoicePerLine = False
     self.autoValidation = True
     self.status = None
