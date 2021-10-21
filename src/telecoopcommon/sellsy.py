@@ -116,7 +116,7 @@ class TcSellsyConnector:
     self.stepSimSuspended = sellsyValues[self.env]['step_sim_suspended']
     self.stepSimTerminated = sellsyValues[self.env]['step_sim_terminated']
 
-  def api(self, method, params=None):
+  def api(self, method, params={}):
     try:
       self.logger.debug(f"Calling Sellsy {method} with params {params}")
       retry = 3
