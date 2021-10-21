@@ -4,6 +4,7 @@ from datetime import datetime
 
 class TcSellsyConnector:
   def __init__(self, conf, logger):
+    self.conf = conf
     self.logger = logger
     self._client = sellsy_api.Client(
       conf['consumer_token'],
@@ -338,9 +339,9 @@ class TcSellsyConnector:
 
   def getClientOpportunities(self, clientId):
     result = []
-    params = { 'search': { 'thirds': [clientId] } }
-    opportunities = sellsyClient.api(method="Opportunities.getList", params=params)
-    for opp in opportunities.values():
+    params = { 'search': { 'thirds': [clientId,] } }
+    opportunities = self.api(method="Opportunities.getList", params=params)
+    for opp in opportunities['result'].values():
       o = SellsyOpportunity(opp['id'])
       o.loadWithValues(opp)
       result.append(o)
@@ -432,6 +433,9 @@ class SellsyClient:
       elif (code == 'telecommown-origine'):
         self.telecommownOrigin = f['formatted_value']
 
+  def getOpportunities(self, connector):
+    return connector.getClientOpportunities(self.id)
+
 class SellsyOpportunity:
   def __init__(self, id):
     self.id = id
@@ -475,9 +479,9 @@ class SellsyOpportunity:
           self.bazileNum = field['textval']
         if (code == 'achatsimphysique'):
           self.achatSimPhysique = (field["boolval"] == "Y")
-        if (code == 'date-activation-sim-souhaitee' and field['timestampval'] is not None and field['timestampval'] > 0):
-          timestamp = field['timestampval']
-          if (timestamp is not None):
+        if (code == 'date-activation-sim-souhaitee' and field['timestampval'] is not None):
+          timestamp = int(field['timestampval']) if isinstance(field['timestampval'], str) else field['timestampval']
+          if timestamp > 0:
             self.dateActivationSimAsked = parisTZ.localize(datetime.fromtimestamp(timestamp))
 
   def updateStep(self, stepId, connector):

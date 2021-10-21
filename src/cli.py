@@ -24,6 +24,8 @@ def cmdline():
                         'get-client',
                         'get-client-from-ref',
                         'get-clients',
+                        'get-opportunities-in-step',
+                        'get-client-opportunities',
                         'update-client',
                         'get-tc-token',
                         'get-code',
@@ -109,6 +111,18 @@ class Runner():
       clients = self.getSellsyConnector().getClients()
       print(len(clients))
       print(next(iter(clients.values())))
+
+    if (command == 'get-opportunities-in-step'):
+      step = self.getArg("Step")
+      connector = self.getSellsyConnector()
+      stepId = connector.conf[step]
+      opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId)
+      print(len(opps))
+
+    if (command == 'get-client-opportunities'):
+      clientId = self.getArg('Client id')
+      opps = self.getSellsyConnector().getClientOpportunities(clientId)
+      print(opps)
 
     if (command == 'update-client'):
       id = self.getArg('Client id')
