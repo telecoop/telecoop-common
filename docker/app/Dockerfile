@@ -13,4 +13,3 @@ RUN pip install pytest
 RUN mkdir /opt/telecoop-common
 COPY . /opt/telecoop-common
 WORKDIR /opt/telecoop-common
-RUN pip install .

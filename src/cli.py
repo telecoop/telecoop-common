@@ -4,7 +4,7 @@
 import sys, os, json
 from datetime import datetime, date
 
-from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, SellsyClient
+from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, SellsyClient, sellsyValues
 from telecoopcommon.telecoop import Connector as TcConnector
 from telecoopcommon.cursor import TcCursor
 
@@ -27,6 +27,7 @@ def cmdline():
                         'get-opportunities-in-step',
                         'get-client-opportunities',
                         'update-client',
+                        'update-cf',
                         'get-tc-token',
                         'get-code',
                         'get-sponsorship-code',
@@ -51,6 +52,7 @@ class Logger:
 
 class Runner():
   def __init__(self, env, config, logger, args):
+    self.env = env
     self.config = config
     self.logger = logger
     self.args = args
@@ -129,6 +131,20 @@ class Runner():
       prop = self.getArg('Property')
       value = self.getArg('Property value')
       response = self.getSellsyConnector().updateClientProperty(id, prop, value)
+      print(response)
+
+    if (command == 'update-cf'):
+      env = 'PROD' if self.env == 'PROD' else 'DEV'
+      entity = self.getArg('entity')
+      id = self.getArg('Entity id')
+      customField = self.getArg('Custom field')
+      cfid = sellsyValues[env]['custom_fields'][customField]
+      value = self.getArg('Value')
+      if (value == 'True'):
+        value = True
+      if (value == 'False'):
+        value = False
+      response = self.getSellsyConnector().updateCustomField(entity, id, cfid, value)
       print(response)
 
     if (command == 'get-tc-token'):

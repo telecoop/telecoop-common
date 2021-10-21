@@ -1,9 +1,86 @@
-import sellsy_api, time, pytz
+import sellsy_api, time, pytz, os
 from json import JSONDecodeError
 from datetime import datetime
 
+sellsyValues = {
+  'DEV': {
+    'owner_id': 170714,
+    'new_client_mail_template_id': 62573,
+    'custom_fields': {
+      'refbazile': 103778,
+      'numerotelecoop': 103448,
+      'nsce': 103775,
+      'rio': 103447,
+      'forfait': 103780,
+      'achatsimphysique': 125472,
+      'facturationmanuelle': 109341,
+      'facture-unique': 117454,
+      'date-activation-sim-souhaitee': 134623,
+      'statut-client-abo-mobile': 141160,
+      'offre-telecommown': 139323,
+      'telecommown-origine': 139327,
+      'telecommown-date-debut': 139329,
+      'telecommown-date-fin': 139332,
+      'abo-telecommown': 139325,
+      'parrainage-code': 139333,
+      'parrainage-lien': 139334,
+      'parrainage-code-nb-use': 139352,
+      'parrainage-nb-discount': 139353,
+      'parrainage-code-parrain': 140671,
+    },
+    'funnel_id_vie_du_contrat': 62579,
+    'step_new': 447893,
+    'step_sim_to_send': 447894,
+    'step_sim_sent': 447895,
+    'step_sim_received': 447896,
+    'step_sim_pending_porta': 447897,
+    'step_sim_pending_new': 447898,
+    'step_sim_activated': 447899,
+    'step_sim_suspended': 447900,
+    'step_sim_terminated': 447901,
+  },
+  'PROD': {
+    'owner_id': 170799,
+    'new_client_mail_template_id': 62591,
+    'custom_fields': {
+      'refbazile': 103227,
+      'numerotelecoop': 103670,
+      'nsce': 102689,
+      'rio': 102688,
+      'forfait': 103346,
+      'achatsimphysique': 125604,
+      'date-activation-sim-souhaitee': 134621,
+      'facturationmanuelle': 109534,
+      'facture-unique': 119383,
+      'statut-client-abo-mobile': 132773,
+      'offre-telecommown': 139951,
+      'telecommown-origine': 139954,
+      'telecommown-date-debut': 139955,
+      'telecommown-date-fin': 139956,
+      'abo-telecommown': 139952,
+      'parrainage-code': 139957,
+      'parrainage-lien': 139958,
+      'parrainage-nb-use': 139959,
+      'parrainage-nb-discount': 139961,
+      'parrainage-code-parrain': 140672,
+    },
+    'funnel_id_vie_du_contrat': 60663,
+    'step_new': 446190,
+    'step_sim_to_send': 434062,
+    'step_sim_sent': 444468,
+    'step_sim_received': 434063,
+    'step_sim_pending_porta': 444469,
+    'step_sim_pending_new': 444470,
+    'step_sim_activated': 442523,
+    'step_sim_suspended': 446191,
+    'step_sim_terminated': 446192,
+  }
+}
+
 class TcSellsyConnector:
   def __init__(self, conf, logger):
+    env = os.getenv('ENV', 'LOCAL')
+    self.env = 'PROD' if env == 'PROD' else 'DEV'
     self.conf = conf
     self.logger = logger
     self._client = sellsy_api.Client(
@@ -11,30 +88,33 @@ class TcSellsyConnector:
       conf['consumer_secret'],
       conf['user_token'],
       conf['user_secret'])
-    self.ownerId = conf['owner_id']
-    self.sellsyNewClientMailTemplateId = conf['new_client_mail_template_id']
-    self.customFieldBazileNb = conf['custom_field_bazile_nb']
-    self.customFieldTelecomNum = conf['custom_field_telecom_num']
-    self.cfIdTeleCommownOffre = conf['cfid_telecommown_offre']
-    self.cfIdTeleCommownOrigine = conf['cfid_telecommown_origine']
-    self.cfIdTeleCommownDateDebut = conf['cfid_telecommown_date_debut']
-    self.cfIdTeleCommownDateFin = conf['cfid_telecommown_date_fin']
-    self.cfidSponsorCode = conf['cfid_sponsor_code']
-    self.cfidSponsorLink = conf['cfid_sponsor_link']
-    self.cfidSponsorNbUse = conf['cfid_sponsor_nb_use']
-    self.cfidSponsorNbDiscount = conf['cfid_sponsor_nb_discount']
-    self.cfidSponsorRefereeCode = conf['cfid_sponsor_referee_code']
+    self.ownerId = sellsyValues[self.env]['owner_id']
+    self.sellsyNewClientMailTemplateId = sellsyValues[self.env]['new_client_mail_template_id']
+    customFields = sellsyValues[self.env]['custom_fields']
+    self.customFieldBazileNb = customFields['refbazile']
+    self.customFieldTelecomNum = customFields['numerotelecoop']
+    self.cfIdStatusClientMobile = customFields['statut-client-abo-mobile']
+    self.cfIdTeleCommownOffre = customFields['offre-telecommown']
+    self.cfIdTeleCommownOrigine = customFields['telecommown-origine']
+    self.cfIdTeleCommownDateDebut = customFields['telecommown-date-debut']
+    self.cfIdTeleCommownDateFin = customFields['telecommown-date-fin']
+    self.cfIdTeleCommownBoth = customFields['abo-telecommown']
+    self.cfidSponsorCode = customFields['parrainage-code']
+    self.cfidSponsorLink = customFields['parrainage-lien']
+    self.cfidSponsorNbUse = customFields['parrainage-code-nb-use']
+    self.cfidSponsorNbDiscount = customFields['parrainage-nb-discount']
+    self.cfidSponsorRefereeCode = customFields['parrainage-code-parrain']
 
-    self.funnelIdVdc = conf['funnel_id_vie_du_contrat']
-    self.stepNew = conf['step_new']
-    self.stepSimToSend = conf['step_sim_to_send']
-    self.stepSimSent = conf['step_sim_sent']
-    self.stepSimReceived = conf['step_sim_received']
-    self.stepSimPendingPorta = conf['step_sim_pending_porta']
-    self.stepSimPendingNew = conf['step_sim_pending_new']
-    self.stepSimActivated = conf['step_sim_activated']
-    self.stepSimSuspended = conf['step_sim_suspended']
-    self.stepSimTerminated = conf['step_sim_terminated']
+    self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
+    self.stepNew = sellsyValues[self.env]['step_new']
+    self.stepSimToSend = sellsyValues[self.env]['step_sim_to_send']
+    self.stepSimSent = sellsyValues[self.env]['step_sim_sent']
+    self.stepSimReceived = sellsyValues[self.env]['step_sim_received']
+    self.stepSimPendingPorta = sellsyValues[self.env]['step_sim_pending_porta']
+    self.stepSimPendingNew = sellsyValues[self.env]['step_sim_pending_new']
+    self.stepSimActivated = sellsyValues[self.env]['step_sim_activated']
+    self.stepSimSuspended = sellsyValues[self.env]['step_sim_suspended']
+    self.stepSimTerminated = sellsyValues[self.env]['step_sim_terminated']
 
   def api(self, method, params=None):
     try:
@@ -165,7 +245,7 @@ class TcSellsyConnector:
       'facture-unique': { 'code': 'facture-unique', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'statut-client-abo-mobile': { 'code': 'statut-client-abo-mobile', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'parrainage-code': { 'code': 'parrainage-code', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
-      'parrainage-link': { 'code': 'parrainage-link', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'parrainage-lien': { 'code': 'parrainage-lien', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'parrainage-code-nb-use': { 'code': 'parrainage-code-nb-use', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'parrainage-nb-discount': { 'code': 'parrainage-nb-discount', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'parrainage-code-parrain': { 'code': 'parrainage-code-parrain', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
@@ -173,6 +253,7 @@ class TcSellsyConnector:
       'telecommown-date-debut': { 'code': 'telecommown-date-debut', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False}
     }
     # Name + person data
     if (cli['client']['type'] == 'person'):
@@ -199,16 +280,16 @@ class TcSellsyConnector:
       for f in fields:
         if ('code' in f):
           code = f['code']
-          if (code in ["refbazile", 'parrainage-code', 'parrainage-link', 'parrainage-code-parrain']):
+          if (code in ["refbazile", 'parrainage-code', 'parrainage-lien', 'parrainage-code-parrain']):
             customFields[code]['textval'] = f["defaultValue"]
           elif (code in ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine'] and 'formatted_value' in f):
             customFields[code]['formatted_value'] = f["formatted_value"]
-          elif (code == "facture-unique"):
+          elif (code in ["facture-unique", 'abo-telecommown']):
             customFields[code]['boolval'] = (f["defaultValue"] == 'Y')
           elif (code in ['parrainage-nb-discount', 'parrainage-code-nb-use']):
             customFields[code]['numericval'] = int(f['defaultValue'])
           elif (code in ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin'] and 'formatted_ymd' in f):
-            customFields[code]['timestampval'] = parisTZ.localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d')).timestamp()
+            customFields[code]['formatted_ymd'] = f['formatted_ymd']
     result['customfields'] = customFields.values()
 
     return result
@@ -302,7 +383,7 @@ class TcSellsyConnector:
           if (code == 'achatsimphysique'):
             result['customfields'][code]['boolval'] = (field["defaultValue"] == "Y")
           if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field):
-            result['customfields'][code]['timestampval'] = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d')).timestamp()
+            result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
 
     return result
 
@@ -373,7 +454,7 @@ class SellsyClient:
     return f"#{self.id} {self.reference} {self.label} {self.email} {self.status}"
 
   def load(self, connector):
-    self.loadWithValues(connector.getClientValues)
+    self.loadWithValues(connector.getClientValues(self.id))
 
   def loadWithValues(self, cli):
     parisTZ = pytz.timezone('Europe/Paris')
@@ -399,6 +480,10 @@ class SellsyClient:
     self.oneInvoicePerLine = False
     self.autoValidation = True
     self.status = None
+    self.optinTeleCommown = None
+    self.telecommownStart = None
+    self.telecommownEnd = None
+    self.telecommownAbo = None
     self.lines = [{
       'msisdn': cli['mobile'].replace('+33', '0')
     }]
@@ -409,13 +494,13 @@ class SellsyClient:
       elif (code == "facturationmanuelle"):
         self.autoValidation = (f["formatted_value"] in ['', 'automatique'])
       elif (code == "facture-unique"):
-        self.oneInvoicePerLine = (f["boolval"] == 'N')
+        self.oneInvoicePerLine = (not f["boolval"])
       elif (code == 'statut-client-abo-mobile' and 'formatted_value' in f):
         self.status = f["formatted_value"]
 
       elif (code == 'parrainage-code'):
         self.sponsorCode = f['textval']
-      elif (code == 'parrainage-link'):
+      elif (code == 'parrainage-lien'):
         self.sponsorLink = f['textval']
       elif (code == 'parrainage-code-nb-use'):
         self.sponsorCodeNb = f['numericval']
@@ -424,14 +509,16 @@ class SellsyClient:
       elif (code == 'parrainage-code-parrain'):
         self.refereeCode = f['textval']
 
-      elif (code == 'offre-telecommown'):
-        self.optinTeleCommown = parisTZ.localize(datetime.fromtimestamp(int(f['timestampval'])))
-      elif (code == 'telecommown-date-debut'):
-        self.telecommownStart = parisTZ.localize(datetime.fromtimestamp(int(f['timestampval'])))
-      elif (code == 'telecommown-date-fin'):
-        self.telecommownEnd = parisTZ.localize(datetime.fromtimestamp(int(f['timestampval'])))
+      elif (code == 'offre-telecommown' and 'formatted_ymd' in f and f['formatted_ymd'] != ''):
+        self.optinTeleCommown = parisTZ.localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))
+      elif (code == 'telecommown-date-debut' and 'formatted_ymd' in f and f['formatted_ymd'] != ''):
+        self.telecommownStart = parisTZ.localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))
+      elif (code == 'telecommown-date-fin' and 'formatted_ymd' in f and f['formatted_ymd'] != ''):
+        self.telecommownEnd = parisTZ.localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))
       elif (code == 'telecommown-origine'):
         self.telecommownOrigin = f['formatted_value']
+      elif (code == 'abo-telecommown'):
+        self.telecommownAbo = f['boolval']
 
   def getOpportunities(self, connector):
     return connector.getClientOpportunities(self.id)
@@ -445,6 +532,7 @@ class SellsyOpportunity:
     self.steps = None
     self.nsce = None
     self.msisdn = None
+    self.bazileNume = None
     self.rio = None
     self.plan = None
     self.achatSimPhysique = None
@@ -478,11 +566,9 @@ class SellsyOpportunity:
         if (code == 'refbazile'):
           self.bazileNum = field['textval']
         if (code == 'achatsimphysique'):
-          self.achatSimPhysique = (field["boolval"] == "Y")
-        if (code == 'date-activation-sim-souhaitee' and field['timestampval'] is not None):
-          timestamp = int(field['timestampval']) if isinstance(field['timestampval'], str) else field['timestampval']
-          if timestamp > 0:
-            self.dateActivationSimAsked = parisTZ.localize(datetime.fromtimestamp(timestamp))
+          self.achatSimPhysique = field["boolval"]
+        if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
+          self.dateActivationSimAsked = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params = { 'oid': self.id, 'stepid': stepId})
