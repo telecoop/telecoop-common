@@ -35,6 +35,11 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['refbazile'], '2222')
   test_connector.updateCustomField('opportunity', id, cf['achatsimphysique'], True)
   test_connector.updateCustomField('opportunity', id, cf['date-activation-sim-souhaitee'], timestamp)
+  test_connector.updateCustomField('opportunity', id, cf['offre-telecommown'], timestamp)
+  test_connector.updateCustomField('opportunity', id, cf['telecommown-date-debut'], timestamp)
+  test_connector.updateCustomField('opportunity', id, cf['telecommown-date-fin'], timestamp)
+  test_connector.updateCustomField('opportunity', id, cf['telecommown-origine'], 'TeleCoop')
+  test_connector.updateCustomField('opportunity', id, cf['abo-telecommown'], 'Y')
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
@@ -46,6 +51,11 @@ def test_get_opportunity(test_connector):
   assert o.bazileNum == '2222', "Check Bazile number"
   assert o.achatSimPhysique == True, "Check achat sim physique"
   assert o.dateActivationSimAsked == now, "Check date activation SIM souhaitée"
+  assert o.optinTeleCommown == now, "Check optin telecommown"
+  assert o.telecommownStart == now, "Check telecommown start"
+  assert o.telecommownEnd == now, "Check telecommown end"
+  assert o.telecommownOrigin == 'TeleCoop', "Check telecommown origine"
+  assert o.telecommownAbo == True, "Check telecommown abo"
 
   test_connector.updateCustomField('opportunity', id, cf['nsce'], '4321')
   test_connector.updateCustomField('opportunity', id, cf['numerotelecoop'], '0610658238')
@@ -104,6 +114,7 @@ def test_get_client(test_connector):
   assert c.optinTeleCommown == now, "Check optin telecommown"
   assert c.telecommownStart == now, "Check telecommown start"
   assert c.telecommownEnd == now, "Check telecommown end"
+  assert c.telecommownOrigin == 'TeleCoop', "Check telecommown origine"
   assert c.telecommownAbo == True, "Check telecommown abo"
 
   test_connector.updateClientProperty(id, 'mobile', '0610658238')

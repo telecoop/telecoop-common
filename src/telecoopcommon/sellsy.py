@@ -370,6 +370,11 @@ class TcSellsyConnector:
         'forfait': { 'code': 'forfait', 'textval': '' },
         'achatsimphysique': { 'code': 'achatsimphysique', 'boolval': False },
         'date-activation-sim-souhaitee': { 'code': 'date-activation-sim-souhaitee', 'timestampval': 0 },
+        'offre-telecommown': { 'code': 'offre-telecommown', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+        'telecommown-date-debut': { 'code': 'telecommown-date-debut', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+        'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+        'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+        'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False}
       }
     }
 
@@ -380,9 +385,11 @@ class TcSellsyConnector:
           code = field['code']
           if (code in ['rio', 'forfait', 'nsce', 'numerotelecoop', 'refbazile']):
             result['customfields'][code]['textval'] = field['defaultValue']
-          if (code == 'achatsimphysique'):
+          if (code in ['telecommown-origine'] and 'formatted_value' in field):
+            result['customfields'][code]['formatted_value'] = field["formatted_value"]
+          if (code in ['achatsimphysique', 'abo-telecommown']):
             result['customfields'][code]['boolval'] = (field["defaultValue"] == "Y")
-          if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field):
+          if (code in ['date-activation-sim-souhaitee', 'offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin'] and 'formatted_ymd' in field):
             result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
 
     return result
@@ -537,6 +544,10 @@ class SellsyOpportunity:
     self.plan = None
     self.achatSimPhysique = None
     self.dateActivationSimAsked = None
+    self.optinTeleCommown = None
+    self.telecommownStart = None
+    self.telecommownEnd = None
+    self.telecommownAbo = None
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
@@ -569,6 +580,16 @@ class SellsyOpportunity:
           self.achatSimPhysique = field["boolval"]
         if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
           self.dateActivationSimAsked = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+        if (code == 'offre-telecommown' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
+          self.optinTeleCommown = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+        if (code == 'telecommown-date-debut' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
+          self.telecommownStart = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+        if (code == 'telecommown-date-fin' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
+          self.telecommownEnd = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+        if (code == 'telecommown-origine'):
+          self.telecommownOrigin = field['formatted_value']
+        if (code == 'abo-telecommown'):
+          self.telecommownAbo = field['boolval']
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params = { 'oid': self.id, 'stepid': stepId})
