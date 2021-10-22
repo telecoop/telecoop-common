@@ -205,9 +205,9 @@ class TcSellsyConnector:
       raise ValueError("Either clientId or opportunityId should be not None")
     response = None
     if clientId is not None:
-      response = sellsyConnector.api(method="Client.getOne", params={ 'clientid': clientId })
+      response = self.api(method="Client.getOne", params={ 'clientid': clientId })
     if opportunityId is not None:
-      response = sellsyConnector.api(method="opportunities.getOne", params={ 'id': opportunityId })
+      response = self.api(method="opportunities.getOne", params={ 'id': opportunityId })
     optinDate = None
     for l in response['customFields']:
       if (l['name'] == 'Z-Offre TeleCommown'):

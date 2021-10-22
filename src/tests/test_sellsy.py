@@ -8,6 +8,9 @@ config.read(confFile)
 
 parisTZ = pytz.timezone('Europe/Paris')
 
+clientIdPG = 34246953
+opportunityIdPG = 5107122
+
 class Logger:
   def critical(self, message):
     return None
@@ -23,7 +26,7 @@ def test_connector():
   return sellsy.TcSellsyConnector(config['SellsyDev'], Logger())
 
 def test_get_opportunity(test_connector):
-  id = 3589914
+  id = opportunityIdPG
   cf = sellsy.sellsyValues['DEV']['custom_fields']
   d = datetime.now()
   now = parisTZ.localize(datetime(year=d.year, month=d.month, day=d.day))
@@ -43,7 +46,7 @@ def test_get_opportunity(test_connector):
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
-  assert o.clientId == '26580424', "Check client id"
+  assert o.clientId == str(clientIdPG), "Check client id"
   assert o.nsce == '1234', "Check nsce"
   assert o.msisdn == '0610658239', "Check msisdn"
   assert o.rio == '1111', "Check RIO"
@@ -76,7 +79,7 @@ def test_get_opportunity(test_connector):
   #assert o.dateActivationSimAsked is None, "Check date activation SIM souhaitée"
 
 def test_get_client(test_connector):
-  id = 26580424
+  id = clientIdPG
   cf = sellsy.sellsyValues['DEV']['custom_fields']
   d = datetime.now()
   now = parisTZ.localize(datetime(year=d.year, month=d.month, day=d.day))
