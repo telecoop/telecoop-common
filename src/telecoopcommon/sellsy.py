@@ -213,7 +213,7 @@ class TcSellsyConnector:
       if (l['name'] == 'Z-Offre TeleCommown'):
         for f in l['list']:
           if (f['code'] == 'offre-telecommown' and 'formatted_ymd' in f and f['formatted_ymd'] != ""):
-            optinDate = pytz.timezone('Europe/Paris').localize(datetime.datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))
+            optinDate = pytz.timezone('Europe/Paris').localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))
             break
         break
     return optinDate
