@@ -501,7 +501,10 @@ class SellsyClient:
       elif (code == "facturationmanuelle"):
         self.autoValidation = (f["formatted_value"] in ['', 'automatique'])
       elif (code == "facture-unique"):
-        self.oneInvoicePerLine = (not f["boolval"])
+        if (isinstance(f["boolval"], bool):
+          self.oneInvoicePerLine = (not f["boolval"])
+        else:
+          self.oneInvoicePerLine = (f['boolval'] == 'N')
       elif (code == 'statut-client-abo-mobile' and 'formatted_value' in f):
         self.status = f["formatted_value"]
 
@@ -525,7 +528,10 @@ class SellsyClient:
       elif (code == 'telecommown-origine'):
         self.telecommownOrigin = f['formatted_value']
       elif (code == 'abo-telecommown'):
-        self.telecommownAbo = f['boolval']
+        if (isinstance(f["boolval"], bool):
+          self.telecommownAbo = f['boolval']
+        else:
+          self.telecommownAbo = (f['boolval'] == 'Y')
 
   def getOpportunities(self, connector):
     return connector.getClientOpportunities(self.id)
@@ -577,7 +583,10 @@ class SellsyOpportunity:
         if (code == 'refbazile'):
           self.bazileNum = field['textval']
         if (code == 'achatsimphysique'):
-          self.achatSimPhysique = field["boolval"]
+          if (isinstance(field["boolval"], bool):
+            self.achatSimPhysique = field["boolval"]
+          else:
+            self.achatSimPhysique = (f['boolval'] == 'Y')
         if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
           self.dateActivationSimAsked = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
         if (code == 'offre-telecommown' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
@@ -589,7 +598,10 @@ class SellsyOpportunity:
         if (code == 'telecommown-origine'):
           self.telecommownOrigin = field['formatted_value']
         if (code == 'abo-telecommown'):
-          self.telecommownAbo = field['boolval']
+          if (isinstance(field["boolval"], bool):
+            self.telecommownAbo = field['boolval']
+          else:
+            self.telecommownAbo = (field['boolval'] == 'Y')
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params = { 'oid': self.id, 'stepid': stepId})
