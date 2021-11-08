@@ -501,7 +501,7 @@ class SellsyClient:
       elif (code == "facturationmanuelle"):
         self.autoValidation = (f["formatted_value"] in ['', 'automatique'])
       elif (code == "facture-unique"):
-        if (isinstance(f["boolval"], bool):
+        if (isinstance(f["boolval"], bool)):
           self.oneInvoicePerLine = (not f["boolval"])
         else:
           self.oneInvoicePerLine = (f['boolval'] == 'N')
@@ -528,7 +528,7 @@ class SellsyClient:
       elif (code == 'telecommown-origine'):
         self.telecommownOrigin = f['formatted_value']
       elif (code == 'abo-telecommown'):
-        if (isinstance(f["boolval"], bool):
+        if (isinstance(f["boolval"], bool)):
           self.telecommownAbo = f['boolval']
         else:
           self.telecommownAbo = (f['boolval'] == 'Y')
@@ -583,7 +583,7 @@ class SellsyOpportunity:
         if (code == 'refbazile'):
           self.bazileNum = field['textval']
         if (code == 'achatsimphysique'):
-          if (isinstance(field["boolval"], bool):
+          if (isinstance(field["boolval"], bool)):
             self.achatSimPhysique = field["boolval"]
           else:
             self.achatSimPhysique = (f['boolval'] == 'Y')
@@ -598,7 +598,7 @@ class SellsyOpportunity:
         if (code == 'telecommown-origine'):
           self.telecommownOrigin = field['formatted_value']
         if (code == 'abo-telecommown'):
-          if (isinstance(field["boolval"], bool):
+          if (isinstance(field["boolval"], bool)):
             self.telecommownAbo = field['boolval']
           else:
             self.telecommownAbo = (field['boolval'] == 'Y')
