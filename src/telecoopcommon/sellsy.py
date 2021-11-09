@@ -586,7 +586,7 @@ class SellsyOpportunity:
           if (isinstance(field["boolval"], bool)):
             self.achatSimPhysique = field["boolval"]
           else:
-            self.achatSimPhysique = (f['boolval'] == 'Y')
+            self.achatSimPhysique = (field['boolval'] == 'Y')
         if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
           self.dateActivationSimAsked = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
         if (code == 'offre-telecommown' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
