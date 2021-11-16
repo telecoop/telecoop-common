@@ -117,7 +117,7 @@ class Runner():
     if (command == 'get-opportunities-in-step'):
       step = self.getArg("Step")
       connector = self.getSellsyConnector()
-      stepId = connector.conf[step]
+      stepId = sellsyValues[self.env][step]
       opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId)
       print(len(opps))
 

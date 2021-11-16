@@ -10,6 +10,7 @@ parisTZ = pytz.timezone('Europe/Paris')
 
 clientIdPG = 34246953
 opportunityIdPG = 5107122
+clientIdNoOpportunity = 33309487
 
 class Logger:
   def critical(self, message):
@@ -154,6 +155,16 @@ def test_get_client(test_connector):
   #assert c.telecommownStart == now, "Check telecommown start"
   #assert c.telecommownEnd == now, "Check telecommown end"
   assert c.telecommownAbo == False, "Check telecommown abo"
+
+def test_get_client_opportunities(test_connector):
+  c = sellsy.SellsyClient(clientIdPG)
+  opps = c.getOpportunities(test_connector)
+  assert opps[0].id == str(opportunityIdPG)
+
+  c = sellsy.SellsyClient(clientIdNoOpportunity)
+  opps = c.getOpportunities(test_connector)
+  assert len(opps) == 0
+
 
 #if (command == 'get-client'):
 #  id = self.getArg('Client id')

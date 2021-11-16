@@ -429,6 +429,8 @@ class TcSellsyConnector:
     result = []
     params = { 'search': { 'thirds': [clientId,] } }
     opportunities = self.api(method="Opportunities.getList", params=params)
+    if len(opportunities['result']) == 0:
+      return result
     for opp in opportunities['result'].values():
       o = SellsyOpportunity(opp['id'])
       o.loadWithValues(opp)
@@ -491,6 +493,7 @@ class SellsyClient:
     self.telecommownStart = None
     self.telecommownEnd = None
     self.telecommownAbo = None
+    self.refereeCode = None
     self.lines = [{
       'msisdn': cli['mobile'].replace('+33', '0')
     }]
