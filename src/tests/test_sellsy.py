@@ -44,6 +44,7 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['telecommown-date-fin'], timestamp)
   test_connector.updateCustomField('opportunity', id, cf['telecommown-origine'], 'TeleCoop')
   test_connector.updateCustomField('opportunity', id, cf['abo-telecommown'], 'Y')
+  test_connector.updateCustomField('opportunity', id, cf['code-promo'], 'TESTCODE')
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
@@ -60,6 +61,7 @@ def test_get_opportunity(test_connector):
   assert o.telecommownEnd == now, "Check telecommown end"
   assert o.telecommownOrigin == 'TeleCoop', "Check telecommown origine"
   assert o.telecommownAbo == True, "Check telecommown abo"
+  assert o.promoCode == 'TESTCODE'
 
   test_connector.updateCustomField('opportunity', id, cf['nsce'], '4321')
   test_connector.updateCustomField('opportunity', id, cf['numerotelecoop'], '0610658238')
@@ -68,6 +70,7 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['refbazile'], '1111')
   test_connector.updateCustomField('opportunity', id, cf['achatsimphysique'], 'N')
   #test_connector.updateCustomField('opportunity', id, cf['date-activation-sim-souhaitee'], None)
+  test_connector.updateCustomField('opportunity', id, cf['code-promo'], 'TESTCODE2')
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
@@ -78,6 +81,7 @@ def test_get_opportunity(test_connector):
   assert o.bazileNum == '1111', "Check Bazile number"
   assert o.achatSimPhysique == False, "Check achat sim physique"
   #assert o.dateActivationSimAsked is None, "Check date activation SIM souhaitée"
+  assert o.promoCode == 'TESTCODE2'
 
 def test_get_client(test_connector):
   id = clientIdPG
@@ -101,6 +105,7 @@ def test_get_client(test_connector):
   test_connector.updateCustomField('client', id, cf['telecommown-date-fin'], timestamp)
   test_connector.updateCustomField('client', id, cf['telecommown-origine'], 'TeleCoop')
   test_connector.updateCustomField('client', id, cf['abo-telecommown'], 'Y')
+  test_connector.updateCustomField('client', id, cf['code-promo'], 'TESTCODE')
 
   c = sellsy.SellsyClient(id)
   c.load(test_connector)
@@ -120,6 +125,7 @@ def test_get_client(test_connector):
   assert c.telecommownEnd == now, "Check telecommown end"
   assert c.telecommownOrigin == 'TeleCoop', "Check telecommown origine"
   assert c.telecommownAbo == True, "Check telecommown abo"
+  assert c.promoCode == 'TESTCODE', "Check promo code"
 
   test_connector.updateClientProperty(id, 'mobile', '0610658238')
   test_connector.updateClientProperty(id, 'email', 'pierre2@afeu.fr')
@@ -137,6 +143,7 @@ def test_get_client(test_connector):
   #test_connector.updateCustomField('client', id, cf['telecommown-date-fin'], timestamp)
   test_connector.updateCustomField('client', id, cf['telecommown-origine'], 'Commown')
   test_connector.updateCustomField('client', id, cf['abo-telecommown'], 'N')
+  test_connector.updateCustomField('client', id, cf['code-promo'], 'TESTCODE2')
 
   c = sellsy.SellsyClient(id)
   c.load(test_connector)
@@ -155,6 +162,7 @@ def test_get_client(test_connector):
   #assert c.telecommownStart == now, "Check telecommown start"
   #assert c.telecommownEnd == now, "Check telecommown end"
   assert c.telecommownAbo == False, "Check telecommown abo"
+  assert c.promoCode == 'TESTCODE2', "Check promo code"
 
 def test_get_client_opportunities(test_connector):
   c = sellsy.SellsyClient(clientIdPG)
@@ -164,6 +172,15 @@ def test_get_client_opportunities(test_connector):
   c = sellsy.SellsyClient(clientIdNoOpportunity)
   opps = c.getOpportunities(test_connector)
   assert len(opps) == 0
+
+def test_get_opportunity_client(test_connector):
+  o = sellsy.SellsyOpportunity(opportunityIdPG)
+  o.load(test_connector)
+  c = o.getClient(test_connector)
+  assert c.id == str(clientIdPG), "First access, check client id"
+  # Shouldn't use the connector, so passing an empty object shouldn't be a problem
+  c = o.getClient(object())
+  assert c.id == str(clientIdPG), "Second access, check client id"
 
 
 #if (command == 'get-client'):

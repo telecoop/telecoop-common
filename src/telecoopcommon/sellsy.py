@@ -27,6 +27,7 @@ sellsyValues = {
       'parrainage-code-nb-use': 139352,
       'parrainage-nb-discount': 139353,
       'parrainage-code-parrain': 140671,
+      'code-promo': 143564,
     },
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
@@ -63,6 +64,7 @@ sellsyValues = {
       'parrainage-code-nb-use': 139959,
       'parrainage-nb-discount': 139961,
       'parrainage-code-parrain': 140672,
+      'code-promo': 144015
     },
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
@@ -104,6 +106,7 @@ class TcSellsyConnector:
     self.cfidSponsorNbUse = customFields['parrainage-code-nb-use']
     self.cfidSponsorNbDiscount = customFields['parrainage-nb-discount']
     self.cfidSponsorRefereeCode = customFields['parrainage-code-parrain']
+    self.cfidCodePromo = customFields['code-promo']
 
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
     self.stepNew = sellsyValues[self.env]['step_new']
@@ -253,7 +256,8 @@ class TcSellsyConnector:
       'telecommown-date-debut': { 'code': 'telecommown-date-debut', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
-      'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False}
+      'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False },
+      'code-promo': { 'code': 'code-promo', 'textval': '' }
     }
     # Name + person data
     if (cli['client']['type'] == 'person'):
@@ -280,7 +284,7 @@ class TcSellsyConnector:
       for f in fields:
         if ('code' in f):
           code = f['code']
-          if (code in ["refbazile", 'parrainage-code', 'parrainage-lien', 'parrainage-code-parrain']):
+          if (code in ["refbazile", 'parrainage-code', 'parrainage-lien', 'parrainage-code-parrain', 'code-promo']):
             customFields[code]['textval'] = f["defaultValue"]
           elif (code in ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine'] and 'formatted_value' in f):
             customFields[code]['formatted_value'] = f["formatted_value"]
@@ -374,7 +378,8 @@ class TcSellsyConnector:
         'telecommown-date-debut': { 'code': 'telecommown-date-debut', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
         'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
         'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
-        'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False}
+        'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False},
+        'code-promo': { 'code': 'code-promo', 'textval': '' }
       }
     }
 
@@ -383,7 +388,7 @@ class TcSellsyConnector:
       for field in fields:
         if ('code' in field):
           code = field['code']
-          if (code in ['rio', 'forfait', 'nsce', 'numerotelecoop', 'refbazile']):
+          if (code in ['rio', 'forfait', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo']):
             result['customfields'][code]['textval'] = field['defaultValue']
           if (code in ['telecommown-origine'] and 'formatted_value' in field):
             result['customfields'][code]['formatted_value'] = field["formatted_value"]
@@ -458,6 +463,16 @@ class SellsyClient:
     self.oneInvoicePerLine = None
     self.autoValidation = None
     self.status = None
+    self.optinTeleCommown = None
+    self.telecommownStart = None
+    self.telecommownEnd = None
+    self.telecommownAbo = None
+    self.sponsorCode = None
+    self.sponsorLink = None
+    self.sponsorCodeNb = None
+    self.sponsorNbDiscount = None
+    self.refereeCode = None
+    self.promoCode = None
 
   def __str__(self):
     return f"#{self.id} {self.reference} {self.label} {self.email} {self.status}"
@@ -486,14 +501,6 @@ class SellsyClient:
     self.email = email
     self.msisdn = cli['mobile']
     self.mainContactId = mainContactId
-    self.oneInvoicePerLine = False
-    self.autoValidation = True
-    self.status = None
-    self.optinTeleCommown = None
-    self.telecommownStart = None
-    self.telecommownEnd = None
-    self.telecommownAbo = None
-    self.refereeCode = None
     self.lines = [{
       'msisdn': cli['mobile'].replace('+33', '0')
     }]
@@ -536,6 +543,9 @@ class SellsyClient:
         else:
           self.telecommownAbo = (f['boolval'] == 'Y')
 
+      elif (code == 'code-promo'):
+        self.promoCode = f['textval']
+
   def getOpportunities(self, connector):
     return connector.getClientOpportunities(self.id)
 
@@ -543,6 +553,7 @@ class SellsyOpportunity:
   def __init__(self, id):
     self.id = id
     self.clientId = None
+    self.client = None
     self.funnelId = None
     self.creationDate = None
     self.steps = None
@@ -557,6 +568,7 @@ class SellsyOpportunity:
     self.telecommownStart = None
     self.telecommownEnd = None
     self.telecommownAbo = None
+    self.promoCode = None
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
@@ -564,6 +576,12 @@ class SellsyOpportunity:
   def load(self, connector):
     values = connector.getOpportunityValues(self.id)
     self.loadWithValues(values)
+
+  def getClient(self, connector):
+    if self.client is None:
+      self.client = SellsyClient(self.clientId)
+      self.client.load(connector)
+    return self.client
 
   def loadWithValues(self, opp):
     parisTZ = pytz.timezone('Europe/Paris')
@@ -605,6 +623,8 @@ class SellsyOpportunity:
             self.telecommownAbo = field['boolval']
           else:
             self.telecommownAbo = (field['boolval'] == 'Y')
+        if (code == 'code-promo'):
+          self.promoCode = field['textval']
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params = { 'oid': self.id, 'stepid': stepId})

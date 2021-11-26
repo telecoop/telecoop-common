@@ -24,11 +24,14 @@ class Connector:
   def getCode(self, code):
     return self.connector.get(f"/promo_codes/codes/{code}")
 
+  def useCode(self, code, client):
+    return self.connector.post(f"/promo_codes/code/{code}/used-by/{client}")
+
   def getSponsorshipCode(self, referee):
     return self.connector.get(f"/promo_codes/sponsorships/{referee}")
 
-  def linkToReferee(self, referee, client):
-    return self.connector.post(f"/promo_codes/sponsorships/{referee}/linkedTo/{client}")
+  def linkToReferee(self, referer, referee):
+    return self.connector.post(f"/promo_codes/sponsorships/{referer}/linkedTo/{referee}")
 
-  def appliedToReferee(self, referee, client):
-    return self.connector.post(f"/promo_codes/sponsorships/{referee}/applied/{client}")
+  def appliedToReferee(self, referer, referee):
+    return self.connector.post(f"/promo_codes/sponsorships/{referer}/applied/{referee}")
