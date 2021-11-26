@@ -375,6 +375,7 @@ class TcSellsyConnector:
         'achatsimphysique': { 'code': 'achatsimphysique', 'boolval': False },
         'date-activation-sim-souhaitee': { 'code': 'date-activation-sim-souhaitee', 'timestampval': 0 },
         'offre-telecommown': { 'code': 'offre-telecommown', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+        'parrainage-code-parrain': { 'code': 'parrainage-code-parrain', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
         'telecommown-date-debut': { 'code': 'telecommown-date-debut', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
         'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
         'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
@@ -388,7 +389,7 @@ class TcSellsyConnector:
       for field in fields:
         if ('code' in field):
           code = field['code']
-          if (code in ['rio', 'forfait', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo']):
+          if (code in ['rio', 'forfait', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo', 'parrainage-code-parrain']):
             result['customfields'][code]['textval'] = field['defaultValue']
           if (code in ['telecommown-origine'] and 'formatted_value' in field):
             result['customfields'][code]['formatted_value'] = field["formatted_value"]
@@ -569,6 +570,7 @@ class SellsyOpportunity:
     self.telecommownEnd = None
     self.telecommownAbo = None
     self.promoCode = None
+    self.refereeCode = None
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
@@ -625,6 +627,8 @@ class SellsyOpportunity:
             self.telecommownAbo = (field['boolval'] == 'Y')
         if (code == 'code-promo'):
           self.promoCode = field['textval']
+        if (code == 'parrainage-code-parrain'):
+          self.refereeCode = field['textval']
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params = { 'oid': self.id, 'stepid': stepId})

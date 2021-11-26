@@ -9,7 +9,7 @@ config.read(confFile)
 parisTZ = pytz.timezone('Europe/Paris')
 
 clientIdPG = 34246953
-opportunityIdPG = 5107122
+opportunityIdPG = 5366993
 clientIdNoOpportunity = 33309487
 
 class Logger:
@@ -45,6 +45,7 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['telecommown-origine'], 'TeleCoop')
   test_connector.updateCustomField('opportunity', id, cf['abo-telecommown'], 'Y')
   test_connector.updateCustomField('opportunity', id, cf['code-promo'], 'TESTCODE')
+  test_connector.updateCustomField('opportunity', id, cf['parrainage-code-parrain'], 'CODEPAR')
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
@@ -61,7 +62,8 @@ def test_get_opportunity(test_connector):
   assert o.telecommownEnd == now, "Check telecommown end"
   assert o.telecommownOrigin == 'TeleCoop', "Check telecommown origine"
   assert o.telecommownAbo == True, "Check telecommown abo"
-  assert o.promoCode == 'TESTCODE'
+  assert o.promoCode == 'TESTCODE', "Check promo code"
+  assert o.refereeCode == 'CODEPAR', "Check referee code"
 
   test_connector.updateCustomField('opportunity', id, cf['nsce'], '4321')
   test_connector.updateCustomField('opportunity', id, cf['numerotelecoop'], '0610658238')
@@ -71,6 +73,7 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['achatsimphysique'], 'N')
   #test_connector.updateCustomField('opportunity', id, cf['date-activation-sim-souhaitee'], None)
   test_connector.updateCustomField('opportunity', id, cf['code-promo'], 'TESTCODE2')
+  test_connector.updateCustomField('opportunity', id, cf['parrainage-code-parrain'], 'CODEPAR2')
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
@@ -82,6 +85,7 @@ def test_get_opportunity(test_connector):
   assert o.achatSimPhysique == False, "Check achat sim physique"
   #assert o.dateActivationSimAsked is None, "Check date activation SIM souhaitée"
   assert o.promoCode == 'TESTCODE2'
+  assert o.refereeCode == 'CODEPAR2', "Check referee code"
 
 def test_get_client(test_connector):
   id = clientIdPG
