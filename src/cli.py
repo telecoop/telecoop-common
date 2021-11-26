@@ -29,7 +29,7 @@ def cmdline():
                         'update-client',
                         'update-cf',
                         'get-tc-token',
-                        'get-code',
+                        'get-code', 'create-code',
                         'get-sponsorship-code',
                         'link-to-referee',
                         'applied-to-referee',
@@ -154,6 +154,15 @@ class Runner():
     if (command == 'get-code'):
       code = self.getArg('code')
       response = self.getTelecoopConnector().getCode(code)
+      print(response.text)
+
+    if (command == 'create-code'):
+      type = self.getArg("code type")
+      amount = self.getArg("code amount")
+      value = None
+      if len(self.args.arguments) > 0:
+        value = self.getArg("value")
+      response = self.getTelecoopConnector().createCode(value=value, type=type, amount=amount)
       print(response.text)
 
     if (command == 'get-sponsorship-code'):

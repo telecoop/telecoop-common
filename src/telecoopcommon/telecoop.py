@@ -21,6 +21,15 @@ class Connector:
   def getToken(self):
     return self.oauth2client.client_credentials()
 
+  def createCode(self, value=None, type='generic', amount='1'):
+    data = {
+      'code_type': type,
+      'amount': amount,
+    }
+    if value is not None:
+      data['value'] = value
+    return self.connector.post(f"/promo_codes/codes/", json=data)
+
   def getCode(self, code):
     return self.connector.get(f"/promo_codes/codes/{code}")
 
