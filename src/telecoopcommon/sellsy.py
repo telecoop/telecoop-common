@@ -106,7 +106,7 @@ class TcSellsyConnector:
     self.cfidSponsorNbUse = customFields['parrainage-code-nb-use']
     self.cfidSponsorNbDiscount = customFields['parrainage-nb-discount']
     self.cfidSponsorRefereeCode = customFields['parrainage-code-parrain']
-    self.cfidCodePromo = customFields['code-promo']
+    self.cfidPromoCode = customFields['code-promo']
 
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
     self.stepNew = sellsyValues[self.env]['step_new']
