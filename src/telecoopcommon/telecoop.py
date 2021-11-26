@@ -15,6 +15,7 @@ class Connector:
     self.connector = ApiClient(
       config['host'],
       auth=OAuth2ClientCredentialsAuth(self.oauth2client),
+      raise_for_status=False
     )
     #self.token = oauth2client.client_credentials()
 
