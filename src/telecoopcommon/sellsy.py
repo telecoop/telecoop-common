@@ -194,7 +194,7 @@ class TcSellsyConnector:
       'linkedtype': entity,
       'linkedid': entityId,
       'values': [
-        { 'cfid': cfid, 'value': value },
+        { 'cfid': cfid, 'value': str(value) if value == 0 else value },
       ]
     }
     return self.api(method='CustomFields.recordValues', params=params)
@@ -469,7 +469,7 @@ class SellsyClient:
     self.telecommownAbo = None
     self.sponsorCode = None
     self.sponsorLink = None
-    self.sponsorCodeNb = None
+    self.sponsorNbUse = None
     self.sponsorNbDiscount = None
     self.refereeCode = None
     self.promoCode = None
@@ -523,7 +523,7 @@ class SellsyClient:
       elif (code == 'parrainage-lien'):
         self.sponsorLink = f['textval']
       elif (code == 'parrainage-code-nb-use'):
-        self.sponsorCodeNb = f['numericval']
+        self.sponsorNbUse = f['numericval']
       elif (code == 'parrainage-nb-discount'):
         self.sponsorNbDiscount = f['numericval']
       elif (code == 'parrainage-code-parrain'):
