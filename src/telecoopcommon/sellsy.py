@@ -27,6 +27,7 @@ sellsyValues = {
       'parrainage-code-nb-use': 139352,
       'parrainage-nb-discount': 139353,
       'parrainage-code-parrain': 140671,
+      'parrainage-nb-code-donated': 146337,
       'code-promo': 143564,
     },
     'funnel_id_vie_du_contrat': 62579,
@@ -64,6 +65,7 @@ sellsyValues = {
       'parrainage-code-nb-use': 139959,
       'parrainage-nb-discount': 139961,
       'parrainage-code-parrain': 140672,
+      'parrainage-nb-code-donated': 146338,
       'code-promo': 144015
     },
     'funnel_id_vie_du_contrat': 60663,
@@ -106,6 +108,7 @@ class TcSellsyConnector:
     self.cfidSponsorNbUse = customFields['parrainage-code-nb-use']
     self.cfidSponsorNbDiscount = customFields['parrainage-nb-discount']
     self.cfidSponsorRefereeCode = customFields['parrainage-code-parrain']
+    self.cfidSponsorNbCodeDonated = customFields['parrainage-nb-code-donated']
     self.cfidPromoCode = customFields['code-promo']
 
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
@@ -252,6 +255,7 @@ class TcSellsyConnector:
       'parrainage-code-nb-use': { 'code': 'parrainage-code-nb-use', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'parrainage-nb-discount': { 'code': 'parrainage-nb-discount', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'parrainage-code-parrain': { 'code': 'parrainage-code-parrain', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
+      'parrainage-nb-code-donated': { 'code': 'parrainage-nb-code-donated', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'offre-telecommown': { 'code': 'offre-telecommown', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'telecommown-date-debut': { 'code': 'telecommown-date-debut', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
@@ -290,7 +294,7 @@ class TcSellsyConnector:
             customFields[code]['formatted_value'] = f["formatted_value"]
           elif (code in ["facture-unique", 'abo-telecommown']):
             customFields[code]['boolval'] = (f["defaultValue"] == 'Y')
-          elif (code in ['parrainage-nb-discount', 'parrainage-code-nb-use']):
+          elif (code in ['parrainage-nb-discount', 'parrainage-code-nb-use', 'parrainage-nb-code-donated']):
             customFields[code]['numericval'] = int(f['defaultValue'])
           elif (code in ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin'] and 'formatted_ymd' in f):
             customFields[code]['formatted_ymd'] = f['formatted_ymd']
@@ -472,6 +476,7 @@ class SellsyClient:
     self.sponsorLink = None
     self.sponsorNbUse = None
     self.sponsorNbDiscount = None
+    self.sponsorNbCodeDonated = None
     self.refereeCode = None
     self.promoCode = None
 
@@ -529,6 +534,8 @@ class SellsyClient:
         self.sponsorNbDiscount = f['numericval']
       elif (code == 'parrainage-code-parrain'):
         self.refereeCode = f['textval']
+      elif (code == 'parrainage-nb-code-donated'):
+        self.sponsorNbCodeDonated = f['numericval']
 
       elif (code == 'offre-telecommown' and 'formatted_ymd' in f and f['formatted_ymd'] != ''):
         self.optinTeleCommown = parisTZ.localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))

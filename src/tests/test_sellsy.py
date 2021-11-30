@@ -104,6 +104,7 @@ def test_get_client(test_connector):
   test_connector.updateCustomField('client', id, cf['parrainage-code-nb-use'], 2)
   test_connector.updateCustomField('client', id, cf['parrainage-nb-discount'], 1)
   test_connector.updateCustomField('client', id, cf['parrainage-code-parrain'], 'CCCC')
+  test_connector.updateCustomField('client', id, cf['parrainage-nb-code-donated'], 1)
   test_connector.updateCustomField('client', id, cf['offre-telecommown'], timestamp)
   test_connector.updateCustomField('client', id, cf['telecommown-date-debut'], timestamp)
   test_connector.updateCustomField('client', id, cf['telecommown-date-fin'], timestamp)
@@ -124,6 +125,7 @@ def test_get_client(test_connector):
   assert c.sponsorNbUse == 2, "Check sponsor nb code"
   assert c.sponsorNbDiscount == 1, "Check sponsor nb discount"
   assert c.refereeCode == 'CCCC', "Check referee code"
+  assert c.sponsorNbCodeDonated == 1, "Check sponsor nb code donated"
   assert c.optinTeleCommown == now, "Check optin telecommown"
   assert c.telecommownStart == now, "Check telecommown start"
   assert c.telecommownEnd == now, "Check telecommown end"
@@ -142,6 +144,7 @@ def test_get_client(test_connector):
   test_connector.updateCustomField('client', id, cf['parrainage-code-nb-use'], 4)
   test_connector.updateCustomField('client', id, cf['parrainage-nb-discount'], 2)
   test_connector.updateCustomField('client', id, cf['parrainage-code-parrain'], 'DDDD')
+  test_connector.updateCustomField('client', id, cf['parrainage-nb-code-donated'], 2)
   #test_connector.updateCustomField('client', id, cf['offre-telecommown'], timestamp)
   #test_connector.updateCustomField('client', id, cf['telecommown-date-debut'], timestamp)
   #test_connector.updateCustomField('client', id, cf['telecommown-date-fin'], timestamp)
@@ -162,6 +165,7 @@ def test_get_client(test_connector):
   assert c.sponsorNbUse == 4, "Check sponsor nb code"
   assert c.sponsorNbDiscount == 2, "Check sponsor nb discount"
   assert c.refereeCode == 'DDDD', "Check referee code"
+  assert c.sponsorNbCodeDonated == 2, "Check sponsor nb code donated"
   #assert c.optinTeleCommown == now, "Check optin telecommown"
   #assert c.telecommownStart == now, "Check telecommown start"
   #assert c.telecommownEnd == now, "Check telecommown end"
