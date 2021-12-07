@@ -37,7 +37,7 @@ class Connector:
   def useCode(self, code, client):
     return self.connector.post(f"/promo_codes/code/{code}/used-by/{client}")
 
-  def getSponsorshipCode(self, referee):
+  def getSponsorshipCode(self, referer):
     return self.connector.get(f"/promo_codes/sponsorships/{referee}")
 
   def linkToReferee(self, referer, referee):

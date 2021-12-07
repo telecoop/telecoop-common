@@ -150,6 +150,8 @@ class TcSellsyConnector:
     except sellsy_api.SellsyError as e: # raised if an error is returned by Sellsy API
       self.logger.warning(e)
       raise e
+    # Sellsy API is throttled at 5 requests per second, we take a margin of 0.05s
+    time.sleep(0.25)
     return result
 
   def updateClientProperty(self, clientId, property, value):
