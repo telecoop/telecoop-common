@@ -46,6 +46,7 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['abo-telecommown'], 'Y')
   test_connector.updateCustomField('opportunity', id, cf['code-promo'], 'TESTCODE')
   test_connector.updateCustomField('opportunity', id, cf['parrainage-code-parrain'], 'CODEPAR')
+  test_connector.updateCustomField('opportunity', id, cf['pack-depannage'], 1)
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
@@ -64,6 +65,7 @@ def test_get_opportunity(test_connector):
   assert o.telecommownAbo == True, "Check telecommown abo"
   assert o.promoCode == 'TESTCODE', "Check promo code"
   assert o.refereeCode == 'CODEPAR', "Check referee code"
+  assert o.packDepannage == 1, "Check pack dépannage"
 
   test_connector.updateCustomField('opportunity', id, cf['nsce'], '4321')
   test_connector.updateCustomField('opportunity', id, cf['numerotelecoop'], '0610658238')
@@ -74,6 +76,7 @@ def test_get_opportunity(test_connector):
   #test_connector.updateCustomField('opportunity', id, cf['date-activation-sim-souhaitee'], None)
   test_connector.updateCustomField('opportunity', id, cf['code-promo'], 'TESTCODE2')
   test_connector.updateCustomField('opportunity', id, cf['parrainage-code-parrain'], 'CODEPAR2')
+  test_connector.updateCustomField('opportunity', id, cf['pack-depannage'], 2)
 
   o = sellsy.SellsyOpportunity(id)
   o.load(test_connector)
@@ -86,6 +89,7 @@ def test_get_opportunity(test_connector):
   #assert o.dateActivationSimAsked is None, "Check date activation SIM souhaitée"
   assert o.promoCode == 'TESTCODE2'
   assert o.refereeCode == 'CODEPAR2', "Check referee code"
+  assert o.packDepannage == 2, "Check pack dépannage"
 
 def test_get_client(test_connector):
   id = clientIdPG

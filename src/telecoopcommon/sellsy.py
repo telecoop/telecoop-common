@@ -29,6 +29,7 @@ sellsyValues = {
       'parrainage-code-parrain': 140671,
       'parrainage-nb-code-donated': 146337,
       'code-promo': 143564,
+      'pack-depannage': 145684,
     },
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
@@ -66,7 +67,8 @@ sellsyValues = {
       'parrainage-nb-discount': 139961,
       'parrainage-code-parrain': 140672,
       'parrainage-nb-code-donated': 146338,
-      'code-promo': 144015
+      'code-promo': 144015,
+      'pack-depannage': 145683,
     },
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
@@ -110,6 +112,7 @@ class TcSellsyConnector:
     self.cfidSponsorRefereeCode = customFields['parrainage-code-parrain']
     self.cfidSponsorNbCodeDonated = customFields['parrainage-nb-code-donated']
     self.cfidPromoCode = customFields['code-promo']
+    self.cfidPackDepannage = customFields['pack-depannage']
 
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
     self.stepNew = sellsyValues[self.env]['step_new']
@@ -386,7 +389,8 @@ class TcSellsyConnector:
         'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
         'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
         'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False},
-        'code-promo': { 'code': 'code-promo', 'textval': '' }
+        'code-promo': { 'code': 'code-promo', 'textval': '' },
+        'pack-depannage': { 'code': 'pack-depannage', 'numericval': 0 }
       }
     }
 
@@ -403,6 +407,8 @@ class TcSellsyConnector:
             result['customfields'][code]['boolval'] = (field["defaultValue"] == "Y")
           if (code in ['date-activation-sim-souhaitee', 'offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin'] and 'formatted_ymd' in field):
             result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
+          if (code in ['pack-depannage']):
+            result['customfields'][code]['numericval'] = int(field['defaultValue'])
 
     return result
 
@@ -580,6 +586,7 @@ class SellsyOpportunity:
     self.telecommownAbo = None
     self.promoCode = None
     self.refereeCode = None
+    self.packDepannage = None
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
@@ -638,6 +645,8 @@ class SellsyOpportunity:
           self.promoCode = field['textval']
         if (code == 'parrainage-code-parrain'):
           self.refereeCode = field['textval']
+        if (code == 'pack-depannage'):
+          self.packDepannage = field['numericval']
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params = { 'oid': self.id, 'stepid': stepId})
