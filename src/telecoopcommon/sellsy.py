@@ -99,6 +99,8 @@ class TcSellsyConnector:
     customFields = sellsyValues[self.env]['custom_fields']
     self.customFieldBazileNb = customFields['refbazile']
     self.customFieldTelecomNum = customFields['numerotelecoop']
+    self.cfidManuelInvoice = customFields['facturationmanuelle']
+    self.cfidMergeInvoices = customFields['facture-unique']
     self.cfIdStatusClientMobile = customFields['statut-client-abo-mobile']
     self.cfIdTeleCommownOffre = customFields['offre-telecommown']
     self.cfIdTeleCommownOrigine = customFields['telecommown-origine']
