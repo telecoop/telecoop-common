@@ -83,6 +83,9 @@ sellsyValues = {
   }
 }
 
+class TcSellsyError(Exception):
+  pass
+
 class TcSellsyConnector:
   def __init__(self, conf, logger):
     env = os.getenv('ENV', 'LOCAL')
@@ -465,6 +468,28 @@ class TcSellsyConnector:
     else:
       raise LookupError(f"Could not opportunity with msisdn {msisdn} for client #{clientId}")
 
+  def getServices(self):
+    params = {
+      'type': 'service',
+      'pagination': {
+        'nbperpage': 100,
+      }
+    }
+    services = self.api(method='Catalogue.getList', params=params)
+    data = {}
+    for id, service in services['result'].items():
+      if ('name' in service):
+        data[service['name']] = {
+          'id': service['id'],
+          'unitAmount': service['unitAmountTaxesInc'],
+          'taxId': service['taxid'],
+          'notes': service['notes'],
+          'tradename': service['tradename']
+        }
+
+    return data
+
+
 class SellsyClient:
   def __init__(self, id):
     self.id = id
@@ -661,3 +686,12 @@ class SellsyOpportunity:
 
   def isOldBazileLine(self):
     return (self.rio is not None and self.rio[0:2] == '56')
+
+  def getPlanItem(self):
+    result = None
+    if self.plan == 'Forfait Sobriété':
+      result = 'PL_750'
+    else:
+      raise TcSellsyError(f"Unknown plan {self.plan}")
+
+    return result
