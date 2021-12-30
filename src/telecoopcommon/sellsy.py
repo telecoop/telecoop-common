@@ -2,6 +2,9 @@ import sellsy_api, time, pytz, os
 from json import JSONDecodeError
 from datetime import datetime
 
+from requests_oauth2client import OAuth2Client, ApiClient
+from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
+
 sellsyValues = {
   'DEV': {
     'owner_id': 170714,
@@ -97,6 +100,7 @@ class TcSellsyConnector:
       conf['consumer_secret'],
       conf['user_token'],
       conf['user_secret'])
+    self._connector = None
     self.ownerId = sellsyValues[self.env]['owner_id']
     self.sellsyNewClientMailTemplateId = sellsyValues[self.env]['new_client_mail_template_id']
     customFields = sellsyValues[self.env]['custom_fields']
@@ -129,6 +133,33 @@ class TcSellsyConnector:
     self.stepSimActivated = sellsyValues[self.env]['step_sim_activated']
     self.stepSimSuspended = sellsyValues[self.env]['step_sim_suspended']
     self.stepSimTerminated = sellsyValues[self.env]['step_sim_terminated']
+
+
+  def getConnector(self):
+    if self._connector is None:
+      self._oauth2client = OAuth2Client(
+        token_endpoint="https://login.sellsy.com/oauth2/access-tokens",
+        auth=(self.conf['v2_client_id'], self.conf['v2_client_secret']),
+      )
+      self._connector = ApiClient(
+        self.conf['v2_host'],
+        auth=OAuth2ClientCredentialsAuth(self._oauth2client),
+        raise_for_status=False
+      )
+    return self._connector
+
+  def getToken(self):
+    return self._oauth2client.client_credentials()
+
+  def api2Get(self, endpoint):
+    connector = self.getConnector()
+    self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
+    return connector.get(endpoint)
+
+  def api2Post(self, endpoint, data):
+    connector = self.getConnector()
+    self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with {data}")
+    return connector.post(endpoint, json=data)
 
   def api(self, method, params={}):
     try:

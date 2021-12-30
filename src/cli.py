@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys, os, json
+import sys, os, json, pytz
 from datetime import datetime, date
 
 from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, SellsyClient, sellsyValues
@@ -33,6 +33,7 @@ def cmdline():
                         'get-sponsorship-code',
                         'link-to-referee',
                         'applied-to-referee',
+                        'get-updated-opportunities'
                       ],
                       help='command')
   parser.add_argument('arguments', metavar='ARGS',
@@ -85,11 +86,29 @@ class Runner():
   def getTelecoopConnector(self):
     return TcConnector(self.config['TeleCoopApi'], self.logger)
 
-  def getArg(self, name):
+  def getArg(self, name, type='str', help=None):
     if (len(self.args.arguments) == 0):
-      self.logger.critical(f"{name} is needed")
+      message = f"{name} needed"
+      if help is not None:
+        message += f" {help}"
+      self.logger.critical(message)
       sys.exit(1)
-    return self.args.arguments.pop(0)
+    valueStr = self.args.arguments.pop(0)
+    if (type == 'date'):
+      try:
+        value = date.fromisoformat(valueStr)
+      except ValueError:
+        self.logger.critical(f"{name} (YYYY-MM-DD) needed")
+        sys.exit(1)
+    elif (type == 'datetime'):
+      try:
+        value = datetime.fromisoformat(valueStr)
+      except ValueError:
+        self.logger.critical(f"{name} (YYYY-MM-DD HH-MI-SS) needed")
+        sys.exit(1)
+    else:
+      value = valueStr
+    return value
 
   def run(self, command):
     if (command == 'get-opportunity'):
@@ -181,6 +200,20 @@ class Runner():
       clientRef = self.getArg('Client ref')
       response = self.getTelecoopConnector().appliedToReferee(referee, clientRef)
       print(response.text)
+
+    if (command == 'get-updated-opportunities'):
+      startDate = self.getArg("Start date", 'datetime')
+      start = pytz.timezone('Europe/Paris').localize(startDate)
+      sellsyConnector = self.getSellsyConnector()
+      params = {
+        'filters': {
+          'updated_status': {
+            'start': start.isoformat()
+          }
+        }
+      }
+      results = sellsyConnector.api2Post('/opportunities/search', params)
+      print(json.dumps(results.json(), indent=2))
 
 def main():
   args = cmdline()
