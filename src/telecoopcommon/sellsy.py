@@ -692,7 +692,7 @@ class SellsyOpportunity:
 
   def getPlanItem(self):
     result = None
-    if self.plan == 'Forfait Sobriété':
+    if self.plan == 'Sobriété':
       result = 'PL_750'
     else:
       raise TcSellsyError(f"Unknown plan {self.plan}")
