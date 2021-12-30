@@ -590,7 +590,10 @@ class SellsyClient:
         self.promoCode = f['textval']
 
   def getOpportunities(self, connector):
-    return connector.getClientOpportunities(self.id)
+    opps = connector.getClientOpportunities(self.id)
+    for opp in opps:
+      opp.client = self
+    return opps
 
 class SellsyOpportunity:
   def __init__(self, id):
