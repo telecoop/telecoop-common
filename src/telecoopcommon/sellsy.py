@@ -435,9 +435,9 @@ class TcSellsyConnector:
       for field in fields:
         if ('code' in field):
           code = field['code']
-          if (code in ['rio', 'forfait', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo', 'parrainage-code-parrain']):
+          if (code in ['rio', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo', 'parrainage-code-parrain']):
             result['customfields'][code]['textval'] = field['defaultValue']
-          if (code in ['telecommown-origine'] and 'formatted_value' in field):
+          if (code in ['telecommown-origine', 'forfait'] and 'formatted_value' in field):
             result['customfields'][code]['formatted_value'] = field["formatted_value"]
           if (code in ['achatsimphysique', 'abo-telecommown']):
             result['customfields'][code]['boolval'] = (field["defaultValue"] == "Y")
@@ -675,7 +675,7 @@ class SellsyOpportunity:
         if (code == 'rio'):
           self.rio = field['textval']
         if (code == 'forfait'):
-          self.plan = field['textval']
+          self.plan = field['formatted_value']
         if (code == 'nsce'):
           self.nsce = field['textval']
         if (code == 'numerotelecoop'):
