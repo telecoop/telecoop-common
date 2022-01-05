@@ -258,7 +258,8 @@ class TcSellsyConnector:
     optinDate = None
     for l in response['customFields']:
       if (l['name'] == 'Z-Offre TeleCommown'):
-        for f in l['list']:
+        fields = l['list'] if isinstance(l['list'], list) else l['list'].values()
+        for f in fields:
           if (f['code'] == 'offre-telecommown' and 'formatted_ymd' in f and f['formatted_ymd'] != ""):
             optinDate = pytz.timezone('Europe/Paris').localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))
             break
