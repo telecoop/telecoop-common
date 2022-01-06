@@ -8,6 +8,12 @@ from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
 sellsyValues = {
   'DEV': {
     'owner_id': 170714,
+    'staff': {
+      'support-client': 170761,
+      'support-societaire': 170714,
+      'finance': 170714,
+      'technique': 170761
+    },
     'new_client_mail_template_id': 62573,
     'custom_fields': {
       'refbazile': 103778,
@@ -47,6 +53,12 @@ sellsyValues = {
   },
   'PROD': {
     'owner_id': 170799,
+    'staff': {
+      'support-client': 170799,
+      'support-societaire': 183494,
+      'finance': 174036,
+      'technique': 168911
+    },
     'new_client_mail_template_id': 62591,
     'custom_fields': {
       'refbazile': 103227,
@@ -102,6 +114,7 @@ class TcSellsyConnector:
       conf['user_secret'])
     self._connector = None
     self.ownerId = sellsyValues[self.env]['owner_id']
+    self.staff = sellsyValues[self.env]['staff']
     self.sellsyNewClientMailTemplateId = sellsyValues[self.env]['new_client_mail_template_id']
     customFields = sellsyValues[self.env]['custom_fields']
     self.customFieldBazileNb = customFields['refbazile']
