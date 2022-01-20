@@ -24,7 +24,7 @@ sellsyValues = {
       'numerotelecoop': 103448,
       'nsce': 103775,
       'rio': 103447,
-      'forfait': 103780,
+      'forfait': 154395,
       'achatsimphysique': 125472,
       'facturationmanuelle': 109341,
       'facture-unique': 117454,
