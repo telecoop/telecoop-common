@@ -33,7 +33,9 @@ def cmdline():
                         'get-sponsorship-code',
                         'link-to-referee',
                         'applied-to-referee',
-                        'get-updated-opportunities'
+                        'get-updated-opportunities',
+
+                        'script',
                       ],
                       help='command')
   parser.add_argument('arguments', metavar='ARGS',
@@ -117,11 +119,13 @@ class Runner():
       o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
+      print(o.getPlanItem())
 
     if (command == 'get-client'):
       id = self.getArg('Client id')
       client = self.getSellsyConnector().getClient(id)
       print(client)
+      print(isinstance(client.telecommownAbo, bool))
 
     if (command == 'get-client-from-ref'):
       ref = self.getArg('Client ref')
@@ -214,6 +218,10 @@ class Runner():
       }
       results = sellsyConnector.api2Post('/opportunities/search', params)
       print(json.dumps(results.json(), indent=2))
+
+    if (command == 'script'):
+      import scripts
+      scripts.initOldTeleCommownClients(self.getSellsyConnector(), self.logger)
 
 def main():
   args = cmdline()

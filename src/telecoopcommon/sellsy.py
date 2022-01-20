@@ -14,6 +14,10 @@ sellsyValues = {
       'finance': 170714,
       'technique': 170761
     },
+    'plans': {
+      'Sobriété': 'pl_807',
+      'Transition': 'pl_827'
+    },
     'new_client_mail_template_id': 62573,
     'custom_fields': {
       'refbazile': 103778,
@@ -58,6 +62,10 @@ sellsyValues = {
       'support-societaire': 183494,
       'finance': 174036,
       'technique': 168911
+    },
+    'plans': {
+      'Sobriété': 'pl_750',
+      'Transition': 'pl_796'
     },
     'new_client_mail_template_id': 62591,
     'custom_fields': {
@@ -115,6 +123,7 @@ class TcSellsyConnector:
     self._connector = None
     self.ownerId = sellsyValues[self.env]['owner_id']
     self.staff = sellsyValues[self.env]['staff']
+    self.plans = sellsyValues[self.env]['plans']
     self.sellsyNewClientMailTemplateId = sellsyValues[self.env]['new_client_mail_template_id']
     customFields = sellsyValues[self.env]['custom_fields']
     self.customFieldBazileNb = customFields['refbazile']
@@ -653,6 +662,7 @@ class SellsyOpportunity:
     self.bazileNume = None
     self.rio = None
     self.plan = None
+    self.planItem = None
     self.achatSimPhysique = None
     self.dateActivationSimAsked = None
     self.optinTeleCommown = None
@@ -669,6 +679,8 @@ class SellsyOpportunity:
   def load(self, connector):
     values = connector.getOpportunityValues(self.id)
     self.loadWithValues(values)
+    if self.plan in connector.plans:
+      self.planItem = connector.plans[self.plan]
 
   def getClient(self, connector):
     if self.client is None:
@@ -736,10 +748,4 @@ class SellsyOpportunity:
     return (self.rio is not None and self.rio[0:2] == '56')
 
   def getPlanItem(self):
-    result = None
-    if self.plan == 'Sobriété':
-      result = 'PL_750'
-    else:
-      raise TcSellsyError(f"Unknown plan {self.plan}")
-
-    return result
+    return self.planItem
