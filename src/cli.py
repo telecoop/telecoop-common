@@ -140,9 +140,12 @@ class Runner():
     if (command == 'get-opportunities-in-step'):
       step = self.getArg("Step")
       connector = self.getSellsyConnector()
-      stepId = sellsyValues[self.env][step]
+      env = 'PROD' if self.env == 'PROD' else 'DEV'
+      stepId = sellsyValues[env][step]
       opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId)
       print(len(opps))
+      for opp in opps:
+        print(f"{opp.id} {opp.planItem}")
 
     if (command == 'get-client-opportunities'):
       clientId = self.getArg('Client id')

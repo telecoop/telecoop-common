@@ -651,6 +651,9 @@ class SellsyClient:
 
 class SellsyOpportunity:
   def __init__(self, id):
+    env = os.getenv('ENV', 'LOCAL')
+    self.env = 'PROD' if env == 'PROD' else 'DEV'
+
     self.id = id
     self.clientId = None
     self.client = None
@@ -673,14 +676,14 @@ class SellsyOpportunity:
     self.refereeCode = None
     self.packDepannage = None
 
+    self.plans = sellsyValues[self.env]['plans']
+
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
 
   def load(self, connector):
     values = connector.getOpportunityValues(self.id)
     self.loadWithValues(values)
-    if self.plan in connector.plans:
-      self.planItem = connector.plans[self.plan]
 
   def getClient(self, connector):
     if self.client is None:
@@ -734,6 +737,9 @@ class SellsyOpportunity:
           self.refereeCode = field['textval']
         if (code == 'pack-depannage'):
           self.packDepannage = field['numericval']
+
+    if self.plan in self.plans:
+      self.planItem = self.plans[self.plan]
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params = { 'oid': self.id, 'stepid': stepId})
