@@ -7,6 +7,7 @@ from datetime import datetime, date
 from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, SellsyClient, sellsyValues
 from telecoopcommon.telecoop import Connector as TcConnector
 from telecoopcommon.cursor import TcCursor
+from telecoopcommon.bazile import Connector as BazileConnector
 
 # Script utils
 import argparse, configparser
@@ -34,6 +35,8 @@ def cmdline():
                         'link-to-referee',
                         'applied-to-referee',
                         'get-updated-opportunities',
+
+                        'bazile-get-conso',
 
                         'script',
                       ],
@@ -78,9 +81,7 @@ class Runner():
     return tcCursor
 
   def getBazileConnector(self):
-    if (self.connector is None):
-      self.connector = bazileAPI.Connector(self.config['BazileAPI'], self.logger)
-    return self.connector
+    return BazileConnector(self.config['BazileAPI'], self.logger)
 
   def getSellsyConnector(self):
     return TcSellsyConnector(self.confSellsy, self.logger)
@@ -119,7 +120,7 @@ class Runner():
       o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
-      print(o.getPlanItem())
+      print(o.bazileNume)
 
     if (command == 'get-client'):
       id = self.getArg('Client id')
@@ -221,6 +222,12 @@ class Runner():
       }
       results = sellsyConnector.api2Post('/opportunities/search', params)
       print(json.dumps(results.json(), indent=2))
+
+    if (command == 'bazile-get-conso'):
+      accountId = self.getArg("Account id")
+      month = self.getArg("Month", "date")
+      bazileConnector = self.getBazileConnector()
+      print(json.dumps(bazileConnector.getConso(accountId, month.strftime('%Y-%m')), indent=2))
 
     if (command == 'script'):
       import scripts

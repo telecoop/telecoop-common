@@ -662,7 +662,7 @@ class SellsyOpportunity:
     self.steps = None
     self.nsce = None
     self.msisdn = None
-    self.bazileNume = None
+    self.bazileNum = None
     self.rio = None
     self.plan = None
     self.planItem = None
