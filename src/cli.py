@@ -36,7 +36,7 @@ def cmdline():
                         'applied-to-referee',
                         'get-updated-opportunities',
 
-                        'bazile-get-conso',
+                        'bazile-get-conso', 'bazile-get-simple-porta-history',
 
                         'script',
                       ],
@@ -120,7 +120,8 @@ class Runner():
       o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
-      print(o.bazileNume)
+      print(o.stepId)
+      print(o.getSimStateFromStep(sellsyConnector))
 
     if (command == 'get-client'):
       id = self.getArg('Client id')
@@ -228,6 +229,11 @@ class Runner():
       month = self.getArg("Month", "date")
       bazileConnector = self.getBazileConnector()
       print(json.dumps(bazileConnector.getConso(accountId, month.strftime('%Y-%m')), indent=2))
+
+    if (command == 'bazile-get-simple-porta-history'):
+      nsce = self.getArg("NSCE")
+      bazileConnector = self.getBazileConnector()
+      print(json.dumps(bazileConnector.getSimplePortaHistory(nsce), indent=2, default=str))
 
     if (command == 'script'):
       import scripts

@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 from requests.auth import HTTPBasicAuth
 from json import JSONDecodeError
 
@@ -83,7 +84,7 @@ class Connector:
       response = self.getSimInfo(nsce)
       num = response['data']['Sim_information']['Numero']
     except BazileError as e:
-      isActive = False
+      num = None
 
     return num
 
@@ -106,3 +107,20 @@ class Connector:
     }
     url = f"/ext/fidelisation"
     return self.post(url, data)
+
+  def getSimplePortaHistory(self, nsce):
+    url = f"/ext/sim/portability/history/{nsce}"
+    response = self.get(url)
+    print(response)
+    history = {}
+    if response['returnCode'] == 200:
+      h = response['data']['Historique']
+      h.sort(key=lambda e: e['date'])
+      for event in h:
+        if event['statut'] == 'PORTING DONE' :
+          if 'activated' not in history:
+            history['activated'] = datetime.fromisoformat(event['date'].replace('Z','+00:00'))
+        else:
+          history[event['statut']] = datetime.fromisoformat(event['date'].replace('Z','+00:00'))
+
+    return history

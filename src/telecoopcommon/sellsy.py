@@ -483,6 +483,17 @@ class TcSellsyConnector:
         'stepid': stepId
       }
     }
+    if (stepId == 'all'):
+      params = {
+        'pagination': {
+          'nbperpage': 1000,
+          'pagenum': 1
+        },
+        'search': {
+          'funnelid': funnelId
+        }
+      }
+
     opportunities = self.api(method='Opportunities.getList', params=params)
     infos = opportunities["infos"]
     nbPages = infos["nbpages"]
@@ -696,6 +707,7 @@ class SellsyOpportunity:
     self.clientId = opp['linkedid']
     self.funnelId = opp['funnelid']
     self.creationDate = opp['created']
+    self.stepId = int(opp['stepid'])
     self.steps = { opp['stepid']: parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate'])) }
 
     for fieldId, field in opp['customfields'].items():
@@ -755,3 +767,20 @@ class SellsyOpportunity:
 
   def getPlanItem(self):
     return self.planItem
+
+  def getSimStateFromStep(self, sellsyConnector):
+    sc = sellsyConnector
+    state = None
+    if self.stepId in [sc.stepNew, sc.stepSimToSend]:
+      state = 'new'
+    elif self.stepId in [sc.stepSimSent, sc.stepSimReceived]:
+      state = 'sent'
+    elif self.stepId in [sc.stepSimPendingPorta, sc.stepSimPendingNew]:
+      state = 'porta'
+    elif self.stepId in [sc.stepSimActivated]:
+      state = 'active'
+    elif self.stepId in [sc.stepSimSuspended]:
+      state = 'suspended'
+    elif self.stepId in [sc.stepSimTerminated]:
+      state = 'terminated'
+    return state
