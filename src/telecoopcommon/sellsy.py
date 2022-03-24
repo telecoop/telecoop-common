@@ -471,7 +471,7 @@ class TcSellsyConnector:
 
     return result
 
-  def getOpportunitiesInStep(self, funnelId, stepId):
+  def getOpportunitiesInStep(self, funnelId, stepId, limit=None):
     result = []
     params = {
       'pagination': {
@@ -504,6 +504,8 @@ class TcSellsyConnector:
         o = SellsyOpportunity(id)
         o.loadWithValues(opp)
         result.append(o)
+        if limit is not None and limit <= len(result):
+          return result
 
       currentPage += 1
       if (infos["pagenum"] <= nbPages):
