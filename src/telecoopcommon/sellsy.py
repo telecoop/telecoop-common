@@ -189,9 +189,11 @@ class TcSellsyConnector:
       retry = 3
       result = None
       while retry >= 0:
+        if retry < 3:
+          self.logger.info(f"Retrying for the {3-retry}th time")
         try:
           result = self._client.api(method, params)
-          retry = 0
+          retry = -1
         except JSONDecodeError as e:
           if (retry < 1):
             self.logger.warning(e)
@@ -201,6 +203,7 @@ class TcSellsyConnector:
         except sellsy_api.errors.SellsyError as e:
           if (e.sellsy_code_error == 'E_OBJ_NOT_LOADABLE'):
             if (retry < 1):
+              self.logger.warning(e)
               raise e
             retry -= 1
             time.sleep(1)
