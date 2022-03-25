@@ -436,6 +436,7 @@ class TcSellsyConnector:
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
       'created': opp['created'],
+      'statusLabel': opp['statusLabel'],
       'stepEnterDate': opp['stepEnterDate'],
       'stepid': opp['stepid'],
       'customfields': {
@@ -676,7 +677,9 @@ class SellsyOpportunity:
     self.client = None
     self.funnelId = None
     self.creationDate = None
+    self.stepIpd = None
     self.steps = None
+    self.status = None
     self.nsce = None
     self.msisdn = None
     self.bazileNum = None
@@ -713,6 +716,7 @@ class SellsyOpportunity:
     self.clientId = opp['linkedid']
     self.funnelId = opp['funnelid']
     self.creationDate = opp['created']
+    self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
     self.steps = { opp['stepid']: parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate'])) }
 
