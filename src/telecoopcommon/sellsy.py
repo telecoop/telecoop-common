@@ -188,7 +188,7 @@ class TcSellsyConnector:
       self.logger.debug(f"Calling Sellsy {method} with params {params}")
       retry = 3
       result = None
-      while retry > 0:
+      while retry >= 0:
         try:
           result = self._client.api(method, params)
           retry = 0
@@ -208,10 +208,11 @@ class TcSellsyConnector:
             raise e
     except sellsy_api.SellsyAuthenticateError as e: # raised if credential keys are not valid
       self.logger.warning('Authentication failed ! Details : {}'.format(e))
+      raise e
     except sellsy_api.SellsyError as e: # raised if an error is returned by Sellsy API
       self.logger.warning(e)
       raise e
-    # Sellsy API is throttled at 5 requests per second, we take a margin of 0.05s
+    # Sellsy API is throttled at 5 requests per second, we take a margin of 0.25s
     time.sleep(0.25)
     return result
 
