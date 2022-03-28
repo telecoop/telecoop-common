@@ -141,13 +141,16 @@ class Runner():
 
     if (command == 'get-opportunities-in-step'):
       step = self.getArg("Step")
+      startDate = None
+      if len(self.args.arguments) > 0:
+        startDate = self.getArg("Start date", "datetime")
       limit = None
       if len(self.args.arguments) > 0:
         limit = int(self.getArg("Limit"))
       connector = self.getSellsyConnector()
       env = 'PROD' if self.env == 'PROD' else 'DEV'
       stepId = sellsyValues[env][step] if step != 'all' else step
-      opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId, limit=limit)
+      opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId, limit=limit, startDate=startDate)
       print(len(opps))
       for opp in opps:
         print(f"{opp.id} {opp.planItem}")
