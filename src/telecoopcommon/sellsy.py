@@ -476,7 +476,7 @@ class TcSellsyConnector:
 
     return result
 
-  def getOpportunitiesInStep(self, funnelId, stepId, limit=None, startDate=None):
+  def getOpportunitiesInStep(self, funnelId, stepId, limit=None, startDate=None, searchParams=None):
     result = []
     params = {
       'pagination': {
@@ -491,6 +491,9 @@ class TcSellsyConnector:
       params['search']['stepid'] = stepId
     if startDate is not None:
       params['search']['periodecreated_start'] = startDate.timestamp()
+    if searchParams is not None:
+      for k, v in searchParams.items():
+        params['search'][k] = v
 
     opportunities = self.api(method='Opportunities.getList', params=params)
     infos = opportunities["infos"]
