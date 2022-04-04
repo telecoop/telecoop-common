@@ -1,9 +1,11 @@
 import requests
 from datetime import datetime
+from time import sleep
 from requests.auth import HTTPBasicAuth
 from json import JSONDecodeError
 
 class BazileError(Exception):
+  statusCode = None
   pass
 
 class Connector:
@@ -32,19 +34,32 @@ class Connector:
     headers = { 'Authorization': 'Bearer ' + self.getToken() }
     url = self.host+service
     self.logger.debug("Calling GET {} with headers {}".format(url, headers))
-    response = requests.get(url, headers=headers)
-    try:
-      if (response.status_code != 200):
-        raise BazileError(f"Got code {response.status_code} \n{response.text}")
-      result = response.json()
-      if ('data' not in result):
-        raise BazileError(f"Unknown response from Bazile {result}")
-    except BazileError as e:
-      self.logger.warning(e)
-      raise e
-    except JSONDecodeError:
-      self.logger.warning(f"Got a non json response {response.text}")
-      raise BazileError("Non JSON response")
+    retry = 3
+    result = None
+    while retry >= 0:
+      try:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+          exc = BazileError(f"Got code {response.status_code} \n{response.text}")
+          exc.statusCode = response.status_code
+          raise exc
+        # We only want to retry when we got a 503 http code
+        retry = -1
+        result = response.json()
+        if ('data' not in result):
+          raise BazileError(f"Unknown response from Bazile {result}")
+      except BazileError as e:
+        if response.status_code == 503 and retry >= 1:
+          # When too many calls on Bazile API, we get a 503 error, waiting some time solves the problem
+          self.logger.info(f"Retrying {3-retry+1}/3")
+          retry -= 1
+          sleep(5)
+          continue
+        self.logger.warning(e)
+        raise e
+      except JSONDecodeError:
+        self.logger.warning(f"Got a non json response {response.text}")
+        raise BazileError("Non JSON response")
     return result
 
   def post(self, service, data):
