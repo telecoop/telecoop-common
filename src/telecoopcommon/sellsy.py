@@ -518,7 +518,7 @@ class TcSellsyConnector:
 
   def getClientOpportunities(self, clientId):
     result = []
-    params = { 'search': { 'thirds': [clientId,] } }
+    params = { 'search': { 'thirds': [clientId,] }, 'pagination': { 'nbperpage': 200 } }
     opportunities = self.api(method="Opportunities.getList", params=params)
     if len(opportunities['result']) == 0:
       return result
