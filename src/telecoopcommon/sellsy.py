@@ -209,10 +209,10 @@ class TcSellsyConnector:
             time.sleep(1)
           else:
             raise e
-    except sellsy_api.SellsyAuthenticateError as e: # raised if credential keys are not valid
+    except sellsy_api.errors.SellsyAuthenticateError as e: # raised if credential keys are not valid
       self.logger.warning('Authentication failed ! Details : {}'.format(e))
       raise e
-    except sellsy_api.SellsyError as e: # raised if an error is returned by Sellsy API
+    except sellsy_api.errors.SellsyError as e: # raised if an error is returned by Sellsy API
       self.logger.warning(e)
       raise e
     # Sellsy API is throttled at 5 requests per second, we take a margin of 0.25s
@@ -433,6 +433,7 @@ class TcSellsyConnector:
     parisTZ = pytz.timezone('Europe/Paris')
     opp = self.api(method="Opportunities.getOne", params={'id': id})
     result = {
+      'relationType': opp['relationType'],
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
       'created': opp['created'],
@@ -671,6 +672,7 @@ class SellsyOpportunity:
     self.id = id
     self.clientId = None
     self.client = None
+    self.prospectId = None
     self.funnelId = None
     self.creationDate = None
     self.stepIpd = None
@@ -702,14 +704,17 @@ class SellsyOpportunity:
     self.loadWithValues(values)
 
   def getClient(self, connector):
-    if self.client is None:
+    if self.client is None and self.clientId is not None:
       self.client = SellsyClient(self.clientId)
       self.client.load(connector)
     return self.client
 
   def loadWithValues(self, opp):
     parisTZ = pytz.timezone('Europe/Paris')
-    self.clientId = opp['linkedid']
+    if opp['relationType'] == 'client':
+      self.clientId = opp['linkedid']
+    else:
+      self.prospectId = opp['linkedid']
     self.funnelId = opp['funnelid']
     self.creationDate = opp['created']
     self.status = opp['statusLabel']

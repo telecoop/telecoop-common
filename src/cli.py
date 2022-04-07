@@ -120,7 +120,7 @@ class Runner():
       o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
-      print(o.status)
+      print(f"{o.clientId} {o.prospectId}")
       print(o.getSimStateFromStep(sellsyConnector))
 
     if (command == 'get-client'):
