@@ -15,8 +15,8 @@ sellsyValues = {
       'technique': 170761
     },
     'plans': {
-      'Sobriété': 'pl_807',
-      'Transition': 'pl_827'
+      'Sobriété': 'PL_807',
+      'Transition': 'PL_827'
     },
     'new_client_mail_template_id': 62573,
     'custom_fields': {
@@ -64,8 +64,8 @@ sellsyValues = {
       'technique': 168911
     },
     'plans': {
-      'Sobriété': 'pl_750',
-      'Transition': 'pl_796'
+      'Sobriété': 'PL_750',
+      'Transition': 'PL_796'
     },
     'new_client_mail_template_id': 62591,
     'custom_fields': {
