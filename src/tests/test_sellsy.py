@@ -70,7 +70,7 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['nsce'], '4321')
   test_connector.updateCustomField('opportunity', id, cf['numerotelecoop'], '0610658238')
   test_connector.updateCustomField('opportunity', id, cf['rio'], '2222')
-  test_connector.updateCustomField('opportunity', id, cf['forfait'], 'Sobriété +')
+  test_connector.updateCustomField('opportunity', id, cf['forfait'], 'Transition')
   test_connector.updateCustomField('opportunity', id, cf['refbazile'], '1111')
   test_connector.updateCustomField('opportunity', id, cf['achatsimphysique'], 'N')
   #test_connector.updateCustomField('opportunity', id, cf['date-activation-sim-souhaitee'], None)
@@ -83,7 +83,7 @@ def test_get_opportunity(test_connector):
   assert o.nsce == '4321', "Check nsce"
   assert o.msisdn == '0610658238', "Check msisdn"
   assert o.rio == '2222', "Check RIO"
-  assert o.plan == 'Sobriété +', "Check forfait"
+  assert o.plan == 'Transition', "Check forfait"
   assert o.bazileNum == '1111', "Check Bazile number"
   assert o.achatSimPhysique == False, "Check achat sim physique"
   #assert o.dateActivationSimAsked is None, "Check date activation SIM souhaitée"
