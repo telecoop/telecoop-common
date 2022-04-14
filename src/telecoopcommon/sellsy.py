@@ -598,6 +598,7 @@ class TcSellsyConnector:
 class SellsyClient:
   def __init__(self, id):
     self.id = id
+    self.actif = None
     self.reference = None
     self.type = None
     self.label = None
@@ -644,6 +645,8 @@ class SellsyClient:
         firstname = contact['forename']
         civility = contact['civil']
 
+    actif = cli.get('actif')
+    self.actif = actif == 'Y' if actif else None
     self.reference = cli['ident']
     self.type = cli['type']
     self.label = cli['name']
