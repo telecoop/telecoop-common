@@ -592,9 +592,11 @@ class SellsyClient:
     self.reference = None
     self.type = None
     self.label = None
+    self.civility = None
     self.name = None
     self.firstname = None
     self.email = None
+    self.web = None
     self.mainContactId = None
     self.oneInvoicePerLine = None
     self.autoValidation = None
@@ -623,6 +625,7 @@ class SellsyClient:
     email = cli['email']
     name = cli['people_name']
     firstname = cli['people_forename']
+    civility = cli.get('people_civil')
     # recherche du contact principal
     mainContactId = cli['maincontactid']
     for contactId, contact in cli["contacts"].items():
@@ -630,13 +633,16 @@ class SellsyClient:
         email = contact['email']
         name = contact['name']
         firstname = contact['forename']
+        civility = contact['civil']
 
     self.reference = cli['ident']
     self.type = cli['type']
     self.label = cli['name']
     self.name =  name
     self.firstname = firstname
+    self.civility = civility
     self.email = email
+    self.web = cli.get('web')
     self.msisdn = cli['mobile']
     self.mainContactId = mainContactId
     self.lines = [{
