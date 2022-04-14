@@ -712,7 +712,7 @@ class SellsyOpportunity:
     self.prospectId = None
     self.funnelId = None
     self.creationDate = None
-    self.stepIpd = None
+    self.stepId = None
     self.steps = None
     self.status = None
     self.nsce = None
