@@ -492,6 +492,9 @@ class TcSellsyConnector:
 
     return result
 
+  def getOpportunities(self):
+    return self.getOpportunitiesInStep(funnelId=self.funnelIdVdc, stepId="all")
+
   def getOpportunitiesInStep(self, funnelId, stepId, limit=None, startDate=None, searchParams=None):
     result = []
     params = {
