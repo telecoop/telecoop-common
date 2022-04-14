@@ -113,6 +113,12 @@ sellsyValues = {
   }
 }
 
+def step_name_from_id(step_id: int):
+  env = 'PROD' if os.getenv('ENV') == 'PROD' else 'DEV'
+  for key, value in sellsyValues[env].items():
+    if value == step_id:
+      return key
+
 class TcSellsyError(Exception):
   pass
 
@@ -713,6 +719,7 @@ class SellsyOpportunity:
     self.funnelId = None
     self.creationDate = None
     self.stepId = None
+    self.stepStart = None
     self.steps = None
     self.status = None
     self.nsce = None
@@ -732,6 +739,10 @@ class SellsyOpportunity:
     self.packDepannage = None
 
     self.plans = sellsyValues[self.env]['plans']
+
+  @property
+  def stepName(self):
+    return step_name_from_id(self.stepId)
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
@@ -756,7 +767,8 @@ class SellsyOpportunity:
     self.creationDate = opp['created']
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
-    self.steps = { opp['stepid']: parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate'])) }
+    self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
+    self.steps = { opp['stepid']: self.stepStart }
 
     for fieldId, field in opp['customfields'].items():
       if ('code' in field):
