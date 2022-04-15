@@ -615,6 +615,7 @@ class SellsyClient:
     self.telecommownStart = None
     self.telecommownEnd = None
     self.telecommownAbo = None
+    self.telecommownOrigin = None
     self.sponsorCode = None
     self.sponsorLink = None
     self.sponsorNbUse = None
