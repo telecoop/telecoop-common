@@ -1,3 +1,4 @@
 conf/conf.cfg
 var
 __pycache__
+venv/
