@@ -4,7 +4,7 @@
 import sys, os, json, pytz
 from datetime import datetime, date
 
-from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, SellsyClient, sellsyValues
+from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, SellsyClient, sellsyValues, SellsyInvoice
 from telecoopcommon.telecoop import Connector as TcConnector
 from telecoopcommon.cursor import TcCursor
 from telecoopcommon.bazile import Connector as BazileConnector
@@ -27,6 +27,7 @@ def cmdline():
                         'get-clients',
                         'get-opportunities-in-step',
                         'get-client-opportunities',
+                        'get-invoice',
                         'update-client',
                         'update-cf',
                         'get-tc-token',
@@ -159,6 +160,12 @@ class Runner():
       clientId = self.getArg('Client id')
       opps = self.getSellsyConnector().getClientOpportunities(clientId)
       print(opps)
+
+    if (command == 'get-invoice'):
+      invoiceId = self.getArg('Invoice id')
+      invoice = SellsyInvoice(invoiceId)
+      invoice.load(self.getSellsyConnector())
+      print(invoice)
 
     if (command == 'update-client'):
       id = self.getArg('Client id')

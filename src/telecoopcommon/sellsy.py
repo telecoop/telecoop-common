@@ -1,6 +1,7 @@
 import sellsy_api, time, pytz, os
 from json import JSONDecodeError
 from datetime import datetime
+from decimal import Decimal
 
 from requests_oauth2client import OAuth2Client, ApiClient
 from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
@@ -43,6 +44,7 @@ sellsyValues = {
       'parrainage-nb-code-donated': 146337,
       'code-promo': 143564,
       'pack-depannage': 145684,
+      'slimpay-mandate-status': 154395,
     },
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
@@ -92,6 +94,7 @@ sellsyValues = {
       'parrainage-nb-code-donated': 146338,
       'code-promo': 144015,
       'pack-depannage': 145683,
+      'slimpay-mandate-status': None,
     },
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
@@ -144,6 +147,7 @@ class TcSellsyConnector:
     self.cfidSponsorNbCodeDonated = customFields['parrainage-nb-code-donated']
     self.cfidPromoCode = customFields['code-promo']
     self.cfidPackDepannage = customFields['pack-depannage']
+    self.cfidSlimpayMandateStatus = customFields['slimpay-mandate-status']
 
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
     self.stepNew = sellsyValues[self.env]['step_new']
@@ -356,7 +360,7 @@ class TcSellsyConnector:
       for f in fields:
         if ('code' in f):
           code = f['code']
-          if (code in ["refbazile", 'parrainage-code', 'parrainage-lien', 'parrainage-code-parrain', 'code-promo']):
+          if (code in ["refbazile", 'parrainage-code', 'parrainage-lien', 'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status']):
             customFields[code]['textval'] = f["defaultValue"]
           elif (code in ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine'] and 'formatted_value' in f):
             customFields[code]['formatted_value'] = f["formatted_value"]
@@ -558,6 +562,24 @@ class TcSellsyConnector:
 
     return data
 
+  def getInvoiceValues(self, id):
+    parisTZ = pytz.timezone('Europe/Paris')
+    invoice = self.api(method="Document.getOne", params={'doctype': 'invoice', 'docid': id})
+    result = {
+      'ident': invoice['ident'],
+      'status': invoice['status'],
+      'step_id': invoice['step'],
+      'totalAmountTaxesFree': invoice['totalAmountTaxesFree'],
+      'taxesAmountSum': invoice['taxesAmountSum'],
+      'totalAmount': invoice['totalAmount'],
+      'dueAmount': invoice['dueAmount'],
+      'payDateCustom': datetime.strptime(invoice['paydate_custom'], "%d/%m/%Y").strftime("%Y-%m-%d"),
+      'thirdident': invoice['thirdident'],
+      'subject': invoice['subject'],
+      'created': invoice['created'],
+    }
+    return result
+
 
 class SellsyClient:
   def __init__(self, id):
@@ -583,6 +605,7 @@ class SellsyClient:
     self.sponsorNbCodeDonated = None
     self.refereeCode = None
     self.promoCode = None
+    self.slimpayMandateStatus = None
 
   def __str__(self):
     return f"#{self.id} {self.reference} {self.label} {self.email} {self.status}"
@@ -657,6 +680,9 @@ class SellsyClient:
 
       elif (code == 'code-promo'):
         self.promoCode = f['textval']
+
+      elif code == 'slimpay-mandate-status':
+        self.slimpayMandateStatus = f['textval']
 
   def getOpportunities(self, connector):
     opps = connector.getClientOpportunities(self.id)
@@ -795,3 +821,83 @@ class SellsyOpportunity:
     elif self.stepId in [sc.stepSimTerminated]:
       state = 'terminated'
     return state
+
+class SellsyInvoice:
+  def __init__(self, id):
+    env = os.getenv('ENV', 'LOCAL')
+    self.env = 'PROD' if env == 'PROD' else 'DEV'
+
+    self.id = id
+    self.reference = None
+    self.sellsyStatus = None
+    self.status = None
+    self.amountHT = None
+    self.tva = None
+    self.amountTTC = None
+    self.amountDue = None
+    self.paymentDate = None
+    self.clientRef = None
+    self.subject = None
+    self.creationDate = None
+
+  def __str__(self):
+    return f"Invoice #{self.id} - {self.reference} {self.sellsyStatus} : {round(self.amountTTC, 2)} € TTC ({round(self.amountHT, 2)} € HT) | {self.subject}"
+
+  def load(self, sellsyConnector):
+    values = sellsyConnector.getInvoiceValues(self.id)
+    self.loadWithValues(values)
+
+  def loadWithValues(self, values):
+    parisTZ = pytz.timezone('Europe/Paris')
+    self.reference = values['ident']
+    self.sellsyStatus = values['status']
+    self.status = values['step_id']
+    self.amountHT = Decimal(values['totalAmountTaxesFree'])
+    self.tva = Decimal(values['taxesAmountSum'])
+    self.amountTTC = Decimal(values['totalAmount'])
+    self.amountDue = Decimal(values['dueAmount'])
+    self.paymentDate = parisTZ.localize(datetime.fromisoformat(values['payDateCustom']))
+    self.clientRef = values['thirdident']
+    self.subject = values['subject']
+
+    self.creationDate = parisTZ.localize(datetime.fromisoformat(values['created']))
+
+  @classmethod
+  def getPendingInvoices(cls, sellsyConnector, logger, startDate=None, search=None, limit=None):
+    result = []
+    params = {
+      'doctype': 'invoice',
+      'pagination': {
+        'nbperpage': 1000,
+        'pagenum': 1
+      },
+      'search': {
+        'steps': ['due']
+      }
+    }
+    if startDate is not None:
+      params['search']['periodecreated_start'] = startDate.timestamp()
+    if searchParams is not None:
+      for k, v in searchParams.items():
+        params['search'][k] = v
+
+    invoices = sellsyConnector.api(method='Document.getList', params=params)
+    infos = invoices["infos"]
+    nbPages = infos["nbpages"]
+    currentPage = 1
+    while (currentPage <= nbPages):
+      logger.info("Processing page {}/{}".format(currentPage, nbPages))
+      for id, invoice in invoices['result'].items():
+        i = SellsyInvoice(id)
+        i.loadWithValues(invoice)
+        result.append(i)
+        if limit is not None and limit <= len(result):
+          return result
+
+      currentPage += 1
+      if (infos["pagenum"] <= nbPages):
+        params['pagination']['pagenum'] = currentPage
+        invoices = sellsyConnector.api(method="Document.getList", params=params)
+        infos = invoices["infos"]
+
+    return result
