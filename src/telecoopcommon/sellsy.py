@@ -863,7 +863,7 @@ class SellsyInvoice:
     self.creationDate = parisTZ.localize(datetime.fromisoformat(values['created']))
 
   @classmethod
-  def getPendingInvoices(cls, sellsyConnector, logger, startDate=None, search=None, limit=None):
+  def getInvoices(cls, sellsyConnector, logger, startDate=None, search=None, limit=None, searchParams=None):
     result = []
     params = {
       'doctype': 'invoice',
