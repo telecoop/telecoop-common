@@ -1,4 +1,4 @@
-import sellsy_api, time, pytz, os
+import sellsy_api, time, pytz, os, phpserialize
 from json import JSONDecodeError
 from datetime import datetime
 from decimal import Decimal
@@ -582,6 +582,7 @@ class TcSellsyConnector:
       'thirdident': invoice['thirdident'],
       'subject': invoice['subject'],
       'created': invoice['created'],
+      'paymediums_text': invoice['paymediums_text'],
     }
     return result
 
@@ -864,6 +865,7 @@ class SellsyInvoice:
     self.paymentDate = parisTZ.localize(datetime.fromisoformat(values['payDateCustom']))
     self.clientRef = values['thirdident']
     self.subject = values['subject']
+    self.payMediums = [v.decode('utf-8') for k, v in phpserialize.loads(values['paymediums_text'].encode('utf-8')).items()]
 
     self.creationDate = parisTZ.localize(datetime.fromisoformat(values['created']))
 

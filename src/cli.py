@@ -166,6 +166,7 @@ class Runner():
       invoice = SellsyInvoice(invoiceId)
       invoice.load(self.getSellsyConnector())
       print(invoice)
+      print(invoice.payMediums)
 
     if (command == 'get-invoices'):
       searchParams = None
