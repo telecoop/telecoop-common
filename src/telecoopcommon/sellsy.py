@@ -771,7 +771,7 @@ class SellsyOpportunity:
     else:
       self.prospectId = opp['linkedid']
     self.funnelId = opp['funnelid']
-    self.creationDate = opp['created']
+    self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created'])) 
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
     self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
