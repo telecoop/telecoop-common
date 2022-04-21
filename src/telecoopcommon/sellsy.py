@@ -875,7 +875,7 @@ class SellsyInvoice:
       }
     }
     if startDate is not None:
-      params['search']['periodecreated_start'] = startDate.timestamp()
+      params['search']['periodecreationDate_start'] = startDate.timestamp()
     if searchParams is not None:
       for k, v in searchParams.items():
         params['search'][k] = v
