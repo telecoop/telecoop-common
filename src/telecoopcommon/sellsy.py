@@ -872,7 +872,6 @@ class SellsyInvoice:
         'pagenum': 1
       },
       'search': {
-        'steps': ['due']
       }
     }
     if startDate is not None:
