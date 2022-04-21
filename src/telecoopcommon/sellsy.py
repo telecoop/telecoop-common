@@ -50,6 +50,7 @@ sellsyValues = {
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
     'step_sim_to_send': 447894,
+    'step_sim_to_send_transition': 573010,
     'step_sim_sent': 447895,
     'step_sim_received': 447896,
     'step_sim_pending_porta': 447897,
@@ -101,6 +102,7 @@ sellsyValues = {
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
     'step_sim_to_send': 434062,
+    'step_sim_to_send_transition': 566314,
     'step_sim_sent': 444468,
     'step_sim_received': 434063,
     'step_sim_pending_porta': 444469,
@@ -154,6 +156,7 @@ class TcSellsyConnector:
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
     self.stepNew = sellsyValues[self.env]['step_new']
     self.stepSimToSend = sellsyValues[self.env]['step_sim_to_send']
+    self.stepSimToSendTransition = sellsyValues[self.env]['step_sim_to_send_transition']
     self.stepSimSent = sellsyValues[self.env]['step_sim_sent']
     self.stepSimReceived = sellsyValues[self.env]['step_sim_received']
     self.stepSimPendingPorta = sellsyValues[self.env]['step_sim_pending_porta']
