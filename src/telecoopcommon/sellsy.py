@@ -11,6 +11,7 @@ sellsyValues = {
     'owner_id': 170714,
     'staff': {
       'support-client': 170761,
+      'support-client-2': 170761,
       'support-societaire': 170714,
       'finance': 170714,
       'technique': 170761
@@ -61,6 +62,7 @@ sellsyValues = {
     'owner_id': 170799,
     'staff': {
       'support-client': 170799,
+      'support-client-2': 206337,
       'support-societaire': 183494,
       'finance': 174036,
       'technique': 168911
