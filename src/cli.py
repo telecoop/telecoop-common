@@ -173,7 +173,7 @@ class Runner():
       if len(self.args.arguments) > 0:
         invoiceStatus = self.getArg('Invoice status')
         searchParams = { 'steps': [invoiceStatus, ] }
-      invoices = SellsyInvoice.getInvoices(self.getSellsyConnector(), self.logger, startDate=datetime(2022,1,1), searchParams=searchParams)
+      invoices = SellsyInvoice.getInvoices(self.getSellsyConnector(), self.logger, startDate=datetime(2022,1,1), searchParams=searchParams, paymentMedium = 'prélèvement')
       print(invoices)
 
     if (command == 'update-client'):

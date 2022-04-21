@@ -582,7 +582,7 @@ class TcSellsyConnector:
       'thirdident': invoice['thirdident'],
       'subject': invoice['subject'],
       'created': invoice['created'],
-      'paymediums_text': invoice['paymediums_text'],
+      'payMediumsText': invoice['paymediums_text'],
     }
     return result
 
@@ -865,12 +865,12 @@ class SellsyInvoice:
     self.paymentDate = parisTZ.localize(datetime.fromisoformat(values['payDateCustom']))
     self.clientRef = values['thirdident']
     self.subject = values['subject']
-    self.payMediums = [v.decode('utf-8') for k, v in phpserialize.loads(values['paymediums_text'].encode('utf-8')).items()]
+    self.payMediums = [v.decode('utf-8') for k, v in phpserialize.loads(values['payMediumsText'].encode('utf-8')).items()]
 
     self.creationDate = parisTZ.localize(datetime.fromisoformat(values['created']))
 
   @classmethod
-  def getInvoices(cls, sellsyConnector, logger, startDate=None, search=None, limit=None, searchParams=None):
+  def getInvoices(cls, sellsyConnector, logger, startDate=None, search=None, limit=None, searchParams=None, paymentMedium=None):
     result = []
     params = {
       'doctype': 'invoice',
@@ -896,7 +896,8 @@ class SellsyInvoice:
       for id, invoice in invoices['result'].items():
         i = SellsyInvoice(id)
         i.loadWithValues(invoice)
-        result.append(i)
+        if paymentMedium is None or (paymentMedium is not None and paymentMedium in i.payMediums):
+          result.append(i)
         if limit is not None and limit <= len(result):
           return result
 
