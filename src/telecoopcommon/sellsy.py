@@ -586,6 +586,16 @@ class TcSellsyConnector:
     }
     return result
 
+  def updateInvoiceStatus(self, invoiceId, status):
+    params = {
+      'docid': invoiceId,
+      'document': {
+        'doctype': 'invoice',
+        'step': status
+      }
+    }
+    self.api(method='Document.updateStep', params=params)
+
 
 class SellsyClient:
   def __init__(self, id):

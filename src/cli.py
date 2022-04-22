@@ -27,7 +27,7 @@ def cmdline():
                         'get-clients',
                         'get-opportunities-in-step',
                         'get-client-opportunities',
-                        'get-invoice', 'get-invoices',
+                        'get-invoice', 'get-invoices', 'update-invoice-status',
                         'update-client',
                         'update-cf',
                         'get-tc-token',
@@ -175,6 +175,11 @@ class Runner():
         searchParams = { 'steps': [invoiceStatus, ] }
       invoices = SellsyInvoice.getInvoices(self.getSellsyConnector(), self.logger, startDate=datetime(2022,1,1), searchParams=searchParams, paymentMedium = 'prélèvement')
       print(invoices)
+
+    if (command == 'update-invoice-status'):
+      invoiceId = self.getArg('Invoice id')
+      status = self.getArg('Status')
+      self.getSellsyConnector().updateInvoiceStatus(invoiceId, status)
 
     if (command == 'update-client'):
       id = self.getArg('Client id')
