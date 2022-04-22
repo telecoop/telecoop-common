@@ -113,6 +113,12 @@ sellsyValues = {
   }
 }
 
+def step_name_from_id(step_id: int):
+  env = 'PROD' if os.getenv('ENV') == 'PROD' else 'DEV'
+  for key, value in sellsyValues[env].items():
+    if value == step_id:
+      return key
+
 class TcSellsyError(Exception):
   pass
 
@@ -486,6 +492,9 @@ class TcSellsyConnector:
 
     return result
 
+  def getOpportunities(self):
+    return self.getOpportunitiesInStep(funnelId=self.funnelIdVdc, stepId="all")
+
   def getOpportunitiesInStep(self, funnelId, stepId, limit=None, startDate=None, searchParams=None):
     result = []
     params = {
@@ -600,12 +609,15 @@ class TcSellsyConnector:
 class SellsyClient:
   def __init__(self, id):
     self.id = id
+    self.actif = None
     self.reference = None
     self.type = None
     self.label = None
+    self.civility = None
     self.name = None
     self.firstname = None
     self.email = None
+    self.web = None
     self.mainContactId = None
     self.oneInvoicePerLine = None
     self.autoValidation = None
@@ -614,6 +626,7 @@ class SellsyClient:
     self.telecommownStart = None
     self.telecommownEnd = None
     self.telecommownAbo = None
+    self.telecommownOrigin = None
     self.sponsorCode = None
     self.sponsorLink = None
     self.sponsorNbUse = None
@@ -634,6 +647,7 @@ class SellsyClient:
     email = cli['email']
     name = cli['people_name']
     firstname = cli['people_forename']
+    civility = cli.get('people_civil')
     # recherche du contact principal
     mainContactId = cli['maincontactid']
     for contactId, contact in cli["contacts"].items():
@@ -641,13 +655,18 @@ class SellsyClient:
         email = contact['email']
         name = contact['name']
         firstname = contact['forename']
+        civility = contact['civil']
 
+    actif = cli.get('actif')
+    self.actif = actif == 'Y' if actif else None
     self.reference = cli['ident']
     self.type = cli['type']
     self.label = cli['name']
     self.name =  name
     self.firstname = firstname
+    self.civility = civility
     self.email = email
+    self.web = cli.get('web')
     self.msisdn = cli['mobile']
     self.mainContactId = mainContactId
     self.lines = [{
@@ -717,7 +736,8 @@ class SellsyOpportunity:
     self.prospectId = None
     self.funnelId = None
     self.creationDate = None
-    self.stepIpd = None
+    self.stepId = None
+    self.stepStart = None
     self.steps = None
     self.status = None
     self.nsce = None
@@ -737,6 +757,10 @@ class SellsyOpportunity:
     self.packDepannage = None
 
     self.plans = sellsyValues[self.env]['plans']
+
+  @property
+  def stepName(self):
+    return step_name_from_id(self.stepId)
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
@@ -758,10 +782,11 @@ class SellsyOpportunity:
     else:
       self.prospectId = opp['linkedid']
     self.funnelId = opp['funnelid']
-    self.creationDate = opp['created']
+    self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created'])) 
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
-    self.steps = { opp['stepid']: parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate'])) }
+    self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
+    self.steps = { opp['stepid']: self.stepStart }
 
     for fieldId, field in opp['customfields'].items():
       if ('code' in field):
