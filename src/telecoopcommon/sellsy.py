@@ -849,7 +849,7 @@ class SellsyOpportunity:
   def getSimStateFromStep(self, sellsyConnector):
     sc = sellsyConnector
     state = None
-    if self.stepId in [sc.stepNew, sc.stepSimToSend]:
+    if self.stepId in [sc.stepNew, sc.stepSimToSend, sc.stepSimToSendTransition]:
       state = 'new'
     elif self.stepId in [sc.stepSimSent, sc.stepSimReceived]:
       state = 'sent'
