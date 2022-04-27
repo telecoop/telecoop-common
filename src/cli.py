@@ -128,6 +128,7 @@ class Runner():
       id = self.getArg('Client id')
       client = self.getSellsyConnector().getClient(id)
       print(client)
+      print(client.companyName)
       print(isinstance(client.telecommownAbo, bool))
 
     if (command == 'get-client-from-ref'):
@@ -153,8 +154,8 @@ class Runner():
       stepId = sellsyValues[env][step] if step != 'all' else step
       opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId, limit=limit, startDate=startDate, searchParams={'status': ['open', 'won', 'lost', 'late', 'closed']})
       print(len(opps))
-      for opp in opps:
-        print(f"{opp.id} {opp.planItem}")
+      #for opp in opps:
+      #  print(f"{opp.id} {opp.planItem}")
 
     if (command == 'get-client-opportunities'):
       clientId = self.getArg('Client id')

@@ -616,6 +616,7 @@ class SellsyClient:
     self.civility = None
     self.name = None
     self.firstname = None
+    self.companyName = None
     self.email = None
     self.web = None
     self.mainContactId = None
@@ -665,6 +666,7 @@ class SellsyClient:
     self.name =  name
     self.firstname = firstname
     self.civility = civility
+    self.companyName = cli['name'] if self.type == 'corporation' else None
     self.email = email
     self.web = cli.get('web')
     self.msisdn = cli['mobile']
@@ -782,7 +784,7 @@ class SellsyOpportunity:
     else:
       self.prospectId = opp['linkedid']
     self.funnelId = opp['funnelid']
-    self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created'])) 
+    self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
     self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
