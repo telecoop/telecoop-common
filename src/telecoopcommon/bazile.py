@@ -126,7 +126,6 @@ class Connector:
   def getSimplePortaHistory(self, nsce):
     url = f"/ext/sim/portability/history/{nsce}"
     response = self.get(url)
-    print(response)
     history = {}
     if response['returnCode'] == 200:
       h = response['data']['Historique']
