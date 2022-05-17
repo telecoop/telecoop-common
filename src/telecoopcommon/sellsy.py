@@ -344,7 +344,8 @@ class TcSellsyConnector:
       'telecommown-date-fin': { 'code': 'telecommown-date-fin', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'telecommown-origine': { 'code': 'telecommown-origine', 'textval': '', 'formatted_value': '', 'boolval': False, 'numericval': 0, 'timestampval': 0 },
       'abo-telecommown': { 'code': 'abo-telecommown', 'boolval': False },
-      'code-promo': { 'code': 'code-promo', 'textval': '' }
+      'code-promo': { 'code': 'code-promo', 'textval': '' },
+      'slimpay-mandate-status': { 'code': 'slimpay-mandate-status', 'textval': ''}
     }
     # Name + person data
     if (cli['client']['type'] == 'person'):

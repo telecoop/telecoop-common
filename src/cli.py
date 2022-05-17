@@ -152,7 +152,9 @@ class Runner():
       connector = self.getSellsyConnector()
       env = 'PROD' if self.env == 'PROD' else 'DEV'
       stepId = sellsyValues[env][step] if step != 'all' else step
-      opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId, limit=limit, startDate=startDate, searchParams={'status': ['open', 'won', 'lost', 'late', 'closed']})
+      #searchParams = {'status': ['open', 'won', 'lost', 'late', 'closed']}
+      searchParams = None
+      opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId, limit=limit, startDate=startDate, searchParams=searchParams)
       print(len(opps))
       #for opp in opps:
       #  print(f"{opp.id} {opp.planItem}")
