@@ -50,6 +50,13 @@ sellsyValues = {
       'code-promo': 143564,
       'pack-depannage': 145684,
       'slimpay-mandate-status': 154395,
+      'member': 103773,
+      'phone-model': 103462,
+      'mean-data-usage': 103460,
+      'mean-messages-sent': 103461,
+      'mean-voice-usage': 103458,
+      'phone-state': 114653,
+      'phone-year': 114652,
     },
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
@@ -102,6 +109,13 @@ sellsyValues = {
       'code-promo': 144015,
       'pack-depannage': 145683,
       'slimpay-mandate-status': None,
+      'member': 103406,
+      'phone-model': 102178,
+      'mean-data-usage': 100269,
+      'mean-messages-sent': 102694,
+      'mean-voice-usage': 102693,
+      'phone-state': 114654,
+      'phone-year': 114656,
     },
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
@@ -330,32 +344,31 @@ class TcSellsyConnector:
       'maincontactid':  mainContactId,
       'contacts': {},
     }
-    fieldDefaultValue = {
-      'code': None,
-      'textval': '',
-      'formatted_value': '',
-      'boolval': False,
-      'numericval': 0,
-      'timestampval': 0
-    }
     customFields = {
-      'refbazile':                  fieldDefaultValue.copy().update({'code': 'refbazile'}),
-      'facturationmanuelle':        fieldDefaultValue.copy().update({'code': 'facturationmanuelle'}),
-      'facture-unique':             fieldDefaultValue.copy().update({'code': 'facture-unique'}),
-      'statut-client-abo-mobile':   fieldDefaultValue.copy().update({'code': 'statut-client-abo-mobile'}),
-      'parrainage-code':            fieldDefaultValue.copy().update({'code': 'parrainage-code'}),
-      'parrainage-lien':            fieldDefaultValue.copy().update({'code': 'parrainage-lien'}),
-      'parrainage-code-nb-use':     fieldDefaultValue.copy().update({'code': 'parrainage-code-nb-use'}),
-      'parrainage-nb-discount':     fieldDefaultValue.copy().update({'code': 'parrainage-nb-discount'}),
-      'parrainage-code-parrain':    fieldDefaultValue.copy().update({'code': 'parrainage-code-parrain'}),
-      'parrainage-nb-code-donated': fieldDefaultValue.copy().update({'code': 'parrainage-nb-code-donated'}),
-      'offre-telecommown':          fieldDefaultValue.copy().update({'code': 'offre-telecommown'}),
-      'telecommown-date-debut':     fieldDefaultValue.copy().update({'code': 'telecommown-date-debut'}),
-      'telecommown-date-fin':       fieldDefaultValue.copy().update({'code': 'telecommown-date-fin'}),
-      'telecommown-origine':        fieldDefaultValue.copy().update({'code': 'telecommown-origine'}),
-      'abo-telecommown':            fieldDefaultValue.copy().update({'code': 'abo-telecommown'}),
-      'code-promo':                 fieldDefaultValue.copy().update({'code': 'code-promo'}),
-      'slimpay-mandate-status':     fieldDefaultValue.copy().update({'code': 'slimpay-mandate-status'}),
+      'refbazile':                  {'code': 'refbazile', 'textval': ''},
+      'facturationmanuelle':        {'code': 'facturationmanuelle', 'formatted_value': ''},
+      'facture-unique':             {'code': 'facture-unique', 'formatted_value': ''},
+      'statut-client-abo-mobile':   {'code': 'statut-client-abo-mobile', 'textval': ''},
+      'parrainage-code':            {'code': 'parrainage-code', 'textval': ''},
+      'parrainage-lien':            {'code': 'parrainage-lien', 'textval': ''},
+      'parrainage-code-nb-use':     {'code': 'parrainage-code-nb-use', 'defaultValue': ''},
+      'parrainage-nb-discount':     {'code': 'parrainage-nb-discount', 'defaultValue': ''},
+      'parrainage-code-parrain':    {'code': 'parrainage-code-parrain', 'textval': ''},
+      'parrainage-nb-code-donated': {'code': 'parrainage-nb-code-donated', 'defaultValue': ''},
+      'offre-telecommown':          {'code': 'offre-telecommown', 'timestampval': ''},
+      'telecommown-date-debut':     {'code': 'telecommown-date-debut', 'timestampval': ''},
+      'telecommown-date-fin':       {'code': 'telecommown-date-fin', 'timestampval': ''},
+      'telecommown-origine':        {'code': 'telecommown-origine', 'formatted_value': ''},
+      'abo-telecommown':            {'code': 'abo-telecommown', 'defaultValue': ''},
+      'code-promo':                 {'code': 'code-promo', 'textval': ''},
+      'slimpay-mandate-status':     {'code': 'slimpay-mandate-status', 'textval': ''},
+      'societaire':                 {'code': 'societaire', 'textval': ''},
+      'typetelephone':              {'code': 'typetelephone', 'textval': ''},
+      'consomoyenneclient':         {'code': 'consomoyenneclient', 'defaultValue': ''},
+      'smsmoyen':                   {'code': 'smsmoyen', 'defaultValue': ''},
+      'hrappel':                    {'code': 'hrappel', 'defaultValue': ''},
+      'neufreconditionne':          {'code': 'neufreconditionne', 'formatted_value': ''},
+      'achattelephone':             {'code': 'achattelephone', 'defaultValue': ''},
     }
     # Name + person data
     if (cli['client']['type'] == 'person'):
@@ -383,17 +396,19 @@ class TcSellsyConnector:
         if ('code' in f):
           code = f['code']
           textFields = [
-            "refbazile", 'parrainage-code', 'parrainage-lien',
+            "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'typetelephone',
             'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status']
-          boolFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine']
+          selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne']
           dateFields = ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin']
+          intFields = ['parrainage-nb-discount', 'parrainage-code-nb-use', 'parrainage-nb-code-donated',
+                       'consomoyenneclient', 'smsmoyen', 'hrappel', 'achattelephone']
           if (code in textFields):
             customFields[code]['textval'] = f["defaultValue"]
-          elif (code in boolFields and 'formatted_value' in f):
+          elif (code in selectFields and 'formatted_value' in f):
             customFields[code]['formatted_value'] = f["formatted_value"]
           elif (code in ["facture-unique", 'abo-telecommown']):
             customFields[code]['boolval'] = (f["defaultValue"] == 'Y')
-          elif (code in ['parrainage-nb-discount', 'parrainage-code-nb-use', 'parrainage-nb-code-donated']):
+          elif (code in intFields):
             customFields[code]['numericval'] = int(f['defaultValue'])
           elif (code in dateFields and 'formatted_ymd' in f):
             customFields[code]['formatted_ymd'] = f['formatted_ymd']
@@ -638,6 +653,14 @@ class SellsyClient:
     self.oneInvoicePerLine = None
     self.autoValidation = None
     self.status = None
+    self.member = None
+    self.phoneModel = None
+    self.meanDataUsage = None
+    self.meanMessagesSent = None
+    self.meanVoiceUsage = None
+    self.phoneState = None
+    self.phoneYear = None
+
     self.optinTeleCommown = None
     self.telecommownStart = None
     self.telecommownEnd = None
@@ -702,6 +725,21 @@ class SellsyClient:
           self.oneInvoicePerLine = (f['boolval'] == 'N')
       elif (code == 'statut-client-abo-mobile' and 'formatted_value' in f):
         self.status = f["formatted_value"]
+
+      elif code == 'societaire':
+        self.member = f['textval']
+      elif code == 'typetelephone':
+        self.phoneModel = f['textval']
+      elif code == 'consomoyenneclient':
+        self.meanDataUsage = f['numericval']
+      elif code == 'smsmoyen':
+        self.meanMessagesSent = f['numericval']
+      elif code == 'hrappel':
+        self.meanVoiceUsage = f['numericval']
+      elif code == 'neufreconditionne':
+        self.phoneState = f['formatted_value']
+      elif code == 'achattelephone':
+        self.phoneYear = f['numericval']
 
       elif (code == 'parrainage-code'):
         self.sponsorCode = f['textval']

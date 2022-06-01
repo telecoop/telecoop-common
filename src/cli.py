@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys, os, json, pytz
+import sys
+import os
+import json
+import pytz
 from datetime import datetime, date
 
-from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, SellsyClient, sellsyValues, SellsyInvoice
+from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, sellsyValues, SellsyInvoice
 from telecoopcommon.telecoop import Connector as TcConnector
-from telecoopcommon.cursor import TcCursor
 from telecoopcommon.bazile import Connector as BazileConnector
 
 # Script utils
-import argparse, configparser
+import argparse
+import configparser
 
 def cmdline():
   parser = argparse.ArgumentParser(description='TeleCoop Common lib client')
@@ -50,10 +53,13 @@ def cmdline():
 class Logger:
   def critical(self, message):
     print(message)
+
   def warning(self, message):
     print(message)
+
   def info(self, message):
     print(message)
+
   def debug(self, message):
     print(message)
 
@@ -72,14 +78,6 @@ class Runner():
     self.dbConnStr = []
     for cnf in config.items("Bdd"):
       self.dbConnStr.append('{item}={value}'.format(item=cnf[0], value=cnf[1]))
-
-  def getCursor(self):
-    self.logger.debug('connecting to {}'.format(' '.join(self.dbConnStr)))
-    conn = psycopg2.connect(' '.join(self.dbConnStr))
-    conn.set_session(autocommit=True)
-    cursor = conn.cursor()
-    tcCursor = TcCursor(cursor, self.logger)
-    return tcCursor
 
   def getBazileConnector(self):
     return BazileConnector(self.config['BazileAPI'], self.logger)
@@ -128,7 +126,13 @@ class Runner():
       id = self.getArg('Client id')
       client = self.getSellsyConnector().getClient(id)
       print(client)
-      print(client.companyName)
+      print(client.member)
+      print(client.phoneModel)
+      print(client.meanDataUsage)
+      print(client.meanMessagesSent)
+      print(client.meanVoiceUsage)
+      print(client.phoneState)
+      print(client.phoneYear)
       print(isinstance(client.telecommownAbo, bool))
 
     if (command == 'get-client-from-ref'):
@@ -152,12 +156,13 @@ class Runner():
       connector = self.getSellsyConnector()
       env = 'PROD' if self.env == 'PROD' else 'DEV'
       stepId = sellsyValues[env][step] if step != 'all' else step
-      #searchParams = {'status': ['open', 'won', 'lost', 'late', 'closed']}
+      # searchParams = {'status': ['open', 'won', 'lost', 'late', 'closed']}
       searchParams = None
-      opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId, limit=limit, startDate=startDate, searchParams=searchParams)
+      opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId,
+                                              limit=limit, startDate=startDate, searchParams=searchParams)
       print(len(opps))
-      #for opp in opps:
-      #  print(f"{opp.id} {opp.planItem}")
+      # for opp in opps:
+      #   print(f"{opp.id} {opp.planItem}")
 
     if (command == 'get-client-opportunities'):
       clientId = self.getArg('Client id')
@@ -175,8 +180,9 @@ class Runner():
       searchParams = None
       if len(self.args.arguments) > 0:
         invoiceStatus = self.getArg('Invoice status')
-        searchParams = { 'steps': [invoiceStatus, ] }
-      invoices = SellsyInvoice.getInvoices(self.getSellsyConnector(), self.logger, startDate=datetime(2022,1,1), searchParams=searchParams, paymentMedium = 'prélèvement')
+        searchParams = {'steps': [invoiceStatus, ]}
+      invoices = SellsyInvoice.getInvoices(self.getSellsyConnector(), self.logger, startDate=datetime(
+        2022, 1, 1), searchParams=searchParams, paymentMedium='prélèvement')
       print(invoices)
 
     if (command == 'update-invoice-status'):
