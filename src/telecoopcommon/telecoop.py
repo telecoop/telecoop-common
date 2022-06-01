@@ -1,7 +1,5 @@
-import requests
 from requests_oauth2client import OAuth2Client, ApiClient
-from requests_oauth2client.auth import BearerAuth, OAuth2ClientCredentialsAuth
-from datetime import datetime
+from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
 
 class Connector:
   def __init__(self, config, logger):
@@ -17,7 +15,7 @@ class Connector:
       auth=OAuth2ClientCredentialsAuth(self.oauth2client),
       raise_for_status=False
     )
-    #self.token = oauth2client.client_credentials()
+    # self.token = oauth2client.client_credentials()
 
   def getToken(self):
     return self.oauth2client.client_credentials()
@@ -29,7 +27,7 @@ class Connector:
     }
     if value is not None:
       data['value'] = value
-    return self.connector.post(f"/promo_codes/codes/", json=data)
+    return self.connector.post("/promo_codes/codes/", json=data)
 
   def getCode(self, code):
     return self.connector.get(f"/promo_codes/codes/{code}")
