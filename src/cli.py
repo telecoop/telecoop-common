@@ -8,6 +8,7 @@ import pytz
 from datetime import datetime, date
 
 from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, sellsyValues, SellsyInvoice
+from telecoopcommon.sellsy import SellsyMemberOpportunity
 from telecoopcommon.telecoop import Connector as TcConnector
 from telecoopcommon.bazile import Connector as BazileConnector
 
@@ -31,6 +32,7 @@ def cmdline():
                         'get-opportunities-in-step',
                         'get-client-opportunities',
                         'get-invoice', 'get-invoices', 'update-invoice-status',
+                        'get-member-opp', 'get-member-opps',
                         'update-client',
                         'update-cf',
                         'get-tc-token',
@@ -189,6 +191,18 @@ class Runner():
       invoiceId = self.getArg('Invoice id')
       status = self.getArg('Status')
       self.getSellsyConnector().updateInvoiceStatus(invoiceId, status)
+
+    if command == 'get-member-opp':
+      opportunityId = self.getArg('Opportunity id')
+      opp = SellsyMemberOpportunity(opportunityId)
+      opp.load(self.getSellsyConnector())
+      print(opp)
+      print(f"{opp.sharesAmount} {opp.paymentDate} {opp.acceptedDate}")
+
+    if command == 'get-member-opps':
+      opps = SellsyMemberOpportunity.getOpportunities(self.getSellsyConnector(), self.logger)
+      print(len(opps))
+      print(next(iter(opps)))
 
     if (command == 'update-client'):
       id = self.getArg('Client id')

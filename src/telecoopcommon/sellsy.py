@@ -57,6 +57,10 @@ sellsyValues = {
       'mean-voice-usage': 103458,
       'phone-state': 114653,
       'phone-year': 114652,
+      'nb-shares': 103581,
+      'shares-amount': 104629,
+      'membership-payment-date': 144644,
+      'membership-accepted-date': 144643,
     },
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
@@ -69,6 +73,11 @@ sellsyValues = {
     'step_sim_activated': 447899,
     'step_sim_suspended': 447900,
     'step_sim_terminated': 447901,
+    'funnel_id_membership': 62446,
+    'step_membership_asked': 446849,
+    'step_membership_sign': 62446,
+    'step_membership_paid': 447902,
+    'step_membership_active': 545659,
   },
   'PROD': {
     'owner_id': 170799,
@@ -116,6 +125,10 @@ sellsyValues = {
       'mean-voice-usage': 102693,
       'phone-state': 114654,
       'phone-year': 114656,
+      'nb-shares': 103223,
+      'shares-amount': 104627,
+      'membership-payment-date': 104863,
+      'membership-accepted-date': 104864,
     },
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
@@ -128,6 +141,11 @@ sellsyValues = {
     'step_sim_activated': 442523,
     'step_sim_suspended': 446191,
     'step_sim_terminated': 446192,
+    'funnel_id_membership': 60664,
+    'step_membership_asked': 434065,
+    'step_membership_sign': 452137,
+    'step_membership_paid': 434066,
+    'step_membership_active': 452138,
   }
 }
 
@@ -188,6 +206,12 @@ class TcSellsyConnector:
     self.stepSimActivated = sellsyValues[self.env]['step_sim_activated']
     self.stepSimSuspended = sellsyValues[self.env]['step_sim_suspended']
     self.stepSimTerminated = sellsyValues[self.env]['step_sim_terminated']
+
+    self.funnelIdMembership = sellsyValues[self.env]['funnel_id_membership']
+    self.stepMembershipAsked = sellsyValues[self.env]['step_membership_asked']
+    self.stepMembershipSign = sellsyValues[self.env]['step_membership_sign']
+    self.stepMembershipPaid = sellsyValues[self.env]['step_membership_paid']
+    self.stepMembershipActive = sellsyValues[self.env]['step_membership_active']
 
   def getConnector(self):
     if self._connector is None:
@@ -519,6 +543,36 @@ class TcSellsyConnector:
           if (code in dateFields and 'formatted_ymd' in field):
             result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
           if (code in ['pack-depannage']):
+            result['customfields'][code]['numericval'] = int(field['defaultValue'])
+
+    return result
+
+  def getMembershipOpportunityValues(self, id):
+    opp = self.api(method="Opportunities.getOne", params={'id': id})
+    result = {
+      'relationType': opp['relationType'],
+      'linkedid': opp['linkedid'],
+      'funnelid': opp['funnelid'],
+      'created': opp['created'],
+      'statusLabel': opp['statusLabel'],
+      'stepEnterDate': opp['stepEnterDate'],
+      'stepid': opp['stepid'],
+      'customfields': {
+        'partssocialessouhaite': {'code': 'partssocialessouhaite', 'defaultValue': ''},
+        'montantparts': {'code': 'montantparts', 'defaultValue': ''},
+        'dateversementsocietariat': {'code': 'dateversementsocietariat', 'timestamptval': ''},
+        'dateacceptationsocietariat': {'code': 'dateacceptationsocietariat', 'timestamptval': ''},
+      }
+    }
+
+    for ln in opp['customFields']:
+      fields = ln['list'].values() if isinstance(ln['list'], dict) else ln['list']
+      for field in fields:
+        if ('code' in field):
+          code = field['code']
+          if (code in ['dateversementsocietariat', 'dateacceptationsocietariat'] and 'formatted_ymd' in field):
+            result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
+          if (code in ['partssocialessouhaite', 'montantparts']):
             result['customfields'][code]['numericval'] = int(field['defaultValue'])
 
     return result
@@ -917,6 +971,115 @@ class SellsyOpportunity:
     elif self.stepId in [sc.stepSimTerminated]:
       state = 'terminated'
     return state
+
+class SellsyMemberOpportunity:
+  def __init__(self, id):
+    env = os.getenv('ENV', 'LOCAL')
+    self.env = 'PROD' if env == 'PROD' else 'DEV'
+
+    self.id = id
+    self.clientId = None
+    self.client = None
+    self.prospectId = None
+    self.funnelId = None
+    self.creationDate = None
+    self.stepId = None
+    self.stepStart = None
+    self.steps = None
+    self.status = None
+    self.nbShares = None
+    self.sharesAmount = None
+    self.paymentDate = None
+    self.acceptedDate = None
+
+  @property
+  def stepName(self):
+    return step_name_from_id(self.stepId)
+
+  def __str__(self):
+    return f"#{self.id} {self.creationDate} {self.nbShares} {self.stepName} / client #{self.clientId}"
+
+  def load(self, connector):
+    values = connector.getMembershipOpportunityValues(self.id)
+    self.loadWithValues(values)
+
+  def getClient(self, connector):
+    if self.client is None and self.clientId is not None:
+      self.client = SellsyClient(self.clientId)
+      self.client.load(connector)
+    return self.client
+
+  def loadWithValues(self, opp):
+    parisTZ = pytz.timezone('Europe/Paris')
+    if opp['relationType'] == 'client':
+      self.clientId = opp['linkedid']
+    else:
+      self.prospectId = opp['linkedid']
+    self.funnelId = opp['funnelid']
+    self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
+    self.status = opp['statusLabel']
+    self.stepId = int(opp['stepid'])
+    self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
+    self.steps = {opp['stepid']: self.stepStart}
+
+    for fieldId, field in opp['customfields'].items():
+      if ('code' in field):
+        code = field['code']
+        if code == 'partssocialessouhaite':
+          self.nbShares = field['numericval']
+        elif code == 'montantparts':
+          self.sharesAmount = field['numericval']
+        elif code == 'dateversementsocietariat' and 'formatted_ymd' in field and field['formatted_ymd'] != '':
+          self.paymentDate = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+        elif code == 'dateacceptationsocietariat' and 'formatted_ymd' in field and field['formatted_ymd'] != '':
+          self.acceptedDate = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+
+  def updateStep(self, stepId, connector):
+    connector.api(method="Opportunities.updateStep", params={'oid': self.id, 'stepid': stepId})
+
+  def updateStatus(self, status, connector):
+    connector.api(method='Opportunities.updateStatus', params={'id': self.id, 'status': status})
+
+  @classmethod
+  def getOpportunities(cls, sellsyConnector, logger,
+                       startDate=None, search=None, limit=None, searchParams=None, paymentMedium=None):
+    result = []
+    params = {
+      'pagination': {
+        'nbperpage': 1000,
+        'pagenum': 1
+      },
+      'search': {
+        'funnelid': sellsyConnector.funnelIdMembership
+      }
+    }
+    if startDate is not None:
+      params['search']['periodecreated_start'] = startDate.timestamp()
+    if searchParams is not None:
+      for k, v in searchParams.items():
+        params['search'][k] = v
+
+    opportunities = sellsyConnector.api(method='Opportunities.getList', params=params)
+    infos = opportunities["infos"]
+    nbPages = infos["nbpages"]
+    currentPage = 1
+    while (currentPage <= nbPages):
+      logger.info("Processing page {}/{}".format(currentPage, nbPages))
+      for id, opp in opportunities['result'].items():
+        o = SellsyMemberOpportunity(id)
+        o.loadWithValues(opp)
+        result.append(o)
+        if limit is not None and limit <= len(result):
+          return result
+
+      currentPage += 1
+      if (infos["pagenum"] <= nbPages):
+        params['pagination']['pagenum'] = currentPage
+        opportunities = sellsyConnector.api(method="Opportunities.getList", params=params)
+        infos = opportunities["infos"]
+
+    return result
+
 
 class SellsyInvoice:
   def __init__(self, id):
