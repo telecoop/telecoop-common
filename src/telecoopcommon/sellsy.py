@@ -75,7 +75,7 @@ sellsyValues = {
     'step_sim_terminated': 447901,
     'funnel_id_membership': 62446,
     'step_membership_asked': 446849,
-    'step_membership_sign': 62446,
+    'step_membership_sign': 545658, 
     'step_membership_paid': 447902,
     'step_membership_active': 545659,
   },
