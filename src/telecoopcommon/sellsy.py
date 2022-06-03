@@ -903,7 +903,12 @@ class SellsyOpportunity:
         if (code == 'rio'):
           self.rio = field['textval']
         if (code == 'forfait'):
-          self.plan = field['formatted_value']
+          # plan should always be known
+          # BUT there's a bug in Sellsy in DEV env where custom field 'forfait' is unknown and unsettable. O joy.
+          if self.env == 'DEV' and 'formatted_value' in field:
+            self.plan = field['formatted_value']
+          elif self.env == 'PROD':
+            self.plan = field['formatted_value']
         if (code == 'nsce'):
           self.nsce = field['textval']
         if (code == 'numerotelecoop'):
