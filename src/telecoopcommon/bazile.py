@@ -1,7 +1,6 @@
 import requests
 from datetime import datetime
 from time import sleep
-from requests.auth import HTTPBasicAuth
 from json import JSONDecodeError
 
 class BazileError(Exception):
@@ -31,7 +30,7 @@ class Connector:
     return self.token
 
   def get(self, service):
-    headers = { 'Authorization': 'Bearer ' + self.getToken() }
+    headers = {'Authorization': 'Bearer ' + self.getToken()}
     url = self.host+service
     self.logger.debug("Calling GET {} with headers {}".format(url, headers))
     retry = 3
@@ -56,14 +55,15 @@ class Connector:
           sleep(5)
           continue
         self.logger.warning(e)
+        self.logger.warning(f"Service called was {service}")
         raise e
       except JSONDecodeError:
-        self.logger.warning(f"Got a non json response {response.text}")
+        self.logger.warning(f"Calling {service}, got a non json response {response.text}")
         raise BazileError("Non JSON response")
     return result
 
   def post(self, service, data):
-    headers = { 'Authorization': 'Bearer {}'.format(self.getToken()) }
+    headers = {'Authorization': 'Bearer {}'.format(self.getToken())}
     url = self.host+service
     self.logger.info("Calling POST {}".format(url))
     response = requests.post(url, json=data, headers=headers)
@@ -76,7 +76,7 @@ class Connector:
     return self.get('/ext/plans')
 
   def postOrder(self, params):
-    #print(params)
+    # print(params)
     return self.post('/ext/order', params)
 
   def getSimInfo(self, nsce):
@@ -88,7 +88,7 @@ class Connector:
     try:
       response = self.getSimInfo(nsce)
       isActive = (response['data']['Sim_information']['Statut'] == 'Active')
-    except BazileError as e:
+    except BazileError:
       isActive = False
 
     return isActive
@@ -98,7 +98,7 @@ class Connector:
     try:
       response = self.getSimInfo(nsce)
       num = response['data']['Sim_information']['Numero']
-    except BazileError as e:
+    except BazileError:
       num = None
 
     return num
@@ -113,14 +113,14 @@ class Connector:
   def postChangePlan(self, accountId, plan, startDate):
     data = {
       "Fidelisation": {
-        "Account_id" : accountId,
-        "Marque_id" : "14",
+        "Account_id": accountId,
+        "Marque_id": "14",
         "Plan_identifiant": plan,
         "Date_mise_en_place": startDate,
         "Paiement_id": "9"
       }
     }
-    url = f"/ext/fidelisation"
+    url = "/ext/fidelisation"
     return self.post(url, data)
 
   def getSimplePortaHistory(self, nsce):
@@ -131,10 +131,10 @@ class Connector:
       h = response['data']['Historique']
       h.sort(key=lambda e: e['date'])
       for event in h:
-        if event['statut'] == 'PORTING DONE' :
+        if event['statut'] == 'PORTING DONE':
           if 'activated' not in history:
-            history['activated'] = datetime.fromisoformat(event['date'].replace('Z','+00:00'))
+            history['activated'] = datetime.fromisoformat(event['date'].replace('Z', '+00:00'))
         else:
-          history[event['statut']] = datetime.fromisoformat(event['date'].replace('Z','+00:00'))
+          history[event['statut']] = datetime.fromisoformat(event['date'].replace('Z', '+00:00'))
 
     return history

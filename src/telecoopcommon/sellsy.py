@@ -24,6 +24,7 @@ sellsyValues = {
       'Sobriété': 'PL_807',
       'Transition': 'PL_827'
     },
+    'paydate_id': 3691808,
     'new_client_mail_template_id': 62573,
     'custom_fields': {
       'refbazile': 103778,
@@ -75,7 +76,7 @@ sellsyValues = {
     'step_sim_terminated': 447901,
     'funnel_id_membership': 62446,
     'step_membership_asked': 446849,
-    'step_membership_sign': 545658, 
+    'step_membership_sign': 545658,
     'step_membership_paid': 447902,
     'step_membership_active': 545659,
   },
@@ -92,6 +93,7 @@ sellsyValues = {
       'Sobriété': 'PL_750',
       'Transition': 'PL_796'
     },
+    'paydate_id': 3691808,
     'new_client_mail_template_id': 62591,
     'custom_fields': {
       'refbazile': 103227,
@@ -173,6 +175,7 @@ class TcSellsyConnector:
     self.ownerId = sellsyValues[self.env]['owner_id']
     self.staff = sellsyValues[self.env]['staff']
     self.plans = sellsyValues[self.env]['plans']
+    self.paydateId = sellsyValues[self.env]['paydate_id']
     self.sellsyNewClientMailTemplateId = sellsyValues[self.env]['new_client_mail_template_id']
     customFields = sellsyValues[self.env]['custom_fields']
     self.customFieldBazileNb = customFields['refbazile']
@@ -689,6 +692,44 @@ class TcSellsyConnector:
     }
     self.api(method='Document.updateStep', params=params)
 
+  def updateInvoicePaymentDate(self, invoiceId, nbDays):
+    params = {
+      'docid': invoiceId,
+      'document': {
+        'doctype': 'invoice',
+      },
+      'paydate': {
+        'id': self.paydateId,
+        'xdays': nbDays
+      }
+    }
+    self.api(method='Document.update', params=params)
+
+  def createPayment(self, invoiceId, paymentDate, amount):
+    params = {
+      'payment': {
+        'date': paymentDate.timestamp(),
+        'amount': f"{amount}",
+        'medium': 1,
+        'doctype': 'invoice',
+        'docid': invoiceId,
+      }
+    }
+    response = self.api(method="Document.createPayment", params=params)
+    self.logger.debug(response)
+    sellsyPaymentId = response['payrelid']
+    return sellsyPaymentId
+
+  def deletePayment(self, paymentId, invoiceId):
+    params = {
+      'payment': {
+        'payid': paymentId,
+        'doctype': 'invoice',
+        'docid': invoiceId,
+      }
+    }
+    self.api(method="Document.deletePayment", params=params)
+
 
 class SellsyClient:
   def __init__(self, id):
@@ -1129,6 +1170,12 @@ class SellsyInvoice:
                        for k, v in phpserialize.loads(values['payMediumsText'].encode('utf-8')).items()]
 
     self.creationDate = parisTZ.localize(datetime.fromisoformat(values['created']))
+
+  def createPayment(self, paymentDate, amount, sellsyConnector):
+    return sellsyConnector.createPayment(self.id, paymentDate, amount)
+
+  def deletePayment(self, paymentId, sellsyConnector):
+    sellsyConnector.deletePayment(paymentId, self.id)
 
   @classmethod
   def getInvoices(cls, sellsyConnector, logger,

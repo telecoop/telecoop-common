@@ -31,7 +31,8 @@ def cmdline():
                         'get-clients',
                         'get-opportunities-in-step',
                         'get-client-opportunities',
-                        'get-invoice', 'get-invoices', 'update-invoice-status',
+                        'get-invoice', 'get-invoices', 'update-invoice-status', 'update-invoice-paydate',
+                        'create-payment', 'delete-payment',
                         'get-member-opp', 'get-member-opps',
                         'update-client',
                         'update-cf',
@@ -121,6 +122,7 @@ class Runner():
       o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
+      print(o.clientId)
       print(f"{o.stepId} {o.getSimStateFromStep(sellsyConnector)}")
       print(o.getSimStateFromStep(sellsyConnector))
 
@@ -191,6 +193,23 @@ class Runner():
       invoiceId = self.getArg('Invoice id')
       status = self.getArg('Status')
       self.getSellsyConnector().updateInvoiceStatus(invoiceId, status)
+
+    if command == 'update-invoice-paydate':
+      invoiceId = self.getArg('Invoice id')
+      nbDays = self.getArg('Nb days')
+      self.getSellsyConnector().updateInvoicePaymentDate(invoiceId, nbDays)
+
+    if command == 'create-payment':
+      invoiceId = self.getArg('Invoice id')
+      amount = float(self.getArg('Amount'))
+      paymentDate = datetime.now()
+      paymentId = self.getSellsyConnector().createPayment(invoiceId, paymentDate, amount)
+      print(paymentId)
+
+    if command == 'delete-payment':
+      paymentId = self.getArg('Payment id')
+      invoiceId = self.getArg('Invoice id')
+      self.getSellsyConnector().deletePayment(paymentId, invoiceId)
 
     if command == 'get-member-opp':
       opportunityId = self.getArg('Opportunity id')
