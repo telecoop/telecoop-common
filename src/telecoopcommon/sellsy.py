@@ -1166,8 +1166,10 @@ class SellsyInvoice:
     self.paymentDate = parisTZ.localize(datetime.fromisoformat(values['payDateCustom']))
     self.clientRef = values['thirdident']
     self.subject = values['subject']
-    self.payMediums = [v.decode('utf-8')
-                       for k, v in phpserialize.loads(values['payMediumsText'].encode('utf-8')).items()]
+    self.payMediums = []
+    if values['payMediumsText'] is not None and values['payMediumsText'] != '':
+      self.payMediums = [v.decode('utf-8')
+                         for k, v in phpserialize.loads(values['payMediumsText'].encode('utf-8')).items()]
 
     self.creationDate = parisTZ.localize(datetime.fromisoformat(values['created']))
 
