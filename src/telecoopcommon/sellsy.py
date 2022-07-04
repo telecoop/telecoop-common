@@ -119,7 +119,7 @@ sellsyValues = {
       'parrainage-nb-code-donated': 146338,
       'code-promo': 144015,
       'pack-depannage': 145683,
-      'slimpay-mandate-status': None,
+      'slimpay-mandate-status': 171542,
       'member': 103406,
       'phone-model': 102178,
       'mean-data-usage': 100269,
