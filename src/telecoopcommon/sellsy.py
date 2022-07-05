@@ -705,7 +705,7 @@ class TcSellsyConnector:
     }
     self.api(method='Document.update', params=params)
 
-  def createPayment(self, invoiceId, paymentDate, amount):
+  def createPayment(self, invoiceId, paymentDate, amount, label):
     params = {
       'payment': {
         'date': paymentDate.timestamp(),
@@ -713,6 +713,7 @@ class TcSellsyConnector:
         'medium': 1,
         'doctype': 'invoice',
         'docid': invoiceId,
+        'ident': label,
       }
     }
     response = self.api(method="Document.createPayment", params=params)

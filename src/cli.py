@@ -202,8 +202,9 @@ class Runner():
     if command == 'create-payment':
       invoiceId = self.getArg('Invoice id')
       amount = float(self.getArg('Amount'))
+      label = self.getArg('Label')
       paymentDate = datetime.now()
-      paymentId = self.getSellsyConnector().createPayment(invoiceId, paymentDate, amount)
+      paymentId = self.getSellsyConnector().createPayment(invoiceId, paymentDate, amount, label)
       print(paymentId)
 
     if command == 'delete-payment':
