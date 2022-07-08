@@ -364,6 +364,8 @@ class TcSellsyConnector:
     result = {
       'ident': cli['client']['ident'],
       'type': cli['client']['type'],
+      'joindate': cli['client']['joindate'],
+      'dateTransformProspect': cli['client']['transformationDate'],
       'people_name': '',
       'people_forename': '',
       'email': '',
@@ -735,6 +737,8 @@ class TcSellsyConnector:
 class SellsyClient:
   def __init__(self, id):
     self.id = id
+    self.creationDate = None
+    self.conversionToClientDate = None
     self.actif = None
     self.reference = None
     self.type = None
@@ -772,7 +776,7 @@ class SellsyClient:
     self.slimpayMandateStatus = None
 
   def __str__(self):
-    return f"#{self.id} {self.reference} {self.label} {self.email} {self.status}"
+    return f"#{self.id} {self.reference} {self.label} {self.email} {self.status} {self.creationDate.isoformat()}"
 
   def load(self, connector):
     self.loadWithValues(connector.getClientValues(self.id))
@@ -793,6 +797,8 @@ class SellsyClient:
         civility = contact['civil']
 
     actif = cli.get('actif')
+    self.creationDate = parisTZ.localize(datetime.fromisoformat(cli['joindate']))
+    self.conversionToClientDate = parisTZ.localize(datetime.fromisoformat(cli['dateTransformProspect']))
     self.actif = actif == 'Y' if actif else None
     self.reference = cli['ident']
     self.type = cli['type']

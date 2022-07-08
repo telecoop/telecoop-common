@@ -130,6 +130,7 @@ class Runner():
       id = self.getArg('Client id')
       client = self.getSellsyConnector().getClient(id)
       print(client)
+      print(client.conversionToClientDate)
       print(client.member)
       print(client.phoneModel)
       print(client.meanDataUsage)
