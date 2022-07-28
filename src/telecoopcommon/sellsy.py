@@ -75,6 +75,10 @@ sellsyValues = {
       'pro-achats-contenu': 181291,
       'pro-achats-surtaxes': 181289,
     },
+    'opportunity_source_interne': 119862,
+    'opportunity_source_site_web': 119864,
+    'opportunity_source_espace_client': 167236,
+    'opportunity_source_tel_mail': 119863,
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
     'step_sim_to_send': 447894,
@@ -175,6 +179,10 @@ sellsyValues = {
       'pro-achats-contenu': 180721,
       'pro-achats-surtaxes': 180720,
     },
+    'opportunity_source_interne': 115933,
+    'opportunity_source_site_web': 115935,
+    'opportunity_source_espace_client': 173871,
+    'opportunity_source_tel_mail': 115934,
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
     'step_sim_to_send': 434062,
@@ -267,10 +275,15 @@ class TcSellsyConnector:
     self.cfidProNomUtilisateur = customFields['pro-nom-utilisateur']
     self.cfidProMailUtilisateur = customFields['pro-mail-utilisateur']
     self.cfidProPalierSuspension = customFields['pro-palier-suspension']
-    self.cfidProAppelinternationaux = customFields['pro-appels-internationaux']
+    self.cfidProAppelInternationaux = customFields['pro-appels-internationaux']
     self.cfidProDonneesMobiles = customFields['pro-donnees-mobiles']
-    self.cfidProAchatContenu = customFields['pro-achats-contenu']
+    self.cfidProAchatsContenu = customFields['pro-achats-contenu']
     self.cfidProAchatsSurtaxes = customFields['pro-achats-surtaxes']
+
+    self.opportunitySourceInterne = sellsyValues[self.env]['opportunity_source_interne']
+    self.opportunitySourceSiteWeb = sellsyValues[self.env]['opportunity_source_site_web']
+    self.opportunitySourceEspaceClient = sellsyValues[self.env]['opportunity_source_espace_client']
+    self.opportunitySourceTelMail = sellsyValues[self.env]['opportunity_source_tel_mail']
 
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
     self.stepNew = sellsyValues[self.env]['step_new']
@@ -1055,6 +1068,24 @@ class SellsyOpportunity:
   def load(self, connector):
     values = connector.getOpportunityValues(self.id)
     self.loadWithValues(values)
+
+  @classmethod
+  def create(cls, connector, data):
+    params = {
+      'opportunity': {
+        'linkedtype': 'third',
+        'linkedid': data['clientId'],
+        'ident': data['reference'],
+        'sourceid': connector.opportunitySourceInterne,
+        'name': data['name'],
+        'funnelid': data['funnelId'],
+        'stepid': data['stepId'],
+      }
+    }
+    id = connector.api(method="Opportunities.create", params=params)
+    o = cls(id)
+    o.load(connector)
+    return o
 
   def getClient(self, connector):
     if self.client is None and self.clientId is not None:

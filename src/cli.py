@@ -25,6 +25,7 @@ def cmdline():
                       help='Log level of the script')
   parser.add_argument('command', metavar='COMMAND',
                       choices=[
+                        'create-opportunity',
                         'get-opportunity',
                         'get-client',
                         'get-client-from-ref',
@@ -116,6 +117,21 @@ class Runner():
     return value
 
   def run(self, command):
+    if command == 'create-opportunity':
+      clientId = self.getArg('Client id')
+      ref = self.getArg('Reference')
+      name = self.getArg('Name')
+      sc = self.getSellsyConnector()
+      data = {
+        'clientId': clientId,
+        'reference': ref,
+        'name': name,
+        'funnelId': sc.funnelIdSimsPro,
+        'stepId': sc.stepProSimsInactive,
+      }
+      o = SellsyOpportunity.create(sc, data)
+      print(o)
+
     if (command == 'get-opportunity'):
       id = self.getArg('Opportunity id')
       sellsyConnector = self.getSellsyConnector()
