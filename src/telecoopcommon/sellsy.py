@@ -62,6 +62,18 @@ sellsyValues = {
       'shares-amount': 104629,
       'membership-payment-date': 144644,
       'membership-accepted-date': 144643,
+      'pro-nb-sims': 180710,
+      'pro-nb-porta': 180712,
+      'pro-date-engagement': 180713,
+      'pro-estim-conso': 180711,
+      'pro-comment': 180714,
+      'pro-nom-utilisateur': 180715,
+      'pro-mail-utilisateur': 180716,
+      'pro-palier-suspension': 181292,
+      'pro-appels-internationaux': 181282,
+      'pro-donnees-mobiles': 181306,
+      'pro-achats-contenu': 181291,
+      'pro-achats-surtaxes': 181289,
     },
     'funnel_id_vie_du_contrat': 62579,
     'step_new': 447893,
@@ -150,6 +162,18 @@ sellsyValues = {
       'shares-amount': 104627,
       'membership-payment-date': 104863,
       'membership-accepted-date': 104864,
+      'pro-nb-sims': 180710,
+      'pro-nb-porta': 180712,
+      'pro-date-engagement': 180713,
+      'pro-estim-conso': 180711,
+      'pro-comment': 180714,
+      'pro-nom-utilisateur': 180715,
+      'pro-mail-utilisateur': 180716,
+      'pro-palier-suspension': 180717,
+      'pro-appels-internationaux': 180718,
+      'pro-donnees-mobiles': 180719,
+      'pro-achats-contenu': 180721,
+      'pro-achats-surtaxes': 180720,
     },
     'funnel_id_vie_du_contrat': 60663,
     'step_new': 446190,
@@ -235,6 +259,18 @@ class TcSellsyConnector:
     self.cfidPromoCode = customFields['code-promo']
     self.cfidPackDepannage = customFields['pack-depannage']
     self.cfidSlimpayMandateStatus = customFields['slimpay-mandate-status']
+    self.cfidProNbSims = customFields['pro-nb-sims']
+    self.cfidProNbPorta = customFields['pro-nb-porta']
+    self.cfidProDateEngagement = customFields['pro-date-engagement']
+    self.cfidProEstimConso = customFields['pro-estim-conso']
+    self.cfidProComment = customFields['pro-comment']
+    self.cfidProNomUtilisateur = customFields['pro-nom-utilisateur']
+    self.cfidProMailUtilisateur = customFields['pro-mail-utilisateur']
+    self.cfidProPalierSuspension = customFields['pro-palier-suspension']
+    self.cfidProAppelinternationaux = customFields['pro-appels-internationaux']
+    self.cfidProDonneesMobiles = customFields['pro-donnees-mobiles']
+    self.cfidProAchatContenu = customFields['pro-achats-contenu']
+    self.cfidProAchatsSurtaxes = customFields['pro-achats-surtaxes']
 
     self.funnelIdVdc = sellsyValues[self.env]['funnel_id_vie_du_contrat']
     self.stepNew = sellsyValues[self.env]['step_new']
@@ -267,6 +303,7 @@ class TcSellsyConnector:
     self.stepProAccountComplete = sellsyValues[self.env]['step_pro_account_complete']
     self.stepProEnd = sellsyValues[self.env]['step_pro_end']
     self.stepProNewSims = sellsyValues[self.env]['step_pro_new_sims']
+
     self.funnelIdSimsPro = sellsyValues[self.env]['funnel_id_sims_pro']
     self.stepProSimsInactive = sellsyValues[self.env]['step_pro_sims_inactive']
     self.stepProSimsAwaiting = sellsyValues[self.env]['step_pro_sims_awaiting']
@@ -586,7 +623,19 @@ class TcSellsyConnector:
         'telecommown-origine': {'code': 'telecommown-origine', 'formatted_value': ''},
         'abo-telecommown': {'code': 'abo-telecommown', 'boolval': False},
         'code-promo': {'code': 'code-promo', 'textval': ''},
-        'pack-depannage': {'code': 'pack-depannage', 'numericval': 0}
+        'pack-depannage': {'code': 'pack-depannage', 'defaultValue': '0', 'numericval': 0},
+        'pro-nb-sims': {'code': 'pro-nb-sims', 'defaultValue': '0', 'numericval': 0},
+        'pro-nb-porta': {'code': 'pro-nb-porta', 'defaultValue': '0', 'numericval': 0},
+        'pro-date-engagement': {'code': 'pro-date-engagement', 'timestampval': 0},
+        'pro-estim-conso': {'code': 'pro-estim-conso', 'textval': ''},
+        'pro-comment': {'code': 'pro-comment', 'textval': ''},
+        'pro-nom-utilisateur': {'code': 'pro-nom-utilisateur', 'textval': ''},
+        'pro-mail-utilisateur': {'code': 'pro-mail-utilisateur', 'textval': ''},
+        'pro-palier-suspension': {'code': 'pro-palier-suspension', 'formatted_value': ''},
+        'pro-appels-internationaux': {'code': 'pro-appels-internationaux', 'formatted_value': ''},
+        'pro-donnees-mobiles': {'code': 'pro-donnees-mobiles', 'formatted_value': ''},
+        'pro-achats-contenu': {'code': 'pro-achats-contenu', 'boolval': True},
+        'pro-achats-surtaxes': {'code': 'pro-achats-surtaxes', 'boolval': True},
       }
     }
 
@@ -595,17 +644,24 @@ class TcSellsyConnector:
       for field in fields:
         if ('code' in field):
           code = field['code']
-          if (code in ['rio', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo', 'parrainage-code-parrain']):
-            result['customfields'][code]['textval'] = field['defaultValue']
-          if (code in ['telecommown-origine', 'forfait'] and 'formatted_value' in field):
-            result['customfields'][code]['formatted_value'] = field["formatted_value"]
-          if (code in ['achatsimphysique', 'abo-telecommown']):
-            result['customfields'][code]['boolval'] = (field["defaultValue"] == "Y")
+          textFields = [
+            'rio', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo', 'parrainage-code-parrain',
+            'pro-estim-conso', 'pro-comment', 'pro-nom-utilisateur', 'pro-mail-utilisateur']
+          listFields = [
+            'telecommown-origine', 'forfait',
+            'pro-palier-suspension', 'pro-appels-internationaux', 'pro-donnees-mobiles']
           dateFields = [
-            'date-activation-sim-souhaitee', 'offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin']
+            'date-activation-sim-souhaitee', 'offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin',
+            'pro-date-engagement']
+          if (code in textFields):
+            result['customfields'][code]['textval'] = field['defaultValue']
+          if (code in listFields and 'formatted_value' in field):
+            result['customfields'][code]['formatted_value'] = field["formatted_value"]
+          if (code in ['achatsimphysique', 'abo-telecommown', 'pro-achats-contenu', 'pro-achats-surtaxes']):
+            result['customfields'][code]['boolval'] = (field["defaultValue"] == "Y")
           if (code in dateFields and 'formatted_ymd' in field):
             result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
-          if (code in ['pack-depannage']):
+          if (code in ['pack-depannage', 'pro-nb-sims', 'pro-nb-porta']):
             result['customfields'][code]['numericval'] = int(field['defaultValue'])
 
     return result
@@ -1043,13 +1099,13 @@ class SellsyOpportunity:
           else:
             self.achatSimPhysique = (field['boolval'] == 'Y')
         if (code == 'date-activation-sim-souhaitee' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
-          self.dateActivationSimAsked = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+          self.dateActivationSimAsked = datetime.strptime(field['formatted_ymd'], '%Y-%m-%d').astimezone(parisTZ)
         if (code == 'offre-telecommown' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
-          self.optinTeleCommown = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+          self.optinTeleCommown = datetime.strptime(field['formatted_ymd'], '%Y-%m-%d').astimezone(parisTZ)
         if (code == 'telecommown-date-debut' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
-          self.telecommownStart = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+          self.telecommownStart = datetime.strptime(field['formatted_ymd'], '%Y-%m-%d').astimezone(parisTZ)
         if (code == 'telecommown-date-fin' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
-          self.telecommownEnd = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+          self.telecommownEnd = datetime.strptime(field['formatted_ymd'], '%Y-%m-%d').astimezone(parisTZ)
         if (code == 'telecommown-origine'):
           self.telecommownOrigin = field['formatted_value']
         if (code == 'abo-telecommown'):
@@ -1063,6 +1119,30 @@ class SellsyOpportunity:
           self.refereeCode = field['textval']
         if (code == 'pack-depannage'):
           self.packDepannage = field['numericval']
+        if (code == 'pro-nb-sims'):
+          self.proNbSims = field['numericval']
+        if (code == 'pro-nb-porta'):
+          self.proNbPorta = field['numericval']
+        if (code == 'pro-date-engagement' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
+          self.proDateEngagement = datetime.strptime(field['formatted_ymd'], '%Y-%m-%d').astimezone(parisTZ)
+        if (code == 'pro-estim-conso'):
+          self.proEstimConso = field['textval']
+        if (code == 'pro-comment'):
+          self.proComment = field['textval']
+        if (code == 'pro-nom-utilisateur'):
+          self.proNomUtilisateur = field['textval']
+        if (code == 'pro-mail-utilisateur'):
+          self.proMailUtilisateur = field['textval']
+        if (code == 'pro-palier-suspension'):
+          self.proPalierSuspension = field['formatted_value']
+        if (code == 'pro-appels-internationaux'):
+          self.proAppelInternationaux = field['formatted_value']
+        if (code == 'pro-donnees-mobiles'):
+          self.proDonneesMobiles = field['formatted_value']
+        if (code == 'pro-achats-contenu'):
+          self.proAchatContenu = field['boolval']
+        if (code == 'pro-achats-surtaxes'):
+          self.proAchatsSurtaxes = field['boolval']
 
     if self.plan in self.plans:
       self.planItem = self.plans[self.plan]
