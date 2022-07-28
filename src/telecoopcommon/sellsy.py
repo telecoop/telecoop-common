@@ -79,6 +79,25 @@ sellsyValues = {
     'step_membership_sign': 545658,
     'step_membership_paid': 447902,
     'step_membership_active': 545659,
+    'funnel_id_dev_pro': 85811,
+    'step_pro_new': 619617,
+    'step_pro_apt_planned': 619618,
+    'step_pro_missing_info': 619619,
+    'step_pro_awaiting': 619620,
+    'step_pro_prop_todo': 619621,
+    'step_pro_prop_internal_validation': 619622,
+    'step_pro_prop_awaiting': 619623,
+    'step_pro_prop_accepted': 619624,
+    'step_pro_account_incomplete': 619625,
+    'step_pro_account_complete': 619626,
+    'step_pro_end': 619627,
+    'step_pro_new_sims': 619628,
+    'funnel_id_sims_pro': 85813,
+    'step_pro_sims_inactive': 619636,
+    'step_pro_sims_awaiting': 619637,
+    'step_pro_sims_activated': 619638,
+    'step_pro_sims_suspended': 619639,
+    'step_pro_sims_terminated': 619640,
   },
   'PROD': {
     'owner_id': 170799,
@@ -93,7 +112,7 @@ sellsyValues = {
       'Sobriété': 'PL_750',
       'Transition': 'PL_796'
     },
-    'paydate_id': 3691808,
+    'paydate_id': 3527781,
     'new_client_mail_template_id': 62591,
     'custom_fields': {
       'refbazile': 103227,
@@ -148,6 +167,25 @@ sellsyValues = {
     'step_membership_sign': 452137,
     'step_membership_paid': 434066,
     'step_membership_active': 452138,
+    'funnel_id_dev_pro': 0,
+    'step_pro_new': 0,
+    'step_pro_apt_planned': 0,
+    'step_pro_missing_info': 0,
+    'step_pro_awaiting': 0,
+    'step_pro_prop_todo': 0,
+    'step_pro_prop_internal_validation': 0,
+    'step_pro_prop_awaiting': 0,
+    'step_pro_prop_accepted': 0,
+    'step_pro_account_incomplete': 0,
+    'step_pro_account_complete': 0,
+    'step_pro_end': 0,
+    'step_pro_new_sims': 0,
+    'funnel_id_sims_pro': 0,
+    'step_pro_sims_inactive': 0,
+    'step_pro_sims_awaiting': 0,
+    'step_pro_sims_activated': 0,
+    'step_pro_sims_suspended': 0,
+    'step_pro_sims_terminated': 0,
   }
 }
 
@@ -215,6 +253,26 @@ class TcSellsyConnector:
     self.stepMembershipSign = sellsyValues[self.env]['step_membership_sign']
     self.stepMembershipPaid = sellsyValues[self.env]['step_membership_paid']
     self.stepMembershipActive = sellsyValues[self.env]['step_membership_active']
+
+    self.funnelIdDevPro = sellsyValues[self.env]['funnel_id_dev_pro']
+    self.stepProNew = sellsyValues[self.env]['step_pro_new']
+    self.stepProAptPlanned = sellsyValues[self.env]['step_pro_apt_planned']
+    self.stepProMissingInfo = sellsyValues[self.env]['step_pro_missing_info']
+    self.stepProAwaiting = sellsyValues[self.env]['step_pro_awaiting']
+    self.stepProPropTodo = sellsyValues[self.env]['step_pro_prop_todo']
+    self.stepProPropInternalValidation = sellsyValues[self.env]['step_pro_prop_internal_validation']
+    self.stepProPropAwaiting = sellsyValues[self.env]['step_pro_prop_awaiting']
+    self.stepProPropAccepted = sellsyValues[self.env]['step_pro_prop_accepted']
+    self.stepProAccountIncomplete = sellsyValues[self.env]['step_pro_account_incomplete']
+    self.stepProAccountComplete = sellsyValues[self.env]['step_pro_account_complete']
+    self.stepProEnd = sellsyValues[self.env]['step_pro_end']
+    self.stepProNewSims = sellsyValues[self.env]['step_pro_new_sims']
+    self.funnelIdSimsPro = sellsyValues[self.env]['funnel_id_sims_pro']
+    self.stepProSimsInactive = sellsyValues[self.env]['step_pro_sims_inactive']
+    self.stepProSimsAwaiting = sellsyValues[self.env]['step_pro_sims_awaiting']
+    self.stepProSimsActivated = sellsyValues[self.env]['step_pro_sims_activated']
+    self.stepProSimsSuspended = sellsyValues[self.env]['step_pro_sims_suspended']
+    self.stepProSimsTerminated = sellsyValues[self.env]['step_pro_sims_terminated']
 
   def getConnector(self):
     if self._connector is None:
@@ -681,7 +739,23 @@ class TcSellsyConnector:
       'subject': invoice['subject'],
       'created': invoice['created'],
       'payMediumsText': invoice['paymediums_text'],
+      'rows': [],
     }
+    for row in invoice['map']['rows']:
+      qt = Decimal(row['qt'])
+      amount = Decimal(row['totalAmountTaxesInc'])
+      if qt != 0 and amount != 0:
+        result['rows'].append({
+          'item': row['item'],
+          'ref': row['name'],
+          'label': row['notes'],
+          'unitAmount': Decimal(row['unitAmountTaxesInc']),
+          'quantity': qt,
+          'amount': amount,
+          'taxes': Decimal(row['taxAmount']),
+          'amountTaxFree': Decimal(['totalAmount']),
+        })
+
     return result
 
   def updateInvoiceStatus(self, invoiceId, status):
@@ -1152,6 +1226,8 @@ class SellsyInvoice:
     self.subject = None
     self.creationDate = None
 
+    self.rows = None
+
   def __str__(self):
     display = f"Invoice #{self.id} - {self.reference} {self.sellsyStatus}"
     display += f" : {round(self.amountTTC, 2)} € TTC ({round(self.amountHT, 2)} € HT) | {self.subject}"
@@ -1179,6 +1255,9 @@ class SellsyInvoice:
                          for k, v in phpserialize.loads(values['payMediumsText'].encode('utf-8')).items()]
 
     self.creationDate = parisTZ.localize(datetime.fromisoformat(values['created']))
+
+    if 'rows' in values:
+      self.rows = values['rows']
 
   def createPayment(self, paymentDate, amount, sellsyConnector):
     return sellsyConnector.createPayment(self.id, paymentDate, amount)
