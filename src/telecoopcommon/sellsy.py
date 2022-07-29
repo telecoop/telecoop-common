@@ -614,6 +614,8 @@ class TcSellsyConnector:
   def getOpportunityValues(self, id):
     opp = self.api(method="Opportunities.getOne", params={'id': id})
     result = {
+      'ident': opp['ident'],
+      'name': opp['name'],
       'relationType': opp['relationType'],
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
@@ -682,6 +684,8 @@ class TcSellsyConnector:
   def getMembershipOpportunityValues(self, id):
     opp = self.api(method="Opportunities.getOne", params={'id': id})
     result = {
+      'ident': opp['ident'],
+      'name': opp['name'],
       'relationType': opp['relationType'],
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
@@ -1031,6 +1035,8 @@ class SellsyOpportunity:
     self.env = 'PROD' if env == 'PROD' else 'DEV'
 
     self.id = id
+    self.reference = None
+    self.name = None
     self.clientId = None
     self.client = None
     self.prospectId = None
@@ -1099,6 +1105,8 @@ class SellsyOpportunity:
       self.clientId = opp['linkedid']
     else:
       self.prospectId = opp['linkedid']
+    self.reference = opp['ident']
+    self.name = opp['name']
     self.funnelId = opp['funnelid']
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']

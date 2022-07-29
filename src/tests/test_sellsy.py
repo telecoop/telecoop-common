@@ -1,4 +1,6 @@
-import configparser, pytest, pytz
+import configparser
+import pytest
+import pytz
 from datetime import datetime
 from telecoopcommon import sellsy
 
@@ -15,10 +17,13 @@ clientIdNoOpportunity = 33309487
 class Logger:
   def critical(self, message):
     return None
+
   def warning(self, message):
     return None
+
   def info(self, message):
     print(message)
+
   def debug(self, message):
     print(message)
 
@@ -56,13 +61,13 @@ def test_get_opportunity(test_connector):
   assert o.rio == '1111', "Check RIO"
   assert o.plan == 'Sobriété', "Check forfait"
   assert o.bazileNum == '2222', "Check Bazile number"
-  assert o.achatSimPhysique == True, "Check achat sim physique"
+  assert o.achatSimPhysique is True, "Check achat sim physique"
   assert o.dateActivationSimAsked == now, "Check date activation SIM souhaitée"
   assert o.optinTeleCommown == now, "Check optin telecommown"
   assert o.telecommownStart == now, "Check telecommown start"
   assert o.telecommownEnd == now, "Check telecommown end"
   assert o.telecommownOrigin == 'TeleCoop', "Check telecommown origine"
-  assert o.telecommownAbo == True, "Check telecommown abo"
+  assert o.telecommownAbo is True, "Check telecommown abo"
   assert o.promoCode == 'TESTCODE', "Check promo code"
   assert o.refereeCode == 'CODEPAR', "Check referee code"
   assert o.packDepannage == 1, "Check pack dépannage"
@@ -73,7 +78,7 @@ def test_get_opportunity(test_connector):
   test_connector.updateCustomField('opportunity', id, cf['forfait'], 'Transition')
   test_connector.updateCustomField('opportunity', id, cf['refbazile'], '1111')
   test_connector.updateCustomField('opportunity', id, cf['achatsimphysique'], 'N')
-  #test_connector.updateCustomField('opportunity', id, cf['date-activation-sim-souhaitee'], None)
+  # test_connector.updateCustomField('opportunity', id, cf['date-activation-sim-souhaitee'], None)
   test_connector.updateCustomField('opportunity', id, cf['code-promo'], 'TESTCODE2')
   test_connector.updateCustomField('opportunity', id, cf['parrainage-code-parrain'], 'CODEPAR2')
   test_connector.updateCustomField('opportunity', id, cf['pack-depannage'], 2)
@@ -85,8 +90,8 @@ def test_get_opportunity(test_connector):
   assert o.rio == '2222', "Check RIO"
   assert o.plan == 'Transition', "Check forfait"
   assert o.bazileNum == '1111', "Check Bazile number"
-  assert o.achatSimPhysique == False, "Check achat sim physique"
-  #assert o.dateActivationSimAsked is None, "Check date activation SIM souhaitée"
+  assert o.achatSimPhysique is False, "Check achat sim physique"
+  # assert o.dateActivationSimAsked is None, "Check date activation SIM souhaitée"
   assert o.promoCode == 'TESTCODE2'
   assert o.refereeCode == 'CODEPAR2', "Check referee code"
   assert o.packDepannage == 2, "Check pack dépannage"
@@ -121,8 +126,8 @@ def test_get_client(test_connector):
   assert c.msisdn == '+33610658239', "Check mobile"
   assert c.email == 'pierre@afeu.fr', "Check email"
   assert c.lines[0]['bazileNum'] == '1234', "Check bazile num"
-  assert c.autoValidation == True, "Check autovalidation"
-  assert c.oneInvoicePerLine == False, "Check facture unique"
+  assert c.autoValidation is True, "Check autovalidation"
+  assert c.oneInvoicePerLine is False, "Check facture unique"
   assert c.status == 'Actif', "Check status"
   assert c.sponsorCode == 'BBBB', "Check sponsor code"
   assert c.sponsorLink == 'LLLL', "Check sponsor link"
@@ -134,7 +139,7 @@ def test_get_client(test_connector):
   assert c.telecommownStart == now, "Check telecommown start"
   assert c.telecommownEnd == now, "Check telecommown end"
   assert c.telecommownOrigin == 'TeleCoop', "Check telecommown origine"
-  assert c.telecommownAbo == True, "Check telecommown abo"
+  assert c.telecommownAbo is True, "Check telecommown abo"
   assert c.promoCode == 'TESTCODE', "Check promo code"
 
   test_connector.updateClientProperty(id, 'mobile', '0610658238')
@@ -149,9 +154,9 @@ def test_get_client(test_connector):
   test_connector.updateCustomField('client', id, cf['parrainage-nb-discount'], 2)
   test_connector.updateCustomField('client', id, cf['parrainage-code-parrain'], 'DDDD')
   test_connector.updateCustomField('client', id, cf['parrainage-nb-code-donated'], 2)
-  #test_connector.updateCustomField('client', id, cf['offre-telecommown'], timestamp)
-  #test_connector.updateCustomField('client', id, cf['telecommown-date-debut'], timestamp)
-  #test_connector.updateCustomField('client', id, cf['telecommown-date-fin'], timestamp)
+  # test_connector.updateCustomField('client', id, cf['offre-telecommown'], timestamp)
+  # test_connector.updateCustomField('client', id, cf['telecommown-date-debut'], timestamp)
+  # test_connector.updateCustomField('client', id, cf['telecommown-date-fin'], timestamp)
   test_connector.updateCustomField('client', id, cf['telecommown-origine'], 'Commown')
   test_connector.updateCustomField('client', id, cf['abo-telecommown'], 'N')
   test_connector.updateCustomField('client', id, cf['code-promo'], 'TESTCODE2')
@@ -161,8 +166,8 @@ def test_get_client(test_connector):
   assert c.msisdn == '+33610658238', "Check mobile"
   assert c.email == 'pierre2@afeu.fr', "Check email"
   assert c.lines[0]['bazileNum'] == '4321', "Check bazile num"
-  assert c.autoValidation == False, "Check autovalidation"
-  assert c.oneInvoicePerLine == True, "Check facture unique"
+  assert c.autoValidation is False, "Check autovalidation"
+  assert c.oneInvoicePerLine is True, "Check facture unique"
   assert c.status == 'Non actif', "Check status"
   assert c.sponsorCode == 'AAAA', "Check sponsor code"
   assert c.sponsorLink == 'MMMM', "Check sponsor link"
@@ -170,10 +175,10 @@ def test_get_client(test_connector):
   assert c.sponsorNbDiscount == 2, "Check sponsor nb discount"
   assert c.refereeCode == 'DDDD', "Check referee code"
   assert c.sponsorNbCodeDonated == 2, "Check sponsor nb code donated"
-  #assert c.optinTeleCommown == now, "Check optin telecommown"
-  #assert c.telecommownStart == now, "Check telecommown start"
-  #assert c.telecommownEnd == now, "Check telecommown end"
-  assert c.telecommownAbo == False, "Check telecommown abo"
+  # assert c.optinTeleCommown == now, "Check optin telecommown"
+  # assert c.telecommownStart == now, "Check telecommown start"
+  # assert c.telecommownEnd == now, "Check telecommown end"
+  assert c.telecommownAbo is False, "Check telecommown abo"
   assert c.promoCode == 'TESTCODE2', "Check promo code"
 
 def test_get_client_opportunities(test_connector):
@@ -193,48 +198,3 @@ def test_get_opportunity_client(test_connector):
   # Shouldn't use the connector, so passing an empty object shouldn't be a problem
   c = o.getClient(object())
   assert c.id == str(clientIdPG), "Second access, check client id"
-
-
-#if (command == 'get-client'):
-#  id = self.getArg('Client id')
-#  client = self.getSellsyConnector().getClient(id)
-#  print(client)
-#
-#if (command == 'get-client-from-ref'):
-#  ref = self.getArg('Client ref')
-#  client = self.getSellsyConnector().getClientFromRef(ref)
-#  print(client)
-#
-#if (command == 'get-clients'):
-#  clients = self.getSellsyConnector().getClients()
-#  print(len(clients))
-#  print(next(iter(clients.values())))
-#
-#if (command == 'get-opportunities-in-step'):
-#  step = self.getArg("Step")
-#  connector = self.getSellsyConnector()
-#  stepId = connector.conf[step]
-#  opps = connector.getOpportunitiesInStep(connector.funnelIdVdc, stepId)
-#  print(len(opps))
-#
-#if (command == 'get-client-opportunities'):
-#  clientId = self.getArg('Client id')
-#  opps = self.getSellsyConnector().getClientOpportunities(clientId)
-#  print(opps)
-#
-#if (command == 'update-client'):
-#  id = self.getArg('Client id')
-#  prop = self.getArg('Property')
-#  value = self.getArg('Property value')
-#  response = self.getSellsyConnector().updateClientProperty(id, prop, value)
-#  print(response)
-#
-#if (command == 'update-cf'):
-#  env = 'PROD' if self.env == 'PROD' else 'DEV'
-#  clientId = self.getArg('Client id')
-#  customField = self.getArg('Custom field')
-#  cfid = sellsyValues[env]['custom_fields'][customField]
-#  value = self.getArg('Value')
-#  response = self.getSellsyConnector().updateCustomField('client', clientId, cfid, "Actif")
-#  print(response)
-#
