@@ -980,28 +980,28 @@ class SellsyClient:
       elif code == 'typetelephone':
         self.phoneModel = f['textval']
       elif code == 'consomoyenneclient':
-        self.meanDataUsage = f['numericval']
+        self.meanDataUsage = int(f['numericval'])
       elif code == 'smsmoyen':
-        self.meanMessagesSent = f['numericval']
+        self.meanMessagesSent = int(f['numericval'])
       elif code == 'hrappel':
-        self.meanVoiceUsage = f['numericval']
+        self.meanVoiceUsage = int(f['numericval'])
       elif code == 'neufreconditionne':
         self.phoneState = f['formatted_value']
       elif code == 'achattelephone':
-        self.phoneYear = f['numericval']
+        self.phoneYear = int(f['numericval'])
 
       elif (code == 'parrainage-code'):
         self.sponsorCode = f['textval']
       elif (code == 'parrainage-lien'):
         self.sponsorLink = f['textval']
       elif (code == 'parrainage-code-nb-use'):
-        self.sponsorNbUse = f['numericval']
+        self.sponsorNbUse = int(f['numericval'])
       elif (code == 'parrainage-nb-discount'):
-        self.sponsorNbDiscount = f['numericval']
+        self.sponsorNbDiscount = int(f['numericval'])
       elif (code == 'parrainage-code-parrain'):
         self.refereeCode = f['textval']
       elif (code == 'parrainage-nb-code-donated'):
-        self.sponsorNbCodeDonated = f['numericval']
+        self.sponsorNbCodeDonated = int(f['numericval'])
 
       elif (code == 'offre-telecommown' and 'formatted_ymd' in f and f['formatted_ymd'] != ''):
         self.optinTeleCommown = parisTZ.localize(datetime.strptime(f['formatted_ymd'], '%Y-%m-%d'))
@@ -1157,11 +1157,11 @@ class SellsyOpportunity:
         if (code == 'parrainage-code-parrain'):
           self.refereeCode = field['textval']
         if (code == 'pack-depannage'):
-          self.packDepannage = field['numericval']
+          self.packDepannage = int(field['numericval'])
         if (code == 'pro-nb-sims'):
-          self.proNbSims = field['numericval']
+          self.proNbSims = int(field['numericval'])
         if (code == 'pro-nb-porta'):
-          self.proNbPorta = field['numericval']
+          self.proNbPorta = int(field['numericval'])
         if (code == 'pro-date-engagement' and 'formatted_ymd' in field and field['formatted_ymd'] != ''):
           self.proDateEngagement = datetime.strptime(field['formatted_ymd'], '%Y-%m-%d').astimezone(parisTZ)
         if (code == 'pro-estim-conso'):
