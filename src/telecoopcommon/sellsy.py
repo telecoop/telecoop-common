@@ -111,6 +111,7 @@ sellsyValues = {
     'funnel_id_sims_pro': 85813,
     'step_pro_sims_inactive': 619636,
     'step_pro_sims_awaiting': 619637,
+    'step_pro_sims_activating': 620880,
     'step_pro_sims_activated': 619638,
     'step_pro_sims_suspended': 619639,
     'step_pro_sims_terminated': 619640,
@@ -215,6 +216,7 @@ sellsyValues = {
     'funnel_id_sims_pro': 0,
     'step_pro_sims_inactive': 0,
     'step_pro_sims_awaiting': 0,
+    'step_pro_sims_activating': 0,
     'step_pro_sims_activated': 0,
     'step_pro_sims_suspended': 0,
     'step_pro_sims_terminated': 0,
@@ -320,6 +322,7 @@ class TcSellsyConnector:
     self.funnelIdSimsPro = sellsyValues[self.env]['funnel_id_sims_pro']
     self.stepProSimsInactive = sellsyValues[self.env]['step_pro_sims_inactive']
     self.stepProSimsAwaiting = sellsyValues[self.env]['step_pro_sims_awaiting']
+    self.stepProSimActivating = sellsyValues[self.env]['step_pro_sims_activating']
     self.stepProSimsActivated = sellsyValues[self.env]['step_pro_sims_activated']
     self.stepProSimsSuspended = sellsyValues[self.env]['step_pro_sims_suspended']
     self.stepProSimsTerminated = sellsyValues[self.env]['step_pro_sims_terminated']
@@ -945,7 +948,8 @@ class SellsyClient:
 
     actif = cli.get('actif')
     self.creationDate = parisTZ.localize(datetime.fromisoformat(cli['joindate']))
-    self.conversionToClientDate = parisTZ.localize(datetime.fromisoformat(cli['dateTransformProspect']))
+    if cli['dateTransformProspect'] is not None:
+      self.conversionToClientDate = parisTZ.localize(datetime.fromisoformat(cli['dateTransformProspect']))
     self.actif = actif == 'Y' if actif else None
     self.reference = cli['ident']
     self.type = cli['type']
@@ -1061,6 +1065,18 @@ class SellsyOpportunity:
     self.promoCode = None
     self.refereeCode = None
     self.packDepannage = None
+    self.proNbSims = None
+    self.proNbPorta = None
+    self.proDateEngagement = None
+    self.proEstimConso = None
+    self.proComment = None
+    self.proNomUtilisateur = None
+    self.proMailUtilisateur = None
+    self.proPalierSuspension = None
+    self.proAppelsInternationaux = None
+    self.proDonneesMobiles = None
+    self.proAchatContenu = None
+    self.proAchatsSurtaxes = None
 
     self.plans = sellsyValues[self.env]['plans']
 
@@ -1173,9 +1189,9 @@ class SellsyOpportunity:
         if (code == 'pro-mail-utilisateur'):
           self.proMailUtilisateur = field['textval']
         if (code == 'pro-palier-suspension'):
-          self.proPalierSuspension = field['formatted_value']
+          self.proPalierSuspension = int(field['formatted_value'])
         if (code == 'pro-appels-internationaux'):
-          self.proAppelInternationaux = field['formatted_value']
+          self.proAppelsInternationaux = field['formatted_value']
         if (code == 'pro-donnees-mobiles'):
           self.proDonneesMobiles = field['formatted_value']
         if (code == 'pro-achats-contenu'):
@@ -1188,9 +1204,11 @@ class SellsyOpportunity:
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params={'oid': self.id, 'stepid': stepId})
+    self.steps[stepId] = datetime.now().astimezone(pytz.timezone('Europe/Paris'))
 
   def updateStatus(self, status, connector):
     connector.api(method='Opportunities.updateStatus', params={'id': self.id, 'status': status})
+    self.status = status
 
   def isPorta(self):
     return (self.rio is not None and self.rio != 'N/A')
@@ -1290,13 +1308,14 @@ class SellsyMemberOpportunity:
   def getOpportunities(cls, sellsyConnector, logger,
                        startDate=None, search=None, limit=None, searchParams=None, paymentMedium=None):
     result = []
+    sc = sellsyConnector
     params = {
       'pagination': {
         'nbperpage': 1000,
         'pagenum': 1
       },
       'search': {
-        'funnelid': sellsyConnector.funnelIdMembership
+        'funnelid': sc.funnelIdMembership
       }
     }
     if startDate is not None:
@@ -1305,7 +1324,7 @@ class SellsyMemberOpportunity:
       for k, v in searchParams.items():
         params['search'][k] = v
 
-    opportunities = sellsyConnector.api(method='Opportunities.getList', params=params)
+    opportunities = sc.api(method='Opportunities.getList', params=params)
     infos = opportunities["infos"]
     nbPages = infos["nbpages"]
     currentPage = 1
@@ -1321,7 +1340,7 @@ class SellsyMemberOpportunity:
       currentPage += 1
       if (infos["pagenum"] <= nbPages):
         params['pagination']['pagenum'] = currentPage
-        opportunities = sellsyConnector.api(method="Opportunities.getList", params=params)
+        opportunities = sc.api(method="Opportunities.getList", params=params)
         infos = opportunities["infos"]
 
     return result
