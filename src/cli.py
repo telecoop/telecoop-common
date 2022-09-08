@@ -157,6 +157,7 @@ class Runner():
       clientId = self.getArg("Client ID")
       funnel = self.getArg("Funnel")
       step = self.getArg("Step")
+      msisdn = self.getArg("Msisdn")
       env = 'PROD' if self.env == 'PROD' else 'DEV'
       sc = self.getSellsyConnector()
       values = {
@@ -173,6 +174,7 @@ class Runner():
           'pack-depannage': 1,
           'abo-telecommown': 'Y',
           'date-activation-sim-souhaitee': datetime.now(pytz.utc).timestamp(),
+          'numerotelecoop': msisdn,
         },
       }
       print(values)
