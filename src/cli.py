@@ -7,7 +7,7 @@ import json
 import pytz
 from datetime import datetime, date
 
-from telecoopcommon.sellsy import TcSellsyConnector, SellsyOpportunity, sellsyValues, SellsyInvoice
+from telecoopcommon.sellsy import TcSellsyConnector, SellsyClient, SellsyOpportunity, sellsyValues, SellsyInvoice
 from telecoopcommon.sellsy import SellsyMemberOpportunity
 from telecoopcommon.telecoop import Connector as TcConnector
 from telecoopcommon.bazile import Connector as BazileConnector
@@ -25,13 +25,13 @@ def cmdline():
                       help='Log level of the script')
   parser.add_argument('command', metavar='COMMAND',
                       choices=[
-                        'create-opportunity',
                         'get-opportunity',
                         'get-client',
                         'get-client-from-ref',
                         'get-clients',
                         'get-opportunities-in-step',
                         'get-client-opportunities',
+                        'create-client', 'create-opportunity',
                         'get-invoice', 'get-invoices', 'update-invoice-status', 'update-invoice-paydate',
                         'create-payment', 'delete-payment',
                         'get-member-opp', 'get-member-opps',
@@ -117,21 +117,6 @@ class Runner():
     return value
 
   def run(self, command):
-    if command == 'create-opportunity':
-      clientId = self.getArg('Client id')
-      ref = self.getArg('Reference')
-      name = self.getArg('Name')
-      sc = self.getSellsyConnector()
-      data = {
-        'clientId': clientId,
-        'reference': ref,
-        'name': name,
-        'funnelId': sc.funnelIdSimsPro,
-        'stepId': sc.stepProSimsInactive,
-      }
-      o = SellsyOpportunity.create(sc, data)
-      print(o)
-
     if (command == 'get-opportunity'):
       id = self.getArg('Opportunity id')
       sellsyConnector = self.getSellsyConnector()
@@ -166,6 +151,34 @@ class Runner():
       print(len(clients))
       print(next(iter(clients.values())))
 
+    if command == 'create-opportunity':
+      name = self.getArg("name")
+      ref = self.getArg("Reference")
+      clientId = self.getArg("Client ID")
+      funnel = self.getArg("Funnel")
+      step = self.getArg("Step")
+      env = 'PROD' if self.env == 'PROD' else 'DEV'
+      sc = self.getSellsyConnector()
+      values = {
+        'name': name,
+        'ident': ref,
+        'linkedtype': 'third',
+        'linkedid': clientId,
+        'sourceid': sc.opportunitySourceInterne,
+        'funnelid': sellsyValues[env][funnel],
+        'stepid': sellsyValues[env][step],
+        'customFields': {
+          'nsce': '12345',
+          'forfait': 'Sobriété',
+          'pack-depannage': 1,
+          'abo-telecommown': 'Y',
+          'date-activation-sim-souhaitee': datetime.now(pytz.utc).timestamp(),
+        },
+      }
+      print(values)
+      opp = SellsyOpportunity.create(values, sc)
+      print(opp)
+
     if (command == 'get-opportunities-in-step'):
       step = self.getArg("Step")
       startDate = None
@@ -189,6 +202,35 @@ class Runner():
       clientId = self.getArg('Client id')
       opps = self.getSellsyConnector().getClientOpportunities(clientId)
       print(opps)
+
+    if command == 'create-client':
+      name = self.getArg("name")
+      ref = self.getArg("Reference")
+      clientType = self.getArg("Type")
+      sc = self.getSellsyConnector()
+      values = {'name': name, 'ident': ref, 'type': clientType}
+      if clientType == 'person':
+        values['contact'] = {
+          'name': 'GEOFFROY',
+          'forename': 'Pierre',
+          'mobile': '0610658293',
+          'civil': 'man'
+        }
+      values['address'] = {
+        'name': 'facturation',
+        'part1': '28 rue Jean Bras',
+        'zip': '35200',
+        'town': 'Rennes',
+        'countrycode': 'FR'
+      }
+      values['customFields'] = {
+        'facturationmanuelle': 'automatique',
+        'telecommown-date-debut': datetime.now(pytz.utc).timestamp(),
+        'mean-messages-sent': '10',
+        'phone-model': 'fairphone 4',
+      }
+      cli = SellsyClient.create(values, sc)
+      print(cli)
 
     if (command == 'get-invoice'):
       invoiceId = self.getArg('Invoice id')

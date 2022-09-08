@@ -491,10 +491,10 @@ class TcSellsyConnector:
       'statut-client-abo-mobile':   {'code': 'statut-client-abo-mobile', 'textval': ''},
       'parrainage-code':            {'code': 'parrainage-code', 'textval': ''},
       'parrainage-lien':            {'code': 'parrainage-lien', 'textval': ''},
-      'parrainage-code-nb-use':     {'code': 'parrainage-code-nb-use', 'defaultValue': ''},
-      'parrainage-nb-discount':     {'code': 'parrainage-nb-discount', 'defaultValue': ''},
+      'parrainage-code-nb-use':     {'code': 'parrainage-code-nb-use', 'defaultValue': '0'},
+      'parrainage-nb-discount':     {'code': 'parrainage-nb-discount', 'defaultValue': '0'},
       'parrainage-code-parrain':    {'code': 'parrainage-code-parrain', 'textval': ''},
-      'parrainage-nb-code-donated': {'code': 'parrainage-nb-code-donated', 'defaultValue': ''},
+      'parrainage-nb-code-donated': {'code': 'parrainage-nb-code-donated', 'defaultValue': '0'},
       'offre-telecommown':          {'code': 'offre-telecommown', 'timestampval': ''},
       'telecommown-date-debut':     {'code': 'telecommown-date-debut', 'timestampval': ''},
       'telecommown-date-fin':       {'code': 'telecommown-date-fin', 'timestampval': ''},
@@ -504,11 +504,11 @@ class TcSellsyConnector:
       'slimpay-mandate-status':     {'code': 'slimpay-mandate-status', 'textval': ''},
       'societaire':                 {'code': 'societaire', 'textval': ''},
       'typetelephone':              {'code': 'typetelephone', 'textval': ''},
-      'consomoyenneclient':         {'code': 'consomoyenneclient', 'defaultValue': ''},
-      'smsmoyen':                   {'code': 'smsmoyen', 'defaultValue': ''},
-      'hrappel':                    {'code': 'hrappel', 'defaultValue': ''},
+      'consomoyenneclient':         {'code': 'consomoyenneclient', 'defaultValue': '0'},
+      'smsmoyen':                   {'code': 'smsmoyen', 'defaultValue': '0'},
+      'hrappel':                    {'code': 'hrappel', 'defaultValue': '0'},
       'neufreconditionne':          {'code': 'neufreconditionne', 'formatted_value': ''},
-      'achattelephone':             {'code': 'achattelephone', 'defaultValue': ''},
+      'achattelephone':             {'code': 'achattelephone', 'defaultValue': '0'},
     }
     # Name + person data
     if (cli['client']['type'] == 'person'):
@@ -549,7 +549,10 @@ class TcSellsyConnector:
           elif (code in ["facture-unique", 'abo-telecommown']):
             customFields[code]['boolval'] = (f["defaultValue"] == 'Y')
           elif (code in intFields):
-            customFields[code]['numericval'] = int(f['defaultValue'])
+            try:
+              customFields[code]['numericval'] = int(f['defaultValue'])
+            except ValueError:
+              customFields[code]['numericval'] = 0
           elif (code in dateFields and 'formatted_ymd' in f):
             customFields[code]['formatted_ymd'] = f['formatted_ymd']
     result['customfields'] = customFields.values()
@@ -680,7 +683,10 @@ class TcSellsyConnector:
           if (code in dateFields and 'formatted_ymd' in field):
             result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
           if (code in ['pack-depannage', 'pro-nb-sims', 'pro-nb-porta']):
-            result['customfields'][code]['numericval'] = int(field['defaultValue'])
+            try:
+              result['customfields'][code]['numericval'] = int(field['defaultValue'])
+            except ValueError:
+              result['customfields'][code]['numericval'] = 0
 
     return result
 
@@ -928,6 +934,44 @@ class SellsyClient:
   def __str__(self):
     return f"#{self.id} {self.reference} {self.label} {self.email} {self.status} {self.creationDate.isoformat()}"
 
+  @classmethod
+  def create(cls, values, sellsyConnector: TcSellsyConnector):
+    sc = sellsyConnector
+    if 'name' not in values:
+      raise ValueError("Client name is missing")
+    data = {'third': {}}
+    fields = [
+      'name', 'ident', 'type', 'email', 'mobile', 'joinDate', 'web', 'siret', 'siren', 'vat', 'rcs', 'apenaf', 'tags']
+    for fld in fields:
+      if fld in values:
+        data['third'][fld] = values[fld]
+    if values['type'] == 'person':
+      fields = ['name', 'forename', 'email', 'mobile', 'web', 'position', 'civil', 'birthdate']
+      contact = values['contact']
+      data['contact'] = {}
+      for fld in fields:
+        if fld in contact:
+          data['contact'][fld] = contact[fld]
+    if 'address' in values:
+      fields = ['name', 'part1', 'part2', 'part3', 'part4', 'zip', 'town', 'countrycode']
+      address = values['address']
+      data['address'] = {}
+      for fld in fields:
+        if fld in address:
+          data['address'][fld] = address[fld]
+
+    response = sc.api(method="Client.create", params=data)
+    sc.logger.debug(response)
+    clientId = response['client_id']
+    if 'customFields' in values:
+      cfIds = sellsyValues[sc.env]['custom_fields']
+      for cfName, cfValue in values['customFields'].items():
+        sc.updateCustomField('client', clientId, cfIds[cfName], cfValue)
+
+    cli = SellsyClient(clientId)
+    cli.load(sc)
+    return cli
+
   def load(self, connector):
     self.loadWithValues(connector.getClientValues(self.id))
 
@@ -1087,27 +1131,32 @@ class SellsyOpportunity:
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
 
+  @classmethod
+  def create(cls, values, sellsyConnector: TcSellsyConnector):
+    sc = sellsyConnector
+    if 'name' not in values:
+      raise ValueError("Opportunity name is missing")
+    data = {'opportunity': {}}
+    fields = ['linkedtype', 'linkedid', 'ident', 'sourceid', 'creationDate', 'name', 'funnelid', 'stepid', 'contacts']
+    for fld in fields:
+      if fld in values:
+        data['opportunity'][fld] = values[fld]
+
+    response = sc.api(method="Opportunities.create", params=data)
+    sc.logger.debug(response)
+    oppId = response
+    if 'customFields' in values:
+      cfIds = sellsyValues[sc.env]['custom_fields']
+      for cfName, cfValue in values['customFields'].items():
+        sc.updateCustomField('opportunity', oppId, cfIds[cfName], cfValue)
+
+    opp = SellsyOpportunity(oppId)
+    opp.load(sc)
+    return opp
+
   def load(self, connector):
     values = connector.getOpportunityValues(self.id)
     self.loadWithValues(values)
-
-  @classmethod
-  def create(cls, connector, data):
-    params = {
-      'opportunity': {
-        'linkedtype': 'third',
-        'linkedid': data['clientId'],
-        'ident': data['reference'],
-        'sourceid': connector.opportunitySourceInterne,
-        'name': data['name'],
-        'funnelid': data['funnelId'],
-        'stepid': data['stepId'],
-      }
-    }
-    id = connector.api(method="Opportunities.create", params=params)
-    o = cls(id)
-    o.load(connector)
-    return o
 
   def getClient(self, connector):
     if self.client is None and self.clientId is not None:
@@ -1189,7 +1238,10 @@ class SellsyOpportunity:
         if (code == 'pro-mail-utilisateur'):
           self.proMailUtilisateur = field['textval']
         if (code == 'pro-palier-suspension'):
-          self.proPalierSuspension = int(field['formatted_value'])
+          try:
+            self.proPalierSuspension = int(field['formatted_value'])
+          except ValueError:
+            self.proPalierSuspension = 150
         if (code == 'pro-appels-internationaux'):
           self.proAppelsInternationaux = field['formatted_value']
         if (code == 'pro-donnees-mobiles'):
