@@ -827,19 +827,22 @@ class TcSellsyConnector:
       'payMediumsText': invoice['paymediums_text'],
       'rows': [],
     }
-    for row in invoice['map']['rows']:
+    for row in invoice['map']['rows'].values():
+      if not isinstance(row, dict):
+        # Sellsy sends rubbish like '_xml_childtag': 'row' in the json response …
+        continue
       qt = Decimal(row['qt'])
       amount = Decimal(row['totalAmountTaxesInc'])
       if qt != 0 and amount != 0:
         result['rows'].append({
-          'item': row['item'],
+          'item': row['type'],
           'ref': row['name'],
           'label': row['notes'],
           'unitAmount': Decimal(row['unitAmountTaxesInc']),
           'quantity': qt,
           'amount': amount,
           'taxes': Decimal(row['taxAmount']),
-          'amountTaxFree': Decimal(['totalAmount']),
+          'amountTaxFree': Decimal(row['totalAmount']),
         })
 
     return result
