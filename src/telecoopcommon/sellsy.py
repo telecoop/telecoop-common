@@ -953,7 +953,7 @@ class SellsyClient:
     for fld in fields:
       if fld in values:
         data['third'][fld] = values[fld]
-    if values['type'] == 'person':
+    if 'contact' in values:
       fields = ['name', 'forename', 'email', 'mobile', 'web', 'position', 'civil', 'birthdate']
       contact = values['contact']
       data['contact'] = {}
