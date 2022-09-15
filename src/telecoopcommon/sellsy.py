@@ -571,14 +571,15 @@ class TcSellsyConnector:
     }
     clients = self.api(method='Client.getList', params=params)
     client = None
-    for id, cli in clients['result'].items():
-      if (cli['ident'] == 'CLI00001001'):
-        # Référence ayant servie de test lors de la mise en prod du parcours souscription
-        continue
+    if clients['result']:
+      for id, cli in clients['result'].items():
+        if (cli['ident'] == 'CLI00001001'):
+          # Référence ayant servie de test lors de la mise en prod du parcours souscription
+          continue
 
-      client = SellsyClient(id)
-      client.loadWithValues(cli)
-      break
+        client = SellsyClient(id)
+        client.loadWithValues(cli)
+        break
 
     return client
 
