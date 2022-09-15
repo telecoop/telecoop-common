@@ -162,12 +162,11 @@ class Runner():
       sc = self.getSellsyConnector()
       values = {
         'name': name,
-        'ident': ref,
-        'linkedtype': 'third',
-        'linkedid': clientId,
-        'sourceid': sc.opportunitySourceInterne,
-        'funnelid': sellsyValues[env][funnel],
-        'stepid': sellsyValues[env][step],
+        'reference': ref,
+        'clientId': clientId,
+        'sourceId': sc.opportunitySourceInterne,
+        'funnelId': sellsyValues[env][funnel],
+        'stepId': sellsyValues[env][step],
         'customFields': {
           'nsce': '12345',
           'forfait': 'Sobriété',

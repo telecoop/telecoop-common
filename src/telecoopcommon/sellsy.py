@@ -1144,10 +1144,23 @@ class SellsyOpportunity:
     if 'name' not in values:
       raise ValueError("Opportunity name is missing")
     data = {'opportunity': {}}
-    fields = ['linkedtype', 'linkedid', 'ident', 'sourceid', 'creationDate', 'name', 'funnelid', 'stepid', 'contacts']
-    for fld in fields:
+    fields = [
+      ('linkedtype', 'type'),
+      ('linkedid', 'clientId'),
+      ('ident', 'reference'),
+      ('sourceid', 'sourceId'),
+      ('creationDate', 'creationDate'),
+      ('name', 'name'),
+      ('funnelid', 'funnelId'),
+      ('stepid', 'stepId'),
+      ('contacts', 'contacts'),
+    ]
+    for fldSellsy, fld in fields:
       if fld in values:
-        data['opportunity'][fld] = values[fld]
+        data['opportunity'][fldSellsy] = values[fld]
+
+    if 'linkedtype' not in data['opportunity']:
+      data['opportunity']['linkedtype'] = 'third'
 
     response = sc.api(method="Opportunities.create", params=data)
     sc.logger.debug(response)
