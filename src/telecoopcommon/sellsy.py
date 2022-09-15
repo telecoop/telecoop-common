@@ -991,12 +991,13 @@ class SellsyClient:
     civility = cli.get('people_civil')
     # recherche du contact principal
     mainContactId = cli['maincontactid']
-    for contactId, contact in cli["contacts"].items():
-      if (contactId == mainContactId):
-        email = contact['email']
-        name = contact['name']
-        firstname = contact['forename']
-        civility = contact['civil']
+    if 'contacts' in cli:
+      for contactId, contact in cli["contacts"].items():
+        if (contactId == mainContactId):
+          email = contact['email']
+          name = contact['name']
+          firstname = contact['forename']
+          civility = contact['civil']
 
     actif = cli.get('actif')
     self.creationDate = parisTZ.localize(datetime.fromisoformat(cli['joindate']))

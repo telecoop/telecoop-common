@@ -168,6 +168,7 @@ class Runner():
         'funnelId': sellsyValues[env][funnel],
         'stepId': sellsyValues[env][step],
         'customFields': {
+          'pro-nb-sims': 10,
           'nsce': '12345',
           'forfait': 'Sobriété',
           'pack-depannage': 1,
