@@ -65,8 +65,8 @@ sellsyValues = {
       'nb-shares': 103581,
       'shares-amount': 104629,
       'membership-ref': 103773,
-      'membership-nb-shares': 104629,
-      'membership-amount': 144644,
+      'membership-nb-shares': 103581,
+      'membership-amount': 104629,
       'membership-payment-label': 181460,
       'membership-payment-mode': 181473,
       'membership-payment-date': 144644,
@@ -107,6 +107,8 @@ sellsyValues = {
     'step_membership_sign': 545658,
     'step_membership_paid': 447902,
     'step_membership_active': 545659,
+    'funnel_id_membership2': 81505,
+    'step_membership2_validated': 587185,
     'funnel_id_dev_pro': 85811,
     'step_pro_new': 619617,
     'step_pro_apt_planned': 619618,
@@ -182,8 +184,8 @@ sellsyValues = {
       'nb-shares': 103223,
       'shares-amount': 104627,
       'membership-ref': 103406,
-      'membership-nb-shares': 104627,
-      'membership-amount': 104863,
+      'membership-nb-shares': 103223,
+      'membership-amount': 104627,
       'membership-payment-label': 182000,
       'membership-payment-mode': 182001,
       'membership-payment-date': 104863,
@@ -224,6 +226,8 @@ sellsyValues = {
     'step_membership_sign': 452137,
     'step_membership_paid': 434066,
     'step_membership_active': 452138,
+    'funnel_id_membership2': 81505,
+    'step_membership2_validated': 587185,
     'funnel_id_dev_pro': 0,
     'step_pro_new': 0,
     'step_pro_apt_planned': 0,
@@ -328,6 +332,9 @@ class TcSellsyConnector:
     self.stepMembershipSign = sellsyValues[self.env]['step_membership_sign']
     self.stepMembershipPaid = sellsyValues[self.env]['step_membership_paid']
     self.stepMembershipActive = sellsyValues[self.env]['step_membership_active']
+
+    self.funnelIdMembership2 = sellsyValues[self.env]['funnel_id_membership2']
+    self.stepMembership2Validated = sellsyValues[self.evn]['step_membership2_validated']
 
     self.funnelIdDevPro = sellsyValues[self.env]['funnel_id_dev_pro']
     self.stepProNew = sellsyValues[self.env]['step_pro_new']
