@@ -216,7 +216,6 @@ class Runner():
           'name': 'GEOFFROY',
           'forename': 'Pierre',
           'mobile': '0610658293',
-          'civil': 'man'
         }
       values['address'] = {
         'name': 'facturation',
