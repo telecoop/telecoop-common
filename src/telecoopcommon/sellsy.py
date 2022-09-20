@@ -1176,6 +1176,7 @@ class SellsyOpportunity:
       ('funnelid', 'funnelId'),
       ('stepid', 'stepId'),
       ('contacts', 'contacts'),
+      ('potential', 'amount'),
     ]
     for fldSellsy, fld in fields:
       if fld in values:
