@@ -1239,7 +1239,7 @@ class SellsyOpportunity:
           # BUT there's a bug in Sellsy in DEV env where custom field 'forfait' is unknown and unsettable. O joy.
           if self.env == 'DEV' and 'formatted_value' in field:
             self.plan = field['formatted_value']
-          elif self.env == 'PROD':
+          elif self.env == 'PROD' and 'formatted_value' in field:
             self.plan = field['formatted_value']
         if (code == 'nsce'):
           self.nsce = field['textval']
