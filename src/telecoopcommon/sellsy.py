@@ -334,7 +334,7 @@ class TcSellsyConnector:
     self.stepMembershipActive = sellsyValues[self.env]['step_membership_active']
 
     self.funnelIdMembership2 = sellsyValues[self.env]['funnel_id_membership2']
-    self.stepMembership2Validated = sellsyValues[self.evn]['step_membership2_validated']
+    self.stepMembership2Validated = sellsyValues[self.env]['step_membership2_validated']
 
     self.funnelIdDevPro = sellsyValues[self.env]['funnel_id_dev_pro']
     self.stepProNew = sellsyValues[self.env]['step_pro_new']
