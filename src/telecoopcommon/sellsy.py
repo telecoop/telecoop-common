@@ -227,7 +227,7 @@ sellsyValues = {
     'step_membership_paid': 434066,
     'step_membership_active': 452138,
     'funnel_id_membership2': 85419,
-    'step_membership2_validated': 616765,
+    'step_membership2_validated': 616766,
     'funnel_id_dev_pro': 0,
     'step_pro_new': 0,
     'step_pro_apt_planned': 0,
@@ -603,10 +603,10 @@ class TcSellsyConnector:
         if (cli['ident'] == 'CLI00001001'):
           # Référence ayant servie de test lors de la mise en prod du parcours souscription
           continue
-
-        client = SellsyClient(id)
-        client.loadWithValues(cli)
-        break
+        if cli['ident'] == ref:
+          client = SellsyClient(id)
+          client.loadWithValues(cli)
+          break
 
     return client
 
