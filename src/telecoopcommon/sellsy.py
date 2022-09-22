@@ -142,8 +142,8 @@ sellsyValues = {
     'plans': {
       'Sobriété': 'PL_750',
       'Transition': 'PL_796',
-      'Sobriété Pro': 'PL_801',
-      'Transition Pro': 'PL_802',
+      'Sobriété Pro': 'PL_849',
+      'Transition Pro': 'PL_850',
     },
     'paydate_id': 3527781,
     'new_client_mail_template_id': 62591,
