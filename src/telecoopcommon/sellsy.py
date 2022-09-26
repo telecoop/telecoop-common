@@ -251,14 +251,21 @@ sellsyValues = {
   }
 }
 
+
 def step_name_from_id(step_id: int):
+  """Get step name from step id
+  """
   env = 'PROD' if os.getenv('ENV') == 'PROD' else 'DEV'
+  result = None
   for key, value in sellsyValues[env].items():
     if value == step_id:
-      return key
+      result = key
+  return result
+
 
 class TcSellsyError(Exception):
   pass
+
 
 class TcSellsyConnector:
   def __init__(self, conf, logger):
@@ -309,6 +316,14 @@ class TcSellsyConnector:
     self.cfidProDonneesMobiles = customFields['pro-donnees-mobiles']
     self.cfidProAchatsContenu = customFields['pro-achats-contenu']
     self.cfidProAchatsSurtaxes = customFields['pro-achats-surtaxes']
+    self.cfidMembershipRef = customFields['membership-ref']
+    self.cfidMembershipNbShares = customFields['membership-nb-shares']
+    self.cfidMembershipAmount = customFields['membership-amount']
+    self.cfidMembershipPaymentMode = customFields['membership-payment-mode']
+    self.cfidMembershipPaymentLabel = customFields['membership-payment-label']
+    self.cfidMembershipPaymentDate = customFields['membership-payment-date']
+    self.cfidMembershipAcceptedDate = customFields['membership-accepted-date']
+    self.cfidMembershipCategory = customFields['membership-category']
 
     self.opportunitySourceInterne = sellsyValues[self.env]['opportunity_source_interne']
     self.opportunitySourceSiteWeb = sellsyValues[self.env]['opportunity_source_site_web']
@@ -654,7 +669,8 @@ class TcSellsyConnector:
           c.loadWithValues(client)
           result[id] = c
         else:
-          self.logger.warning(f"Client #{id} has no reference")
+          if client.status != 'Non abonné':
+            self.logger.warning(f"Client #{id} has no reference")
 
       currentPage += 1
       if (infos["pagenum"] <= nbPages):
@@ -759,18 +775,30 @@ class TcSellsyConnector:
         'montantparts': {'code': 'montantparts', 'defaultValue': ''},
         'dateversementsocietariat': {'code': 'dateversementsocietariat', 'timestamptval': ''},
         'dateacceptationsocietariat': {'code': 'dateacceptationsocietariat', 'timestamptval': ''},
+        'moyen-de-paiement': {'code': 'moyen-de-paiement', 'textval': ''},
+        'reference-paiement': {'code': 'reference-paiement', 'textval': ''},
+        'categorie-societaire': {'code': 'categorie-societaire', 'textval': ''},
+        'societaire': {'code': 'societaire', 'textval': ''},
       }
     }
 
     for ln in opp['customFields']:
       fields = ln['list'].values() if isinstance(ln['list'], dict) else ln['list']
       for field in fields:
-        if ('code' in field):
+        if 'code' in field:
           code = field['code']
-          if (code in ['dateversementsocietariat', 'dateacceptationsocietariat'] and 'formatted_ymd' in field):
+          if code in ['dateversementsocietariat', 'dateacceptationsocietariat'] and 'formatted_ymd' in field:
             result['customfields'][code]['formatted_ymd'] = field['formatted_ymd']
-          if (code in ['partssocialessouhaite', 'montantparts']):
+          if code in ['partssocialessouhaite', 'montantparts']:
             result['customfields'][code]['numericval'] = int(field['defaultValue'])
+          if code == 'moyen-de-paiement':
+            result['customFields'][code]['moyen-de-paiement'] = field['defaultValue']
+          if code == 'reference-paiement':
+            result['customFields'][code]['reference-paiement'] = field['defaultValue']
+          if code == 'societaire':
+            result['customFields'][code]['societaire'] = field['defaultValue']
+          if code == 'categorie-societaire':
+            result['customFields'][code]['categorie-societaire'] = field['defaultValue']
 
     return result
 
@@ -801,7 +829,7 @@ class TcSellsyConnector:
     nbPages = infos["nbpages"]
     currentPage = 1
     while (currentPage <= nbPages):
-      self.logger.info("Processing page {}/{}".format(currentPage, nbPages))
+      self.logger.info(f"Processing page {currentPage}/{nbPages}")
       for id, opp in opportunities['result'].items():
         o = SellsyOpportunity(id)
         o.loadWithValues(opp)
@@ -823,10 +851,13 @@ class TcSellsyConnector:
     opportunities = self.api(method="Opportunities.getList", params=params)
     if len(opportunities['result']) == 0:
       return result
-    for opp in opportunities['result'].values():
-      o = SellsyOpportunity(opp['id'])
-      o.loadWithValues(opp)
-      result.append(o)
+    for opportunity in opportunities['result'].values():
+      if opportunity['funnelid'] == str(self.funnelIdMembership):
+        opp = SellsyMemberOpportunity(opportunity['id'])
+      else:
+        opp = SellsyOpportunity(opportunity['id'])
+      opp.loadWithValues(opp)
+      result.append(opp)
     return result
 
   def getOpportunityFromClientAndMsisdn(self, clientId, msisdn):
@@ -834,8 +865,7 @@ class TcSellsyConnector:
     for opp in opportunities:
       if opp.msisdn == msisdn:
         return opp
-    else:
-      raise LookupError(f"Could not opportunity with msisdn {msisdn} for client #{clientId}")
+    raise LookupError(f"Could not opportunity with msisdn {msisdn} for client #{clientId}")
 
   def getServices(self):
     params = {
@@ -1333,7 +1363,7 @@ class SellsyOpportunity:
     self.status = status
 
   def isPorta(self):
-    return (self.rio is not None and self.rio != 'N/A')
+    return (self.rio is not None and self.rio != 'N/A' and self.rio != '')
 
   def isOldBazileLine(self):
     return (self.rio is not None and self.rio[0:2] == '56')
@@ -1358,6 +1388,7 @@ class SellsyOpportunity:
       state = 'terminated'
     return state
 
+
 class SellsyMemberOpportunity:
   def __init__(self, id):
     env = os.getenv('ENV', 'LOCAL')
@@ -1373,10 +1404,14 @@ class SellsyMemberOpportunity:
     self.stepStart = None
     self.steps = None
     self.status = None
+    self.reference = None
+    self.category = None
     self.nbShares = None
     self.sharesAmount = None
     self.paymentDate = None
     self.acceptedDate = None
+    self.paymentLabel = None
+    self.paymentMode = None
 
   @property
   def stepName(self):
@@ -1408,8 +1443,8 @@ class SellsyMemberOpportunity:
     self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
     self.steps = {opp['stepid']: self.stepStart}
 
-    for fieldId, field in opp['customfields'].items():
-      if ('code' in field):
+    for _, field in opp['customfields'].items():
+      if 'code' in field:
         code = field['code']
         if code == 'partssocialessouhaite':
           self.nbShares = field['numericval']
@@ -1419,6 +1454,14 @@ class SellsyMemberOpportunity:
           self.paymentDate = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
         elif code == 'dateacceptationsocietariat' and 'formatted_ymd' in field and field['formatted_ymd'] != '':
           self.acceptedDate = parisTZ.localize(datetime.strptime(field['formatted_ymd'], '%Y-%m-%d'))
+        elif code == 'moyen-de-paiement':
+          self.paymentMode = field['textval']
+        elif code == 'reference-paiement':
+          self.paymentLabel = field['textval']
+        elif code == 'societaire':
+          self.reference = field['textval']
+        elif code == 'categorie-societaire':
+          self.category = field['textval']
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params={'oid': self.id, 'stepid': stepId})
