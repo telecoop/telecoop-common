@@ -1110,7 +1110,7 @@ class SellsyClient:
       elif code == 'societaire':
         self.member = f['textval']
       elif code == 'categorie-societaire':
-        self.category = f['textval']
+        self.memberCategory = f['textval']
       elif code == 'typetelephone':
         self.phoneModel = f['textval']
       elif code == 'consomoyenneclient':
