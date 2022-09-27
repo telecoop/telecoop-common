@@ -851,7 +851,7 @@ class TcSellsyConnector:
         opp = SellsyMemberOpportunity(opportunity['id'])
       else:
         opp = SellsyOpportunity(opportunity['id'])
-      opp.loadWithValues(opp)
+      opp.loadWithValues(opportunity)
       result.append(opp)
     return result
 
