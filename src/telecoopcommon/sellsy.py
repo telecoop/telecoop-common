@@ -549,6 +549,7 @@ class TcSellsyConnector:
       'code-promo':                 {'code': 'code-promo', 'textval': ''},
       'slimpay-mandate-status':     {'code': 'slimpay-mandate-status', 'textval': ''},
       'societaire':                 {'code': 'societaire', 'textval': ''},
+      'categorie-societaire':       {'code': 'categorie-societaire', 'textval': ''},
       'typetelephone':              {'code': 'typetelephone', 'textval': ''},
       'consomoyenneclient':         {'code': 'consomoyenneclient', 'defaultValue': '0'},
       'smsmoyen':                   {'code': 'smsmoyen', 'defaultValue': '0'},
@@ -582,7 +583,7 @@ class TcSellsyConnector:
         if ('code' in f):
           code = f['code']
           textFields = [
-            "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'typetelephone',
+            "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'categorie-societaire', 'typetelephone',
             'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status']
           selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne']
           dateFields = ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin']
@@ -995,6 +996,7 @@ class SellsyClient:
     self.autoValidation = None
     self.status = None
     self.member = None
+    self.memberCategory = None
     self.phoneModel = None
     self.meanDataUsage = None
     self.meanMessagesSent = None
@@ -1092,14 +1094,10 @@ class SellsyClient:
     self.web = cli.get('web')
     self.msisdn = cli['mobile']
     self.mainContactId = mainContactId
-    self.lines = [{
-      'msisdn': cli['mobile'].replace('+33', '0')
-    }]
+    self.lines = []
     for f in cli["customfields"]:
       code = f["code"]
-      if (code == "refbazile"):
-        self.lines[0]['bazileNum'] = f["textval"]
-      elif (code == "facturationmanuelle"):
+      if (code == "facturationmanuelle"):
         self.autoValidation = (f["formatted_value"] in ['', 'automatique'])
       elif (code == "facture-unique"):
         if (isinstance(f["boolval"], bool)):
@@ -1111,6 +1109,8 @@ class SellsyClient:
 
       elif code == 'societaire':
         self.member = f['textval']
+      elif code == 'categorie-societaire':
+        self.category = f['textval']
       elif code == 'typetelephone':
         self.phoneModel = f['textval']
       elif code == 'consomoyenneclient':
@@ -1404,8 +1404,6 @@ class SellsyMemberOpportunity:
     self.stepStart = None
     self.steps = None
     self.status = None
-    self.reference = None
-    self.category = None
     self.nbShares = None
     self.sharesAmount = None
     self.paymentDate = None
@@ -1458,10 +1456,6 @@ class SellsyMemberOpportunity:
           self.paymentMode = field['textval']
         elif code == 'reference-paiement':
           self.paymentLabel = field['textval']
-        elif code == 'societaire':
-          self.reference = field['textval']
-        elif code == 'categorie-societaire':
-          self.category = field['textval']
 
   def updateStep(self, stepId, connector):
     connector.api(method="Opportunities.updateStep", params={'oid': self.id, 'stepid': stepId})
