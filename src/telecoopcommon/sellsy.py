@@ -549,7 +549,7 @@ class TcSellsyConnector:
       'code-promo':                 {'code': 'code-promo', 'textval': ''},
       'slimpay-mandate-status':     {'code': 'slimpay-mandate-status', 'textval': ''},
       'societaire':                 {'code': 'societaire', 'textval': ''},
-      'categorie-societaire':       {'code': 'categorie-societaire', 'textval': ''},
+      'categorie-societaire':       {'code': 'categorie-societaire', 'formatted_value': ''},
       'typetelephone':              {'code': 'typetelephone', 'textval': ''},
       'consomoyenneclient':         {'code': 'consomoyenneclient', 'defaultValue': '0'},
       'smsmoyen':                   {'code': 'smsmoyen', 'defaultValue': '0'},
@@ -583,9 +583,9 @@ class TcSellsyConnector:
         if ('code' in f):
           code = f['code']
           textFields = [
-            "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'categorie-societaire', 'typetelephone',
+            "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'typetelephone',
             'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status']
-          selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne']
+          selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne', 'categorie_societaire']
           dateFields = ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin']
           intFields = ['parrainage-nb-discount', 'parrainage-code-nb-use', 'parrainage-nb-code-donated',
                        'consomoyenneclient', 'smsmoyen', 'hrappel', 'achattelephone']
@@ -778,8 +778,6 @@ class TcSellsyConnector:
         'dateacceptationsocietariat': {'code': 'dateacceptationsocietariat', 'timestamptval': ''},
         'moyen-de-paiement': {'code': 'moyen-de-paiement', 'textval': ''},
         'reference-paiement': {'code': 'reference-paiement', 'textval': ''},
-        'categorie-societaire': {'code': 'categorie-societaire', 'textval': ''},
-        'societaire': {'code': 'societaire', 'textval': ''},
       }
     }
 
@@ -796,10 +794,6 @@ class TcSellsyConnector:
             result['customFields'][code]['moyen-de-paiement'] = field['defaultValue']
           if code == 'reference-paiement':
             result['customFields'][code]['reference-paiement'] = field['defaultValue']
-          if code == 'societaire':
-            result['customFields'][code]['societaire'] = field['defaultValue']
-          if code == 'categorie-societaire':
-            result['customFields'][code]['categorie-societaire'] = field['defaultValue']
 
     return result
 
@@ -1110,7 +1104,7 @@ class SellsyClient:
       elif code == 'societaire':
         self.member = f['textval']
       elif code == 'categorie-societaire':
-        self.memberCategory = f['textval']
+        self.memberCategory = f['formatted_value']
       elif code == 'typetelephone':
         self.phoneModel = f['textval']
       elif code == 'consomoyenneclient':

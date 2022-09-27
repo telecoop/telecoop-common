@@ -145,6 +145,7 @@ class Runner():
       ref = self.getArg('Client ref')
       client = self.getSellsyConnector().getClientFromRef(ref)
       print(client)
+      print(client.memberCategory)
 
     if (command == 'get-clients'):
       clients = self.getSellsyConnector().getClients()
