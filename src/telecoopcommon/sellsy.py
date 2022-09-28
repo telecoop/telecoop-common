@@ -694,6 +694,7 @@ class TcSellsyConnector:
       'relationType': opp['relationType'],
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
+      'sourceid': opp['sourceid'],
       'created': opp['created'],
       'statusLabel': opp['statusLabel'],
       'stepEnterDate': opp['stepEnterDate'],
@@ -767,6 +768,7 @@ class TcSellsyConnector:
       'relationType': opp['relationType'],
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
+      'sourceid': opp['sourceid'],
       'created': opp['created'],
       'statusLabel': opp['statusLabel'],
       'stepEnterDate': opp['stepEnterDate'],
@@ -1169,6 +1171,7 @@ class SellsyOpportunity:
     self.client = None
     self.prospectId = None
     self.funnelId = None
+    self.sourceId = None
     self.creationDate = None
     self.stepId = None
     self.stepStart = None
@@ -1267,6 +1270,7 @@ class SellsyOpportunity:
     self.reference = opp['ident']
     self.name = opp['name']
     self.funnelId = opp['funnelid']
+    self.sourceId = opp['sourceid']
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
@@ -1393,6 +1397,7 @@ class SellsyMemberOpportunity:
     self.client = None
     self.prospectId = None
     self.funnelId = None
+    self.sourceId = None
     self.creationDate = None
     self.stepId = None
     self.stepStart = None
@@ -1429,6 +1434,7 @@ class SellsyMemberOpportunity:
     else:
       self.prospectId = opp['linkedid']
     self.funnelId = opp['funnelid']
+    self.sourceId = opp['sourceid']
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
