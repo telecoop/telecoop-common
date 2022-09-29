@@ -686,6 +686,26 @@ class TcSellsyConnector:
     o.loadWithValues(self.getOpportunityValues)
     return o
 
+  @classmethod
+  def getSourceIdFromValue(cls, source):
+    env = os.getenv('ENV', 'LOCAL')
+    env = 'PROD' if env == 'PROD' else 'DEV'
+    sourceId = None
+    if source == 'Site web':
+      sourceId = sellsyValues[env]['opportunity_source_site_web']
+    if source == 'Interne':
+      sourceId = sellsyValues[env]['opportunity_source_interne']
+    if source == 'Tel/Mail':
+      sourceId = sellsyValues[env]['opportunity_source_tel_mail']
+    if source == 'Espace client':
+      sourceId = sellsyValues[env]['opportunity_source_espace_client']
+    if source == 'Lita':
+      sourceId = sellsyValues[env]['opportunity_source_lita']
+    if source == 'Registre Excel':
+      sourceId = sellsyValues[env]['opportunity_source_registre_excel']
+
+    return sourceId
+
   def getOpportunityValues(self, id):
     opp = self.api(method="Opportunities.getOne", params={'id': id})
     print(f"Source : {opp['source']}")
@@ -1272,7 +1292,7 @@ class SellsyOpportunity:
     self.reference = opp['ident']
     self.name = opp['name']
     self.funnelId = opp['funnelid']
-    self.sourceId = opp['sourceid']
+    self.sourceId = opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source'])
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
@@ -1438,7 +1458,7 @@ class SellsyMemberOpportunity:
       self.prospectId = opp['linkedid']
     self.reference = opp['ident']
     self.funnelId = opp['funnelid']
-    self.sourceId = opp['sourceid']
+    self.sourceId = opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source'])
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
