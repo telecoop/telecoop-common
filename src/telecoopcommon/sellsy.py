@@ -1416,6 +1416,7 @@ class SellsyMemberOpportunity:
 
     self.id = id
     self.reference = None
+    self.name = None
     self.clientId = None
     self.client = None
     self.prospectId = None
@@ -1457,6 +1458,7 @@ class SellsyMemberOpportunity:
     else:
       self.prospectId = opp['linkedid']
     self.reference = opp['ident']
+    self.name = opp['name']
     self.funnelId = opp['funnelid']
     self.sourceId = opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source'])
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
