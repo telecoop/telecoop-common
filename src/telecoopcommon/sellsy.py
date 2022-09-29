@@ -688,13 +688,14 @@ class TcSellsyConnector:
 
   def getOpportunityValues(self, id):
     opp = self.api(method="Opportunities.getOne", params={'id': id})
+    print(f"Source : {opp['source']}")
     result = {
       'ident': opp['ident'],
       'name': opp['name'],
       'relationType': opp['relationType'],
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
-      'sourceid': opp['sourceid'],
+      'sourceid': opp['source'],
       'created': opp['created'],
       'statusLabel': opp['statusLabel'],
       'stepEnterDate': opp['stepEnterDate'],
@@ -768,7 +769,7 @@ class TcSellsyConnector:
       'relationType': opp['relationType'],
       'linkedid': opp['linkedid'],
       'funnelid': opp['funnelid'],
-      'sourceid': opp['sourceid'],
+      'sourceid': opp['source'],
       'created': opp['created'],
       'statusLabel': opp['statusLabel'],
       'stepEnterDate': opp['stepEnterDate'],

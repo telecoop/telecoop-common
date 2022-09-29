@@ -123,6 +123,7 @@ class Runner():
       o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
+      print(o.sourceId)
       print(repr(o.proNbSims))
       print(f"{o.stepId} {o.getSimStateFromStep(sellsyConnector)}")
       print(o.getSimStateFromStep(sellsyConnector))
