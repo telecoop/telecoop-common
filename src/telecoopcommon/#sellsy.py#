@@ -1189,6 +1189,7 @@ class SellsyOpportunity:
     self.telecommownStart = None
     self.telecommownEnd = None
     self.telecommownAbo = None
+    self.telecommownOrigin = None
     self.promoCode = None
     self.refereeCode = None
     self.packDepannage = None
