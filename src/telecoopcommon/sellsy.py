@@ -84,6 +84,8 @@ sellsyValues = {
       'pro-donnees-mobiles': 181306,
       'pro-achats-contenu': 181291,
       'pro-achats-surtaxes': 181289,
+      'slimpay-date-prelevement': 189294,
+      'slimpay-lien-prelevement': 189295,
     },
     'opportunity_source_interne': 119862,
     'opportunity_source_site_web': 119864,
@@ -203,6 +205,8 @@ sellsyValues = {
       'pro-donnees-mobiles': 183866,
       'pro-achats-contenu': 183874,
       'pro-achats-surtaxes': 183873,
+      'slimpay-date-prelevement': 189309,
+      'slimpay-lien-prelevement': 189312,
     },
     'opportunity_source_interne': 115933,
     'opportunity_source_site_web': 115935,
@@ -324,6 +328,9 @@ class TcSellsyConnector:
     self.cfidMembershipPaymentDate = customFields['membership-payment-date']
     self.cfidMembershipAcceptedDate = customFields['membership-accepted-date']
     self.cfidMembershipCategory = customFields['membership-category']
+
+    self.cfidSlimpayPaymentDate = customFields['slimpay-date-prelevement']
+    self.cfidSlimpayPaymentLink = customFields['slimpay-lien-prelevement']
 
     self.opportunitySourceInterne = sellsyValues[self.env]['opportunity_source_interne']
     self.opportunitySourceSiteWeb = sellsyValues[self.env]['opportunity_source_site_web']
@@ -473,7 +480,7 @@ class TcSellsyConnector:
     return response
 
   def updateCustomField(self, entity, entityId, cfid, value):
-    knownEntities = ['client', 'opportunity']
+    knownEntities = ['client', 'opportunity', 'invoice']
     if (entity not in knownEntities):
       raise ValueError(f"Unknown entity {entity}, should be in {knownEntities}")
     params = {
@@ -585,7 +592,7 @@ class TcSellsyConnector:
           textFields = [
             "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'typetelephone',
             'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status']
-          selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne', 'categorie_societaire']
+          selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne', 'categorie-societaire']
           dateFields = ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin']
           intFields = ['parrainage-nb-discount', 'parrainage-code-nb-use', 'parrainage-nb-code-donated',
                        'consomoyenneclient', 'smsmoyen', 'hrappel', 'achattelephone']
