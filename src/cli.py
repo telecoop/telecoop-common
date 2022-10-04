@@ -368,8 +368,11 @@ class Runner():
       print(json.dumps(bazileConnector.getSimplePortaHistory(nsce), indent=2, default=str))
 
     if (command == 'script'):
-      import scripts
-      scripts.initOldTeleCommownClients(self.getSellsyConnector(), self.logger)
+      opps = SellsyMemberOpportunity.getOpportunities(self.getSellsyConnector(), self.logger)
+      print(len(opps))
+      print(opps[0])
+      # import scripts
+      # scripts.initOldTeleCommownClients(self.getSellsyConnector(), self.logger)
 
 def main():
   args = cmdline()

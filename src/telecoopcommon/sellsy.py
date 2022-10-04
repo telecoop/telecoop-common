@@ -110,7 +110,12 @@ sellsyValues = {
     'step_membership_paid': 447902,
     'step_membership_active': 545659,
     'funnel_id_membership2': 81505,
+    'step_membership2_created': 587181,
+    'step_membership2_sign': 587182,
+    'step_membership2_paid': 587183,
+    'step_membership2_verified': 587184,
     'step_membership2_validated': 587185,
+    'step_membership2_refused': 587186,
     'funnel_id_dev_pro': 85811,
     'step_pro_new': 619617,
     'step_pro_apt_planned': 619618,
@@ -231,7 +236,12 @@ sellsyValues = {
     'step_membership_paid': 434066,
     'step_membership_active': 452138,
     'funnel_id_membership2': 85419,
+    'step_membership2_created': 616762,
+    'step_membership2_sign': 616763,
+    'step_membership2_paid': 616764,
+    'step_membership2_verified': 616765,
     'step_membership2_validated': 616766,
+    'step_membership2_refused': 616767,
     'funnel_id_dev_pro': 86648,
     'step_pro_new': 625924,
     'step_pro_apt_planned': 625925,
@@ -1501,39 +1511,40 @@ class SellsyMemberOpportunity:
                        startDate=None, search=None, limit=None, searchParams=None, paymentMedium=None):
     result = []
     sc = sellsyConnector
-    params = {
-      'pagination': {
-        'nbperpage': 1000,
-        'pagenum': 1
-      },
-      'search': {
-        'funnelid': sc.funnelIdMembership
+    for funnelId in [sc.funnelIdMembership, sc.funnelIdMembership2]:
+      params = {
+        'pagination': {
+          'nbperpage': 1000,
+          'pagenum': 1
+        },
+        'search': {
+          'funnelid': funnelId
+        }
       }
-    }
-    if startDate is not None:
-      params['search']['periodecreated_start'] = startDate.timestamp()
-    if searchParams is not None:
-      for k, v in searchParams.items():
-        params['search'][k] = v
+      if startDate is not None:
+        params['search']['periodecreated_start'] = startDate.timestamp()
+      if searchParams is not None:
+        for k, v in searchParams.items():
+          params['search'][k] = v
 
-    opportunities = sc.api(method='Opportunities.getList', params=params)
-    infos = opportunities["infos"]
-    nbPages = infos["nbpages"]
-    currentPage = 1
-    while (currentPage <= nbPages):
-      logger.info("Processing page {}/{}".format(currentPage, nbPages))
-      for id, opp in opportunities['result'].items():
-        o = SellsyMemberOpportunity(id)
-        o.loadWithValues(opp)
-        result.append(o)
-        if limit is not None and limit <= len(result):
-          return result
+      opportunities = sc.api(method='Opportunities.getList', params=params)
+      infos = opportunities["infos"]
+      nbPages = infos["nbpages"]
+      currentPage = 1
+      while (currentPage <= nbPages):
+        logger.info("Processing page {}/{}".format(currentPage, nbPages))
+        for id, opp in opportunities['result'].items():
+          o = SellsyMemberOpportunity(id)
+          o.loadWithValues(opp)
+          result.append(o)
+          if limit is not None and limit <= len(result):
+            return result
 
-      currentPage += 1
-      if (infos["pagenum"] <= nbPages):
-        params['pagination']['pagenum'] = currentPage
-        opportunities = sc.api(method="Opportunities.getList", params=params)
-        infos = opportunities["infos"]
+        currentPage += 1
+        if (infos["pagenum"] <= nbPages):
+          params['pagination']['pagenum'] = currentPage
+          opportunities = sc.api(method="Opportunities.getList", params=params)
+          infos = opportunities["infos"]
 
     return result
 
