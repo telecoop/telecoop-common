@@ -672,12 +672,12 @@ class TcSellsyConnector:
           # Référence ayant servie de test lors de la mise en prod du parcours souscription
           continue
 
+        c = SellsyClient(id)
+        c.loadWithValues(client)
         if (client['ident'] is not None and client['ident'] not in ['', '-1']):
-          c = SellsyClient(id)
-          c.loadWithValues(client)
           result[id] = c
         else:
-          if client.status != 'Non abonné':
+          if c.status != 'Non abonné':
             self.logger.warning(f"Client #{id} has no reference")
 
       currentPage += 1
