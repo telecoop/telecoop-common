@@ -1024,6 +1024,7 @@ class SellsyClient:
     self.firstname = None
     self.companyName = None
     self.email = None
+    self.phoneNumber = None
     self.web = None
     self.mainContactId = None
     self.oneInvoicePerLine = None
@@ -1125,6 +1126,7 @@ class SellsyClient:
     self.civility = civility
     self.companyName = cli['name'] if self.type == 'corporation' else None
     self.email = email
+    self.phoneNumber = cli['mobile']
     self.web = cli.get('web')
     self.msisdn = cli['mobile']
     self.mainContactId = mainContactId
