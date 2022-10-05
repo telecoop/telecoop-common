@@ -107,6 +107,7 @@ sellsyValues = {
     'funnel_id_membership': 62446,
     'step_membership_asked': 446849,
     'step_membership_sign': 545658,
+    'step_membership_signed': 632765,
     'step_membership_paid': 447902,
     'step_membership_active': 545659,
     'funnel_id_membership2': 81505,
@@ -233,6 +234,7 @@ sellsyValues = {
     'funnel_id_membership': 60664,
     'step_membership_asked': 434065,
     'step_membership_sign': 452137,
+    'step_membership_signed': 632764,
     'step_membership_paid': 434066,
     'step_membership_active': 452138,
     'funnel_id_membership2': 85419,
@@ -490,7 +492,7 @@ class TcSellsyConnector:
     return response
 
   def updateCustomField(self, entity, entityId, cfid, value):
-    knownEntities = ['client', 'opportunity', 'invoice']
+    knownEntities = ['client', 'opportunity', 'document']
     if (entity not in knownEntities):
       raise ValueError(f"Unknown entity {entity}, should be in {knownEntities}")
     params = {
