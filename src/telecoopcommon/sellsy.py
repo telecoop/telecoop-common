@@ -4,7 +4,7 @@ import pytz
 import os
 import phpserialize
 from json import JSONDecodeError
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 from requests_oauth2client import OAuth2Client, ApiClient
@@ -547,6 +547,10 @@ class TcSellsyConnector:
       'email': '',
       'mobile': '',
       'maincontactid':  mainContactId,
+      'addr_part1': '',
+      'addr_zip': '',
+      'addr_town': '',
+      'addr_countrycode': '',
       'contacts': {},
     }
     customFields = {
@@ -575,6 +579,8 @@ class TcSellsyConnector:
       'hrappel':                    {'code': 'hrappel', 'defaultValue': '0'},
       'neufreconditionne':          {'code': 'neufreconditionne', 'formatted_value': ''},
       'achattelephone':             {'code': 'achattelephone', 'defaultValue': '0'},
+      'lieunaissance':              {'code': 'lieunaissance', 'textval': ''},
+      'datenaissance':              {'code': 'datenaissance', 'formatted_ymd': ''},
     }
     # Name + person data
     if (cli['client']['type'] == 'person'):
@@ -595,6 +601,12 @@ class TcSellsyConnector:
       result['contacts'][mainContactId] = cli['contacts'][mainContactId]
     elif ('contact' in cli):
       result['contacts'][mainContactId] = cli['contact']
+    for addr in cli['address']:
+      if addr['name'] == 'Address principale':
+        result['addr_part1'] = addr['part']
+        result['addr_zip'] = addr['zip']
+        result['addr_town'] = addr['town']
+        result['addr_countrycode'] = addr['countrycode']
     # Custom fields
     for ln in cli['customFields']:
       fields = ln['list'].values() if isinstance(ln['list'], dict) else ln['list']
@@ -603,9 +615,9 @@ class TcSellsyConnector:
           code = f['code']
           textFields = [
             "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'typetelephone',
-            'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status']
+            'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status', 'lieunaissance']
           selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne', 'categorie-societaire']
-          dateFields = ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin']
+          dateFields = ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin', 'datenaissance']
           intFields = ['parrainage-nb-discount', 'parrainage-code-nb-use', 'parrainage-nb-code-donated',
                        'consomoyenneclient', 'smsmoyen', 'hrappel', 'achattelephone']
           if (code in textFields):
@@ -1027,8 +1039,16 @@ class SellsyClient:
     self.companyName = None
     self.email = None
     self.phoneNumber = None
+    # Should delete this one, but not sur if used somewhere
+    self.msisdn = None
     self.web = None
     self.mainContactId = None
+    self.birthDate = None
+    self.birthPlace = None
+    self.address = None
+    self.zipCode = None
+    self.city = None
+    self.country = None
     self.oneInvoicePerLine = None
     self.autoValidation = None
     self.status = None
@@ -1054,6 +1074,8 @@ class SellsyClient:
     self.refereeCode = None
     self.promoCode = None
     self.slimpayMandateStatus = None
+
+    self.lines = []
 
   def __str__(self):
     return f"#{self.id} {self.reference} {self.label} {self.email} {self.status} {self.creationDate.isoformat()}"
@@ -1132,6 +1154,10 @@ class SellsyClient:
     self.web = cli.get('web')
     self.msisdn = cli['mobile']
     self.mainContactId = mainContactId
+    self.address = cli['addr_part1']
+    self.zipCode = cli['addr_zip']
+    self.city = cli['addr_town']
+    self.country = cli['addr_countrycode']
     self.lines = []
     for f in cli["customfields"]:
       code = f["code"]
@@ -1188,6 +1214,11 @@ class SellsyClient:
           self.telecommownAbo = f['boolval']
         else:
           self.telecommownAbo = (f['boolval'] == 'Y')
+
+      elif code == 'datenaissance' and 'formatted_ymd' in f and f['formatted_ymd'] != '':
+        self.birthDate = date.fromisoformat(f['formatted_ymd'])
+      elif code == 'lieunaissance':
+        self.birthPlace = f['textval']
 
       elif (code == 'code-promo'):
         self.promoCode = f['textval']
