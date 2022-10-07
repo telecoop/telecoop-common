@@ -149,7 +149,7 @@ class Runner():
       print(client.memberCategory)
 
     if (command == 'get-clients'):
-      clients = self.getSellsyConnector().getClients()
+      clients = self.getSellsyConnector().getClients(True)
       print(len(clients))
       print(next(iter(clients.values())))
 

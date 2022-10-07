@@ -677,7 +677,7 @@ class TcSellsyConnector:
 
     return client
 
-  def getClients(self):
+  def getClients(self, includeMembers=False):
     result = {}
     params = {
       'pagination': {
@@ -698,7 +698,7 @@ class TcSellsyConnector:
 
         c = SellsyClient(id)
         c.loadWithValues(client)
-        if (client['ident'] is not None and client['ident'] not in ['', '-1']):
+        if (client['ident'] is not None and client['ident'] not in ['', '-1']) or (c.member and includeMembers):
           result[id] = c
         else:
           if c.status != 'Non abonné':
