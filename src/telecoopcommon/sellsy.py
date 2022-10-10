@@ -1359,7 +1359,8 @@ class SellsyOpportunity:
     self.reference = opp['ident']
     self.name = opp['name']
     self.funnelId = opp['funnelid']
-    self.sourceId = int(opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source']))
+    sourceId = opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source'])
+    self.sourceId = int(sourceId) if sourceId is not None else None
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
@@ -1531,7 +1532,8 @@ class SellsyMemberOpportunity:
     self.reference = opp['ident']
     self.name = opp['name']
     self.funnelId = opp['funnelid']
-    self.sourceId = int(opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source']))
+    sourceId = opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source'])
+    self.sourceId = int(sourceId) if sourceId is not None else None
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
