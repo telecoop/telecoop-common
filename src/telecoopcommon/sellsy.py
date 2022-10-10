@@ -268,14 +268,25 @@ sellsyValues = {
 }
 
 
-def step_name_from_id(step_id: int):
+def stepNameFromId(stepId: int):
   """Get step name from step id
   """
   env = 'PROD' if os.getenv('ENV') == 'PROD' else 'DEV'
   result = None
   for key, value in sellsyValues[env].items():
-    if value == step_id:
+    if value == stepId:
       result = key
+  return result
+
+
+def sourceNameFromId(sourceId: int):
+  """Get source name from source id
+  """
+  env = 'PROD' if os.getenv('ENV') == 'PROD' else 'DEV'
+  result = None
+  for key, value in sellsyValues[env].items():
+    if value == sourceId:
+      result = ' '.join(key.split('_')[2:])
   return result
 
 
@@ -1283,7 +1294,11 @@ class SellsyOpportunity:
 
   @property
   def stepName(self):
-    return step_name_from_id(self.stepId)
+    return stepNameFromId(self.stepId)
+
+  @property
+  def sourceName(self):
+    return sourceNameFromId(self.sourceId)
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.msisdn} client #{self.clientId}"
@@ -1344,7 +1359,7 @@ class SellsyOpportunity:
     self.reference = opp['ident']
     self.name = opp['name']
     self.funnelId = opp['funnelid']
-    self.sourceId = opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source'])
+    self.sourceId = int(opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source']))
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
@@ -1488,7 +1503,11 @@ class SellsyMemberOpportunity:
 
   @property
   def stepName(self):
-    return step_name_from_id(self.stepId)
+    return stepNameFromId(self.stepId)
+
+  @property
+  def sourceName(self):
+    return sourceNameFromId(self.sourceId)
 
   def __str__(self):
     return f"#{self.id} {self.creationDate} {self.nbShares} {self.stepName} / client #{self.clientId}"
@@ -1512,7 +1531,7 @@ class SellsyMemberOpportunity:
     self.reference = opp['ident']
     self.name = opp['name']
     self.funnelId = opp['funnelid']
-    self.sourceId = opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source'])
+    self.sourceId = int(opp['sourceid'] if 'sourceid' in opp else TcSellsyConnector.getSourceIdFromValue(opp['source']))
     self.creationDate = parisTZ.localize(datetime.fromisoformat(opp['created']))
     self.status = opp['statusLabel']
     self.stepId = int(opp['stepid'])
