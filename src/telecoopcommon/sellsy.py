@@ -856,9 +856,9 @@ class TcSellsyConnector:
           if code in ['partssocialessouhaite', 'montantparts']:
             result['customfields'][code]['numericval'] = int(field['defaultValue'])
           if code == 'moyen-de-paiement':
-            result['customFields'][code]['moyen-de-paiement'] = field['defaultValue']
+            result['customfields'][code]['moyen-de-paiement'] = field['defaultValue']
           if code == 'reference-paiement':
-            result['customFields'][code]['reference-paiement'] = field['defaultValue']
+            result['customfields'][code]['reference-paiement'] = field['defaultValue']
 
     return result
 

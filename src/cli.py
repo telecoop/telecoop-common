@@ -120,15 +120,13 @@ class Runner():
     if (command == 'get-opportunity'):
       id = self.getArg('Opportunity id')
       sellsyConnector = self.getSellsyConnector()
-      o = SellsyOpportunity(id)
+      o = SellsyMemberOpportunity(id)
+      #o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
       print(o.sourceId)
       print(o.sourceName)
       print(o.stepName)
-      print(repr(o.proNbSims))
-      print(f"{o.stepId} {o.getSimStateFromStep(sellsyConnector)}")
-      print(o.getSimStateFromStep(sellsyConnector))
 
     if (command == 'get-client'):
       id = self.getArg('Client id')
