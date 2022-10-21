@@ -86,6 +86,7 @@ sellsyValues = {
       'pro-achats-surtaxes': 181289,
       'slimpay-date-prelevement': 189294,
       'slimpay-lien-prelevement': 189295,
+      'depassement-forfait-data': 193085,
     },
     'opportunity_source_interne': 119862,
     'opportunity_source_site_web': 119864,
@@ -213,6 +214,7 @@ sellsyValues = {
       'pro-achats-surtaxes': 183873,
       'slimpay-date-prelevement': 189309,
       'slimpay-lien-prelevement': 189312,
+      'depassement-forfait-data': 193102,
     },
     'opportunity_source_interne': 115933,
     'opportunity_source_site_web': 115935,
@@ -314,6 +316,7 @@ class TcSellsyConnector:
     customFields = sellsyValues[self.env]['custom_fields']
     self.customFieldBazileNb = customFields['refbazile']
     self.customFieldTelecomNum = customFields['numerotelecoop']
+    self.cfidMobileDataOutOfPlan = customFields['depassement-forfait-data']
     self.cfidManuelInvoice = customFields['facturationmanuelle']
     self.cfidMergeInvoices = customFields['facture-unique']
     self.cfIdStatusClientMobile = customFields['statut-client-abo-mobile']
@@ -768,6 +771,7 @@ class TcSellsyConnector:
         'rio': {'code': 'rio', 'textval': ''},
         'refbazile': {'code': 'refbazile', 'textval': ''},
         'forfait': {'code': 'forfait', 'textval': ''},
+        'depassement-forfait-data': {'code': 'depassement-forfait-data', 'formatted_value': ''},
         'achatsimphysique': {'code': 'achatsimphysique', 'boolval': False},
         'date-activation-sim-souhaitee': {'code': 'date-activation-sim-souhaitee', 'timestampval': 0},
         'offre-telecommown': {'code': 'offre-telecommown', 'timestampval': 0},
@@ -802,7 +806,7 @@ class TcSellsyConnector:
             'rio', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo', 'parrainage-code-parrain',
             'pro-estim-conso', 'pro-comment', 'pro-nom-utilisateur', 'pro-mail-utilisateur']
           listFields = [
-            'telecommown-origine', 'forfait',
+            'telecommown-origine', 'forfait', 'depassement-forfait-data',
             'pro-palier-suspension', 'pro-appels-internationaux', 'pro-donnees-mobiles']
           dateFields = [
             'date-activation-sim-souhaitee', 'offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin',
@@ -1267,6 +1271,7 @@ class SellsyOpportunity:
     self.rio = None
     self.plan = None
     self.planItem = None
+    self.mobileDataOutOfPlan = None
     self.achatSimPhysique = None
     self.dateActivationSimAsked = None
     self.optinTeleCommown = None
@@ -1385,6 +1390,8 @@ class SellsyOpportunity:
           self.msisdn = field['textval']
         if code == 'refbazile':
           self.bazileNum = field['textval']
+        if code == 'depassement-forfait-data':
+          self.mobileDataOutOfPlan = field['formatted_value']
         if code == 'achatsimphysique':
           if isinstance(field["boolval"], bool):
             self.achatSimPhysique = field["boolval"]

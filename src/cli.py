@@ -120,10 +120,11 @@ class Runner():
     if (command == 'get-opportunity'):
       id = self.getArg('Opportunity id')
       sellsyConnector = self.getSellsyConnector()
-      o = SellsyMemberOpportunity(id)
-      #o = SellsyOpportunity(id)
+      #o = SellsyMemberOpportunity(id)
+      o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
+      print(o.mobileDataOutOfPlan)
       print(o.sourceId)
       print(o.sourceName)
       print(o.stepName)
