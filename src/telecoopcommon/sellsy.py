@@ -114,7 +114,7 @@ sellsyValues = {
     'funnel_id_membership2': 81505,
     'step_membership2_created': 587181,
     'step_membership2_sign': 587182,
-    'step_membership2_paid': 587183,
+    'step_membership2_payment': 587183,
     'step_membership2_verified': 587184,
     'step_membership2_validated': 587185,
     'step_membership2_refused': 587186,
@@ -242,7 +242,7 @@ sellsyValues = {
     'funnel_id_membership2': 85419,
     'step_membership2_created': 616762,
     'step_membership2_sign': 616763,
-    'step_membership2_paid': 616764,
+    'step_membership2_payment': 616764,
     'step_membership2_verified': 616765,
     'step_membership2_validated': 616766,
     'step_membership2_refused': 616767,
@@ -382,7 +382,12 @@ class TcSellsyConnector:
     self.stepMembershipActive = sellsyValues[self.env]['step_membership_active']
 
     self.funnelIdMembership2 = sellsyValues[self.env]['funnel_id_membership2']
+    self.stepMembership2Created = sellsyValues[self.env]['step_membership2_created']
+    self.stepMembership2Sign = sellsyValues[self.env]['step_membership2_sign']
+    self.stepMembership2Payment = sellsyValues[self.env]['step_membership2_payment']
+    self.stepMembership2Verified = sellsyValues[self.env]['step_membership2_verified']
     self.stepMembership2Validated = sellsyValues[self.env]['step_membership2_validated']
+    self.stepMembership2Refused = sellsyValues[self.env]['step_membership2_refused']
 
     self.funnelIdDevPro = sellsyValues[self.env]['funnel_id_dev_pro']
     self.stepProNew = sellsyValues[self.env]['step_pro_new']
