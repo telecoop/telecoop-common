@@ -124,6 +124,7 @@ class Runner():
       o = SellsyOpportunity(id)
       o.load(sellsyConnector)
       print(o)
+      print(o.tags)
       print(o.mobileDataOutOfPlan)
       print(o.sourceId)
       print(o.sourceName)

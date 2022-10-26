@@ -770,6 +770,7 @@ class TcSellsyConnector:
       'statusLabel': opp['statusLabel'],
       'stepEnterDate': opp['stepEnterDate'],
       'stepid': opp['stepid'],
+      'smarttags': ','.join([o['word'] for o in opp['tags'].values()]),
       'customfields': {
         'nsce': {'code': 'nsce', 'textval': ''},
         'numerotelecoop': {'code': 'numerotelecoop', 'textval': ''},
@@ -1266,6 +1267,7 @@ class SellsyOpportunity:
     self.funnelId = None
     self.sourceId = None
     self.creationDate = None
+    self.tags = None
     self.stepId = None
     self.stepStart = None
     self.steps = None
@@ -1376,6 +1378,7 @@ class SellsyOpportunity:
     self.stepId = int(opp['stepid'])
     self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
     self.steps = {opp['stepid']: self.stepStart}
+    self.tags = opp['smarttags'].split(',')
 
     for _, field in opp['customfields'].items():
       if 'code' in field:
