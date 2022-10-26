@@ -770,7 +770,7 @@ class TcSellsyConnector:
       'statusLabel': opp['statusLabel'],
       'stepEnterDate': opp['stepEnterDate'],
       'stepid': opp['stepid'],
-      'smarttags': ','.join([o['word'] for o in opp['tags'].values()]),
+      'smarttags': ','.join([o['word'] for o in opp['tags'].values()]) if isinstance(opp['tags'], dict) else '',
       'customfields': {
         'nsce': {'code': 'nsce', 'textval': ''},
         'numerotelecoop': {'code': 'numerotelecoop', 'textval': ''},
