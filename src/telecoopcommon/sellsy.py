@@ -1382,7 +1382,7 @@ class SellsyOpportunity:
     self.stepId = int(opp['stepid'])
     self.stepStart = parisTZ.localize(datetime.fromisoformat(opp['stepEnterDate']))
     self.steps = {opp['stepid']: self.stepStart}
-    self.tags = opp['smarttags'].split(',')
+    self.tags = opp['smarttags'].split(',') if opp['smarttags'] is not None else []
 
     for _, field in opp['customfields'].items():
       if 'code' in field:
