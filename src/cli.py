@@ -250,7 +250,7 @@ class Runner():
         invoiceStatus = self.getArg('Invoice status')
         searchParams = {'steps': [invoiceStatus, ]}
       invoices = SellsyInvoice.getInvoices(self.getSellsyConnector(), self.logger, startDate=datetime(
-        2022, 1, 1), searchParams=searchParams, paymentMedium='prélèvement')
+        2022, 1, 1), searchParams=searchParams, paymentMedium='prélèvement', limit=10, fetchLines=True)
       print(invoices)
 
     if (command == 'update-invoice-status'):

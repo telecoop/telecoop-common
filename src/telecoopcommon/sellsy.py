@@ -77,8 +77,10 @@ sellsyValues = {
       'pro-nb-sims': 180710,
       'pro-nb-porta': 180712,
       'pro-date-engagement': 180713,
+      'pro-ancien-operateur': 183594,
       'pro-estim-conso': 180711,
       'pro-comment': 180714,
+      'pro-pref-rappel': 184029,
       'pro-nom-utilisateur': 180715,
       'pro-mail-utilisateur': 180716,
       'pro-palier-suspension': 181292,
@@ -122,6 +124,7 @@ sellsyValues = {
     'step_membership2_refused': 587186,
     'funnel_id_dev_pro': 85811,
     'step_pro_new': 619617,
+    'step_pro_contacted': 619617,
     'step_pro_apt_planned': 619618,
     'step_pro_missing_info': 619619,
     'step_pro_awaiting': 619620,
@@ -129,7 +132,6 @@ sellsyValues = {
     'step_pro_prop_internal_validation': 619622,
     'step_pro_prop_awaiting': 619623,
     'step_pro_prop_accepted': 619624,
-    'step_pro_account_incomplete': 619625,
     'step_pro_account_complete': 619626,
     'step_pro_end': 619627,
     'step_pro_new_sims': 619628,
@@ -207,8 +209,10 @@ sellsyValues = {
       'pro-nb-sims': 183863,
       'pro-nb-porta': 183861,
       'pro-date-engagement': 183869,
+      'pro-ancien-operateur': 183872,
       'pro-estim-conso': 183859,
       'pro-comment': 183870,
+      'pro-pref-rappel': 184030,
       'pro-nom-utilisateur': 183864,
       'pro-mail-utilisateur': 183865,
       'pro-palier-suspension': 183860,
@@ -252,6 +256,7 @@ sellsyValues = {
     'step_membership2_refused': 616767,
     'funnel_id_dev_pro': 86648,
     'step_pro_new': 625924,
+    'step_pro_contacted': 641855,
     'step_pro_apt_planned': 625925,
     'step_pro_missing_info': 625926,
     'step_pro_awaiting': 625927,
@@ -259,7 +264,6 @@ sellsyValues = {
     'step_pro_prop_internal_validation': 625929,
     'step_pro_prop_awaiting': 625930,
     'step_pro_prop_accepted': 625931,
-    'step_pro_account_incomplete': 625932,
     'step_pro_account_complete': 625933,
     'step_pro_end': 625934,
     'step_pro_new_sims': 625935,
@@ -341,8 +345,10 @@ class TcSellsyConnector:
     self.cfidProNbSims = customFields['pro-nb-sims']
     self.cfidProNbPorta = customFields['pro-nb-porta']
     self.cfidProDateEngagement = customFields['pro-date-engagement']
+    self.cfidProAncienOperateur = customFields['pro-ancien-operateur']
     self.cfidProEstimConso = customFields['pro-estim-conso']
     self.cfidProComment = customFields['pro-comment']
+    self.cfidProPrefRappel = customFields['pro-pref-rappel']
     self.cfidProNomUtilisateur = customFields['pro-nom-utilisateur']
     self.cfidProMailUtilisateur = customFields['pro-mail-utilisateur']
     self.cfidProPalierSuspension = customFields['pro-palier-suspension']
@@ -395,6 +401,7 @@ class TcSellsyConnector:
 
     self.funnelIdDevPro = sellsyValues[self.env]['funnel_id_dev_pro']
     self.stepProNew = sellsyValues[self.env]['step_pro_new']
+    self.stepProContacted = sellsyValues[self.env]['step_pro_contacted']
     self.stepProAptPlanned = sellsyValues[self.env]['step_pro_apt_planned']
     self.stepProMissingInfo = sellsyValues[self.env]['step_pro_missing_info']
     self.stepProAwaiting = sellsyValues[self.env]['step_pro_awaiting']
@@ -402,7 +409,6 @@ class TcSellsyConnector:
     self.stepProPropInternalValidation = sellsyValues[self.env]['step_pro_prop_internal_validation']
     self.stepProPropAwaiting = sellsyValues[self.env]['step_pro_prop_awaiting']
     self.stepProPropAccepted = sellsyValues[self.env]['step_pro_prop_accepted']
-    self.stepProAccountIncomplete = sellsyValues[self.env]['step_pro_account_incomplete']
     self.stepProAccountComplete = sellsyValues[self.env]['step_pro_account_complete']
     self.stepProEnd = sellsyValues[self.env]['step_pro_end']
     self.stepProNewSims = sellsyValues[self.env]['step_pro_new_sims']
@@ -762,7 +768,6 @@ class TcSellsyConnector:
 
   def getOpportunityValues(self, id):
     opp = self.api(method="Opportunities.getOne", params={'id': id})
-    print(f"Source : {opp['source']}")
     result = {
       'ident': opp['ident'],
       'name': opp['name'],
@@ -795,8 +800,10 @@ class TcSellsyConnector:
         'pro-nb-sims': {'code': 'pro-nb-sims', 'defaultValue': '0', 'numericval': 0},
         'pro-nb-porta': {'code': 'pro-nb-porta', 'defaultValue': '0', 'numericval': 0},
         'pro-date-engagement': {'code': 'pro-date-engagement', 'timestampval': 0},
+        'pro-ancien-operateur': {'code': 'pro-ancien-operateur', 'textval': ''},
         'pro-estim-conso': {'code': 'pro-estim-conso', 'textval': ''},
         'pro-comment': {'code': 'pro-comment', 'textval': ''},
+        'pro-pref-rappel': {'code': 'pro-pref-rappel', 'textval': ''},
         'pro-nom-utilisateur': {'code': 'pro-nom-utilisateur', 'textval': ''},
         'pro-mail-utilisateur': {'code': 'pro-mail-utilisateur', 'textval': ''},
         'pro-palier-suspension': {'code': 'pro-palier-suspension', 'formatted_value': ''},
@@ -814,7 +821,8 @@ class TcSellsyConnector:
           code = field['code']
           textFields = [
             'rio', 'nsce', 'numerotelecoop', 'refbazile', 'code-promo', 'parrainage-code-parrain',
-            'pro-estim-conso', 'pro-comment', 'pro-nom-utilisateur', 'pro-mail-utilisateur']
+            'pro-estim-conso', 'pro-comment', 'pro-nom-utilisateur', 'pro-mail-utilisateur',
+            'pro-ancien-operateur']
           listFields = [
             'telecommown-origine', 'forfait', 'depassement-forfait-data',
             'pro-palier-suspension', 'pro-appels-internationaux', 'pro-donnees-mobiles']
@@ -876,8 +884,10 @@ class TcSellsyConnector:
 
     return result
 
-  def getOpportunities(self):
-    return self.getOpportunitiesInStep(funnelId=self.funnelIdVdc, stepId="all")
+  def getOpportunities(self, funnelId=None):
+    if funnelId is None:
+      funnelId = self.funnelIdVdc
+    return self.getOpportunitiesInStep(funnelId=funnelId, stepId="all")
 
   def getOpportunitiesInStep(self, funnelId, stepId, limit=None, startDate=None, searchParams=None):
     result = []
@@ -974,6 +984,7 @@ class TcSellsyConnector:
       'dueAmount': invoice['dueAmount'],
       'payDateCustom': datetime.strptime(invoice['paydate_custom'], "%d/%m/%Y").strftime("%Y-%m-%d"),
       'thirdident': invoice['thirdident'],
+      'thirdid': invoice['thirdid'],
       'subject': invoice['subject'],
       'created': invoice['created'],
       'payMediumsText': invoice['paymediums_text'],
@@ -1296,8 +1307,10 @@ class SellsyOpportunity:
     self.proNbSims = None
     self.proNbPorta = None
     self.proDateEngagement = None
+    self.proAncienOperateur = None
     self.proEstimConso = None
     self.proComment = None
+    self.proPrefRappel = None
     self.proNomUtilisateur = None
     self.proMailUtilisateur = None
     self.proPalierSuspension = None
@@ -1436,10 +1449,14 @@ class SellsyOpportunity:
           self.proNbPorta = int(field['numericval'])
         if code == 'pro-date-engagement' and 'formatted_ymd' in field and field['formatted_ymd'] != '':
           self.proDateEngagement = datetime.strptime(field['formatted_ymd'], '%Y-%m-%d').astimezone(parisTZ)
+        if code == 'pro-ancien-operateur':
+          self.proAncienOperateur = field['textval']
         if code == 'pro-estim-conso':
           self.proEstimConso = field['textval']
         if code == 'pro-comment':
           self.proComment = field['textval']
+        if code == 'pro-pref-rappel':
+          self.proPrefRappel = field['textval']
         if code == 'pro-nom-utilisateur':
           self.proNomUtilisateur = field['textval']
         if code == 'pro-mail-utilisateur':
@@ -1639,6 +1656,7 @@ class SellsyInvoice:
     self.amountDue = None
     self.paymentDate = None
     self.clientRef = None
+    self.clientId = None
     self.subject = None
     self.creationDate = None
 
@@ -1664,6 +1682,7 @@ class SellsyInvoice:
     self.amountDue = Decimal(values['dueAmount'])
     self.paymentDate = parisTZ.localize(datetime.fromisoformat(values['payDateCustom']))
     self.clientRef = values['thirdident']
+    self.clientId = int(values['thirdid'])
     self.subject = values['subject']
     self.payMediums = []
     if values['payMediumsText'] is not None and values['payMediumsText'] != '':
@@ -1683,7 +1702,7 @@ class SellsyInvoice:
 
   @classmethod
   def getInvoices(cls, sellsyConnector, logger,
-                  startDate=None, search=None, limit=None, searchParams=None, paymentMedium=None):
+                  startDate=None, limit=None, searchParams=None, paymentMedium=None, fetchLines=False):
     result = []
     params = {
       'doctype': 'invoice',
@@ -1708,8 +1727,13 @@ class SellsyInvoice:
       logger.info("Processing page {}/{}".format(currentPage, nbPages))
       for id, invoice in invoices['result'].items():
         i = SellsyInvoice(id)
-        i.loadWithValues(invoice)
-        if paymentMedium is None or (paymentMedium is not None and paymentMedium in i.payMediums):
+        if fetchLines:
+          # Invoice lines are only present in Sellsy API call Document.getOne, so we must call getOne for each invoice
+          # … yeah, lame, I know
+          i.load(sellsyConnector)
+        else:
+          i.loadWithValues(invoice)
+        if paymentMedium is None or paymentMedium in i.payMediums:
           result.append(i)
         if limit is not None and limit <= len(result):
           return result
