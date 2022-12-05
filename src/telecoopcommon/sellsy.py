@@ -41,6 +41,7 @@ sellsyValues = {
       'facture-unique': 117454,
       'date-activation-sim-souhaitee': 134623,
       'statut-client-abo-mobile': 141160,
+      'paiement-favori': 199733,
       'birth-date': 103675,
       'birth-place': 103674,
       'offre-telecommown': 139323,
@@ -132,7 +133,7 @@ sellsyValues = {
     'step_pro_prop_internal_validation': 619622,
     'step_pro_prop_awaiting': 619623,
     'step_pro_prop_accepted': 619624,
-    'step_pro_account_complete': 619626,
+    'step_pro_account_complete': 619625,
     'step_pro_end': 619627,
     'step_pro_new_sims': 619628,
     'funnel_id_sims_pro': 85813,
@@ -173,6 +174,7 @@ sellsyValues = {
       'facturationmanuelle': 109534,
       'facture-unique': 119383,
       'statut-client-abo-mobile': 132773,
+      'paiement-favori': 195638,
       'birth-date': 102695,
       'birth-place': 102696,
       'offre-telecommown': 139951,
@@ -610,6 +612,7 @@ class TcSellsyConnector:
       'achattelephone':             {'code': 'achattelephone', 'defaultValue': '0'},
       'lieunaissance':              {'code': 'lieunaissance', 'textval': ''},
       'datenaissance':              {'code': 'datenaissance', 'formatted_ymd': ''},
+      'paiementfavori':             {'code': 'paiementfavori', 'formatted_value': ''},
     }
     # Name + person data
     if (cli['client']['type'] == 'person'):
@@ -645,7 +648,8 @@ class TcSellsyConnector:
           textFields = [
             "refbazile", 'parrainage-code', 'parrainage-lien', 'societaire', 'typetelephone',
             'parrainage-code-parrain', 'code-promo', 'slimpay-mandate-status', 'lieunaissance']
-          selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine', 'neufreconditionne', 'categorie-societaire']
+          selectFields = ["facturationmanuelle", 'statut-client-abo-mobile', 'telecommown-origine',
+                          'neufreconditionne', 'categorie-societaire', 'paiementfavori']
           dateFields = ['offre-telecommown', 'telecommown-date-debut', 'telecommown-date-fin', 'datenaissance']
           intFields = ['parrainage-nb-discount', 'parrainage-code-nb-use', 'parrainage-nb-code-donated',
                        'consomoyenneclient', 'smsmoyen', 'hrappel', 'achattelephone']
@@ -675,12 +679,12 @@ class TcSellsyConnector:
     clients = self.api(method='Client.getList', params=params)
     client = None
     if clients['result']:
-      for id, cli in clients['result'].items():
-        if (cli['ident'] == 'CLI00001001'):
+      for clientId, cli in clients['result'].items():
+        if cli['ident'] == 'CLI00001001':
           # Référence ayant servie de test lors de la mise en prod du parcours souscription
           continue
         if cli['ident'] == ref:
-          client = SellsyClient(id)
+          client = SellsyClient(clientId)
           client.loadWithValues(cli)
           break
 
@@ -1088,6 +1092,7 @@ class SellsyClient:
     self.oneInvoicePerLine = None
     self.autoValidation = None
     self.status = None
+    self.preferredPaymentMethod = None
     self.member = None
     self.memberCategory = None
     self.phoneModel = None
@@ -1206,6 +1211,8 @@ class SellsyClient:
           self.oneInvoicePerLine = (f['boolval'] == 'N')
       elif (code == 'statut-client-abo-mobile' and 'formatted_value' in f):
         self.status = f["formatted_value"]
+      elif code == 'paiementfavori':
+        self.preferredPaymentMethod = f['formatted_value']
 
       elif code == 'societaire':
         self.member = f['textval']
