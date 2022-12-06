@@ -91,6 +91,8 @@ sellsyValues = {
       'pro-achats-surtaxes': 181289,
       'slimpay-date-prelevement': 189294,
       'slimpay-lien-prelevement': 189295,
+      'slimpay-reject-reason': 199792,
+      'slimpay-paiement-status': 199793,
       'depassement-forfait-data': 193085,
     },
     'opportunity_source_interne': 119862,
@@ -224,6 +226,8 @@ sellsyValues = {
       'pro-achats-surtaxes': 183873,
       'slimpay-date-prelevement': 189309,
       'slimpay-lien-prelevement': 189312,
+      'slimpay-reject-reason': 199780,
+      'slimpay-paiement-status': 199787,
       'depassement-forfait-data': 193102,
     },
     'opportunity_source_interne': 115933,
@@ -369,6 +373,8 @@ class TcSellsyConnector:
 
     self.cfidSlimpayPaymentDate = customFields['slimpay-date-prelevement']
     self.cfidSlimpayPaymentLink = customFields['slimpay-lien-prelevement']
+    self.cfidSlimpayRejectReason = customFields['slimpay-reject-reason']
+    self.cfidSlimpayPaymentStatus = customFields['slimpay-payment-status']
 
     self.opportunitySourceInterne = sellsyValues[self.env]['opportunity_source_interne']
     self.opportunitySourceSiteWeb = sellsyValues[self.env]['opportunity_source_site_web']
