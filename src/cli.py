@@ -149,6 +149,7 @@ class Runner():
       client = self.getSellsyConnector().getClientFromRef(ref)
       print(client)
       print(client.memberCategory)
+      print(client.preferredPaymentMethod)
 
     if (command == 'get-clients'):
       clients = self.getSellsyConnector().getClients(True)
