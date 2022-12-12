@@ -311,7 +311,7 @@ class TcSellsyError(Exception):
 
 
 class TcSellsyConnector:
-  def __init__(self, conf, logger):
+   def __init__(self, conf, logger):
     env = os.getenv('ENV', 'LOCAL')
     self.env = 'PROD' if env == 'PROD' else 'DEV'
     self.conf = conf
@@ -428,6 +428,13 @@ class TcSellsyConnector:
     self.stepProSimsActivated = sellsyValues[self.env]['step_pro_sims_activated']
     self.stepProSimsSuspended = sellsyValues[self.env]['step_pro_sims_suspended']
     self.stepProSimsTerminated = sellsyValues[self.env]['step_pro_sims_terminated']
+
+    self.services = None
+    self.itemIds = None
+    self.modelIds = None
+    self.taxId = None
+    self.payMediums = None
+    self.rateCategories = None
 
   def getConnector(self):
     if self._connector is None:
@@ -729,7 +736,7 @@ class TcSellsyConnector:
     nbPages = infos["nbpages"]
     currentPage = 1
     while (currentPage <= nbPages):
-      self.logger.info("Processing page {}/{}".format(currentPage, nbPages))
+      self.logger.debug("Processing page {}/{}".format(currentPage, nbPages))
       for id, client in clients['result'].items():
         if (client['ident'] == 'CLI00001001'):
           # Référence ayant servie de test lors de la mise en prod du parcours souscription
@@ -923,7 +930,7 @@ class TcSellsyConnector:
     nbPages = infos["nbpages"]
     currentPage = 1
     while (currentPage <= nbPages):
-      self.logger.info(f"Processing page {currentPage}/{nbPages}")
+      self.logger.debug(f"Processing page {currentPage}/{nbPages}")
       for id, opp in opportunities['result'].items():
         o = SellsyOpportunity(id)
         o.loadWithValues(opp)
@@ -962,28 +969,111 @@ class TcSellsyConnector:
     raise LookupError(f"Could not opportunity with msisdn {msisdn} for client #{clientId}")
 
   def getServices(self):
+    if self.services is None:
+      params = {
+        'type': 'service',
+        'pagination': {
+          'nbperpage': 100,
+        }
+      }
+      services = self.api(method='Catalogue.getList', params=params)
+      data = {}
+      for id, service in services['result'].items():
+        if ('name' in service):
+          data[service['name']] = {
+            'id': service['id'],
+            'unitAmount': service['unitAmountTaxesInc'],
+            'taxId': service['taxid'],
+            'notes': service['notes'],
+            'tradename': service['tradename']
+          }
+      self.services = data
+
+    return self.services
+
+  def getItemIds(self):
+    if self.itemIds is None:
+      units = self.api(method='AccountDatas.getUnits', params={})
+      data = {}
+      for unitId, unit in units.items():
+        if ('value' in unit):
+          data[unit['value']] = unitId
+      self.itemIds = data
+
+    return self.itemIds
+
+  def getModelIds(self):
+    if self.modelIds is None:
+      params = {
+        'doctype': 'model',
+        'pagination': {
+          'nbperpage': 100,
+        },
+      }
+      models = self.api(method='Document.getList', params=params)
+      data = {}
+      for modelId, model in models['result'].items():
+        if ('ident' in model):
+          data[model['ident']] = modelId
+      self.modelIds = data
+
+    return self.modelIds
+
+  def getTaxId(self, taxRateString):
+    if self.taxId is None:
+      taxes = self.api(method='AccountDatas.getTaxes')
+      for taxId, tax in taxes.items():
+        if ('value' in tax and tax['value'] == taxRateString):
+          self.taxId = taxId
+          break
+
+    return self.taxId
+
+  def getPayMediums(self):
+    if self.payMediums is None:
+      result = {}
+      mediums = self.api(method='AccountDatas.getPayMediums')
+      for id, medium in mediums.items():
+        if ('value' in medium and medium['value'] in ["prélèvement", "carte bancaire", "virement bancaire"]):
+          result[medium['value']] = id
+      self.payMediums = result
+
+    return self.payMediums
+
+  def getRateCategories(self):
+    if self.rateCategories is None:
+      categories = self.api(method='AccountDatas.getRateCategories')
+      data = {}
+      for id, category in categories.items():
+        if ('name' in category):
+          data[category['name']] = id
+      self.rateCategories = data
+
+    return self.rateCategories
+
+  def getSellsyClientInfo(self, clientRef):
     params = {
-      'type': 'service',
-      'pagination': {
-        'nbperpage': 100,
+      'search': {
+        'ident': clientRef
       }
     }
-    services = self.api(method='Catalogue.getList', params=params)
-    data = {}
-    for id, service in services['result'].items():
-      if ('name' in service):
-        data[service['name']] = {
-          'id': service['id'],
-          'unitAmount': service['unitAmountTaxesInc'],
-          'taxId': service['taxid'],
-          'notes': service['notes'],
-          'tradename': service['tradename']
-        }
-
-    return data
+    result = self.api(method='Client.getList', params=params)
+    for id, client in result['result'].items():
+      if ('ident' in client):
+        # Email par défaut
+        email = client['email']
+        # recherche du contact principal
+        mainContactId = client['maincontactid']
+        for contactId, contact in client["contacts"].items():
+          if (contactId == mainContactId):
+            email = contact['email']
+        return [id, email]
 
   def getInvoiceValues(self, id):
-    invoice = self.api(method="Document.getOne", params={'doctype': 'invoice', 'docid': id})
+    try:
+      invoice = self.api(method="Document.getOne", params={'doctype': 'invoice', 'docid': id})
+    except sellsy_api.errors.SellsyError:
+      invoice = self.api(method="Document.getOne", params={'doctype': 'creditnote', 'docid': id})
     result = {
       'ident': invoice['ident'],
       'status': invoice['status'],
@@ -1629,15 +1719,15 @@ class SellsyMemberOpportunity:
       if startDate is not None:
         params['search']['periodecreated_start'] = startDate.timestamp()
       if searchParams is not None:
-        for k, v in searchParams.items():
-          params['search'][k] = v
+        for k, value in searchParams.items():
+          params['search'][k] = value
 
       opportunities = sc.api(method='Opportunities.getList', params=params)
       infos = opportunities["infos"]
       nbPages = infos["nbpages"]
       currentPage = 1
       while (currentPage <= nbPages):
-        logger.info("Processing page {}/{}".format(currentPage, nbPages))
+        logger.debug("Processing page {}/{}".format(currentPage, nbPages))
         for id, opp in opportunities['result'].items():
           o = SellsyMemberOpportunity(id)
           o.loadWithValues(opp)
@@ -1655,11 +1745,11 @@ class SellsyMemberOpportunity:
 
 
 class SellsyInvoice:
-  def __init__(self, id):
+  def __init__(self, invoiceId):
     env = os.getenv('ENV', 'LOCAL')
     self.env = 'PROD' if env == 'PROD' else 'DEV'
 
-    self.id = id
+    self.id = invoiceId
     self.reference = None
     self.sellsyStatus = None
     self.status = None
@@ -1672,6 +1762,7 @@ class SellsyInvoice:
     self.clientId = None
     self.subject = None
     self.creationDate = None
+    self.payMediums = None
 
     self.rows = None
 
@@ -1729,17 +1820,17 @@ class SellsyInvoice:
     if startDate is not None:
       params['search']['periodecreationDate_start'] = startDate.timestamp()
     if searchParams is not None:
-      for k, v in searchParams.items():
-        params['search'][k] = v
+      for k, value in searchParams.items():
+        params['search'][k] = value
 
     invoices = sellsyConnector.api(method='Document.getList', params=params)
     infos = invoices["infos"]
     nbPages = infos["nbpages"]
     currentPage = 1
-    while (currentPage <= nbPages):
-      logger.info("Processing page {}/{}".format(currentPage, nbPages))
-      for id, invoice in invoices['result'].items():
-        i = SellsyInvoice(id)
+    while currentPage <= nbPages:
+      logger.debug(f"Processing page {currentPage}/{nbPages}")
+      for invoiceId, invoice in invoices['result'].items():
+        i = SellsyInvoice(invoiceId)
         if fetchLines:
           # Invoice lines are only present in Sellsy API call Document.getOne, so we must call getOne for each invoice
           # … yeah, lame, I know
@@ -1752,9 +1843,129 @@ class SellsyInvoice:
           return result
 
       currentPage += 1
-      if (infos["pagenum"] <= nbPages):
+      if infos["pagenum"] <= nbPages:
         params['pagination']['pagenum'] = currentPage
         invoices = sellsyConnector.api(method="Document.getList", params=params)
         infos = invoices["infos"]
 
     return result
+
+  @classmethod
+  def generate(cls, data, connector, logger):
+    logger.info("Fetching invoice from model")
+    modelIds = connector.getModelIds()
+    isPro = data['isPro']
+    modelId = modelIds['Forfait Sobriété']
+    if isPro:
+      modelId = modelIds['Facture Mensuelle Pro']
+    elif data['isFirstInvoice']:
+      modelId = modelIds['Forfait Sobriété - Prorata']
+    params = {
+      'docid': modelIds['Forfait Sobriété'] if not isPro else modelIds[''],
+      'newDoctype': 'invoice',
+      'thirdid': data['sellsyClientId'],
+    }
+    model = connector.api(method='Document.getModel', params=params)
+
+    logger.info("Creating invoice")
+
+    rateCategories = connector.getRateCategories()
+    params = {
+      'document': {
+        'doctype': 'invoice' if data['amount'] > 0 else 'creditnote',
+        'thirdid': data['sellsyClientId'],
+        'docspeakerStaffId': connector.ownerId,
+        'subject': data['subject'].format(subject=model['subject']),
+        'doclayout': model['doclayout'],
+        'payMediums': data['payMediums'],
+        'enabledPaymentGateways': [],
+        'notes': data['notes'].format(notes=model['notes']),
+        'hidePayment': 'Y',
+        'rateCategory': rateCategories['Tarif HT'] if isPro else rateCategories['Tarif TTC'],
+      },
+      'paydate': {
+       'id': model['paydate'],
+       'xdays': model['paydate_xdays'],
+       # 'xdays': TcSlimPayConnector.DELAY,
+      },
+      'row': {}
+    }
+    if data['parentInvoiceId'] is not None:
+      params['document']['parentId'] = data['parentInvoiceId']
+    if data['slimpayMandateStatus'] == 'active':
+      params['paydate']['xdays'] = data['paymentDelay']
+      params['payMediums'] = None
+    if data['paymentMethod'] == 'Prélèvement':
+      params['document']['payMediums'] = [data['payMediums']['prélèvement']]
+    elif data['paymentMethod'] == 'Carte bancaire':
+      params['document']['payMediums'] = [data['payMediums']['carte bancaire']]
+      params['document']['enabledPaymentGateways'] = ['stripe']
+    elif data['paymentMethod'] == 'Virement':
+      params['document']['payMediums'] = [data['payMediums']['virement bancaire']]
+
+    for i, row in enumerate(data['rows']):
+      if row['type'] == 'item':
+        params['row'][i] = {
+          'row_type': row['type'],
+          'row_linkedid': row['serviceId'],
+          # 'row_unit': line['unitId'],
+          'row_unitAmount': row['unitAmount'],
+          'row_name': row['name'],
+          'row_notes': row['notes'],
+          'row_taxid': row['taxId'],
+          'row_qt': row['quantity'],
+        }
+      else:
+        params['row'][i] = {
+          'row_type': row['type'],
+        }
+
+    result = connector.api(method='Document.create', params=params)
+    # print(json.dumps(result, indent=2))
+    invoice = SellsyInvoice(result['doc_id'])
+
+    logger.info("Fetching invoice reference")
+    try:
+      invoice.load(connector)
+
+      lessThan1 = (data['amount'] > 0 and data['amount'] < 1)
+      if data['automaticValidation'] and not lessThan1 and data['amount'] > 0:
+        logger.info("Automatic validation enabled : validating invoice and sending mail")
+        invoice.validateAndSend(data['email'], connector)
+        invoice.sellsyStatus = 'due'
+    except sellsy_api.SellsyError as exp:
+      if exp.sellsy_code_error == 'E_OBJ_NOT_LOADABLE':
+        # Sellsy object was created (we have the docId) but accessible yet through API
+        # -> we use the docId as a reference and another process will check later
+        #    to finish the validation of the invoice
+        invoice.reference = invoice.id
+      else:
+        raise exp
+
+    return invoice
+
+  def validateAndSend(self, email, connector):
+    params = {
+      'docid': self.id,
+      'document': {
+        'doctype': 'invoice',
+        'step': 'due'
+      }
+    }
+    connector.api(method='Document.updateStep', params=params)
+
+    if email:
+      params = {
+        'docid': self.id,
+        'email': {
+          'doctype': 'invoice',
+          'emails': [email],
+          'includeAttachments': 'N',
+        }
+      }
+      try:
+        connector.api(method='Document.sendDocByMail', params=params)
+      except sellsy_api.SellsyError as e:
+        connector.logger.warning('Whoops, something went wrong sending the email : {}'.format(e))
+    else:
+      connector.logger.warning("Tried to send invoice to client without email")
