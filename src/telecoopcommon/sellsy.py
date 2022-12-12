@@ -311,7 +311,7 @@ class TcSellsyError(Exception):
 
 
 class TcSellsyConnector:
-   def __init__(self, conf, logger):
+  def __init__(self, conf, logger):
     env = os.getenv('ENV', 'LOCAL')
     self.env = 'PROD' if env == 'PROD' else 'DEV'
     self.conf = conf
