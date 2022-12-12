@@ -1861,7 +1861,7 @@ class SellsyInvoice:
     elif data['isFirstInvoice']:
       modelId = modelIds['Forfait Sobriété - Prorata']
     params = {
-      'docid': modelIds['Forfait Sobriété'] if not isPro else modelIds[''],
+      'docid': modelId,
       'newDoctype': 'invoice',
       'thirdid': data['sellsyClientId'],
     }
