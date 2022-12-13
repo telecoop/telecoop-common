@@ -1511,17 +1511,17 @@ class SellsyOpportunity:
   def getSimStateFromStep(self, sellsyConnector):
     sc = sellsyConnector
     state = None
-    if self.stepId in [sc.stepNew, sc.stepSimToSend, sc.stepSimToSendTransition]:
+    if self.stepId in [sc.stepNew, sc.stepSimToSend, sc.stepSimToSendTransition, sc.stepProSimsInactive]:
       state = 'new'
-    elif self.stepId in [sc.stepSimSent, sc.stepSimReceived]:
+    elif self.stepId in [sc.stepSimSent, sc.stepSimReceived, sc.stepProSimsAwaiting]:
       state = 'sent'
-    elif self.stepId in [sc.stepSimPendingPorta, sc.stepSimPendingNew]:
+    elif self.stepId in [sc.stepSimPendingPorta, sc.stepSimPendingNew, sc.stepProSimActivating]:
       state = 'porta'
-    elif self.stepId in [sc.stepSimActivated]:
+    elif self.stepId in [sc.stepSimActivated, sc.stepProSimsActivated]:
       state = 'active'
-    elif self.stepId in [sc.stepSimSuspended]:
+    elif self.stepId in [sc.stepSimSuspended, sc.stepProSimsSuspended]:
       state = 'suspended'
-    elif self.stepId in [sc.stepSimTerminated]:
+    elif self.stepId in [sc.stepSimTerminated, sc.stepProSimsTerminated]:
       state = 'terminated'
     return state
 
