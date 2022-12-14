@@ -125,7 +125,14 @@ class Connector:
 
   def getSimplePortaHistory(self, nsce):
     url = f"/ext/sim/portability/history/{nsce}"
-    response = self.get(url)
+    try:
+      response = self.get(url)
+    except BazileError as exp:
+      if exp.statusCode == 404:
+        self.logger.warning(f"SIM {nsce} not found")
+        return
+      else:
+        raise exp
     history = {}
     if response['returnCode'] == 200:
       h = response['data']['Historique']
