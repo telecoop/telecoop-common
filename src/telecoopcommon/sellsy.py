@@ -1915,10 +1915,10 @@ class SellsyInvoice:
           'row_taxid': row['taxId'],
           'row_qt': row['quantity'],
         }
-      elif row['type'] == 'comment':
+      elif row['type'] in ['comment', 'title']:
         params['row'][i] = {
-          'row_type': 'comment',
-          'row_comment': row['comment'],
+          'row_type': row['type'],
+          f"row_{row['type']}": row[row['type']],
         }
       else:
         params['row'][i] = {
