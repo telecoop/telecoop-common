@@ -1928,6 +1928,9 @@ class SellsyInvoice:
           'row_type': row['type'],
         }
 
+    if data['isLastInvoice']:
+      params['document']['tags'] = 'derniere-facture'
+
     result = connector.api(method='Document.create', params=params)
     # print(json.dumps(result, indent=2))
     invoice = SellsyInvoice(result['doc_id'])
