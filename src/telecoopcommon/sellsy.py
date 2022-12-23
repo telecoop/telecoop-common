@@ -1299,7 +1299,10 @@ class SellsyClient:
     for f in cli["customfields"]:
       code = f["code"]
       if (code == "facturationmanuelle"):
-        self.autoValidation = (f["formatted_value"] in ['', 'automatique'])
+        if f["formatted_value"] == 'hors process':
+          self.autoValidation = None
+        else:
+          self.autoValidation = (f["formatted_value"] in ['', 'automatique'])
       elif (code == "facture-unique"):
         if (isinstance(f["boolval"], bool)):
           self.oneInvoicePerLine = (not f["boolval"])
