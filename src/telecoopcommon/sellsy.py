@@ -1304,10 +1304,7 @@ class SellsyClient:
         else:
           self.autoValidation = (f["formatted_value"] in ['', 'automatique'])
       elif (code == "facture-unique"):
-        if (isinstance(f["boolval"], bool)):
-          self.oneInvoicePerLine = (not f["boolval"])
-        else:
-          self.oneInvoicePerLine = (f['boolval'] == 'N')
+        self.oneInvoicePerLine = (f['boolval'] == 'N')
       elif (code == 'statut-client-abo-mobile' and 'formatted_value' in f):
         self.status = f["formatted_value"]
       elif code == 'paiementfavori':

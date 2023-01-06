@@ -148,6 +148,7 @@ class Runner():
       ref = self.getArg('Client ref')
       client = self.getSellsyConnector().getClientFromRef(ref)
       print(client)
+      print(client.oneInvoicePerLine)
       print(client.memberCategory)
       print(client.preferredPaymentMethod)
 
