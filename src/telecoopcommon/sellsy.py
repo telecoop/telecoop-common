@@ -57,6 +57,7 @@ sellsyValues = {
             "parrainage-nb-code-donated": 146337,
             "code-promo": 143564,
             "pack-depannage": 145684,
+            "pack-depannage-used": 209177,
             "slimpay-mandate-status": 154395,
             "member": 103773,
             "phone-model": 103462,
@@ -192,6 +193,7 @@ sellsyValues = {
             "parrainage-nb-code-donated": 146338,
             "code-promo": 144015,
             "pack-depannage": 145683,
+            "pack-depannage-used": 209130,
             "slimpay-mandate-status": 171542,
             "member": 103406,
             "phone-model": 102178,
@@ -348,6 +350,7 @@ class TcSellsyConnector:
         self.cfidSponsorNbCodeDonated = customFields["parrainage-nb-code-donated"]
         self.cfidPromoCode = customFields["code-promo"]
         self.cfidPackDepannage = customFields["pack-depannage"]
+        self.cfidPackDepannageUsed = customFields["pack-depannage-used"]
         self.cfidSlimpayMandateStatus = customFields["slimpay-mandate-status"]
         self.cfidProNbSims = customFields["pro-nb-sims"]
         self.cfidProNbPorta = customFields["pro-nb-porta"]
@@ -908,6 +911,11 @@ class TcSellsyConnector:
                     "defaultValue": "0",
                     "numericval": 0,
                 },
+                "pack-depannage-utilises": {
+                    "code": "pack-depannage-utilises",
+                    "defaultValue": "0",
+                    "numericval": 0,
+                },
                 "pro-nb-sims": {
                     "code": "pro-nb-sims",
                     "defaultValue": "0",
@@ -997,7 +1005,12 @@ class TcSellsyConnector:
                         result["customfields"][code]["formatted_ymd"] = field[
                             "formatted_ymd"
                         ]
-                    if code in ["pack-depannage", "pro-nb-sims", "pro-nb-porta"]:
+                    if code in [
+                        "pack-depannage",
+                        "pack-depannage-utilises",
+                        "pro-nb-sims",
+                        "pro-nb-porta",
+                    ]:
                         try:
                             result["customfields"][code]["numericval"] = int(
                                 field["defaultValue"]
@@ -1637,6 +1650,7 @@ class SellsyOpportunity:
         self.promoCode = None
         self.refereeCode = None
         self.packDepannage = None
+        self.packDepannageUsed = None
         self.proNbSims = None
         self.proNbPorta = None
         self.proDateEngagement = None
@@ -1741,7 +1755,8 @@ class SellsyOpportunity:
                     self.rio = field["textval"]
                 if code == "forfait":
                     # plan should always be known
-                    # BUT there's a bug in Sellsy in DEV env where custom field 'forfait' is unknown and unsettable. O joy.
+                    # BUT there's a bug in Sellsy in DEV env where custom field 'forfait' is unknown and unsettable.
+                    # O joy.
                     if self.env == "DEV" and "formatted_value" in field:
                         self.plan = field["formatted_value"]
                     elif self.env == "PROD" and "formatted_value" in field:
@@ -1804,6 +1819,8 @@ class SellsyOpportunity:
                     self.refereeCode = field["textval"]
                 if code == "pack-depannage":
                     self.packDepannage = int(field["numericval"])
+                if code == "pack-depannage-utilises":
+                    self.packDepannageUsed = int(field["numericval"])
                 if code == "pro-nb-sims":
                     self.proNbSims = int(field["numericval"])
                 if code == "pro-nb-porta":
