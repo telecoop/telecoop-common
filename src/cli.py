@@ -419,11 +419,12 @@ class Runner:
             )
 
         if command == "script":
-            opps = SellsyMemberOpportunity.getOpportunities(
-                self.getSellsyConnector(), self.logger
-            )
-            print(len(opps))
-            print(opps[0])
+            tsc = self.getSellsyConnector()
+            invoiceId = self.getArg("Invoice id")
+            invoice = SellsyInvoice(invoiceId)
+            invoice.load(tsc)
+            invoice.processSEPARejection("TEST", "testing", None, tsc)
+
             # import scripts
             # scripts.initOldTeleCommownClients(self.getSellsyConnector(), self.logger)
 

@@ -1260,6 +1260,7 @@ class TcSellsyConnector:
                 method="Document.getOne", params={"doctype": "invoice", "docid": id}
             )
         except sellsy_api.errors.SellsyError:
+
             invoice = self.api(
                 method="Document.getOne", params={"doctype": "creditnote", "docid": id}
             )
@@ -2308,7 +2309,38 @@ class SellsyInvoice:
                 connector.api(method="Document.sendDocByMail", params=params)
             except sellsy_api.SellsyError as e:
                 connector.logger.warning(
-                    "Whoops, something went wrong sending the email : {}".format(e)
+                    f"Whoops, something went wrong sending the email : {e}"
                 )
         else:
             connector.logger.warning("Tried to send invoice to client without email")
+
+    def updateCustomField(self, cfid, value, sellsyConnector):
+        sellsyConnector.updateCustomField("document", self.id, cfid, value)
+
+    def addPayMedium(self, payMedium, sellsyConnector):
+        tsc = sellsyConnector
+        self.payMediums.append(payMedium)
+        allPayMediums = tsc.getPayMediums()
+        payMediums = []
+        for medium in self.payMediums:
+            payMediums.append(allPayMediums[medium])
+        params = {
+            "docid": self.id,
+            "document": {"doctype": "invoice", "payMediums": payMediums},
+        }
+        sellsyConnector.api(method="Document.update", params=params)
+
+    def processSEPARejection(
+        self, rejectCode, rejectReason, paymentId, sellsyConnector
+    ):
+        tsc = sellsyConnector
+        # For payment rejected before paymentDate, we won't have created the payment in Sellsy yet
+        if paymentId is not None:
+            self.deletePayment(paymentId, tsc)
+
+        self.updateCustomField(
+            tsc.cfidSlimpayRejectReason, f"{rejectCode} - {rejectReason}", tsc
+        )
+
+        # Add card payment method for easier recovery process
+        self.addPayMedium("carte bancaire", tsc)
