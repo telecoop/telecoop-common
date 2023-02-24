@@ -510,12 +510,12 @@ class TcSellsyConnector:
                         time.sleep(1)
                     else:
                         raise e
-        except sellsy_api.errors.SellsyAuthenticateError as e:  # raised if credential keys are not valid
-            self.logger.warning("Authentication failed ! Details : {}".format(e))
-            raise e
-        except sellsy_api.errors.SellsyError as e:  # raised if an error is returned by Sellsy API
-            self.logger.warning(e)
-            raise e
+        except sellsy_api.errors.SellsyAuthenticateError as excp:  # raised if credential keys are not valid
+            self.logger.warning(f"Authentication failed ! Details : {excp}")
+            raise excp
+        except sellsy_api.errors.SellsyError as excp:  # raised if an error is returned by Sellsy API
+            self.logger.warning(excp)
+            raise excp
         # Sellsy API is throttled at 5 requests per second, we take a margin of 0.25s
         time.sleep(0.25)
         return result
@@ -2130,8 +2130,8 @@ class SellsyInvoice:
         if "rows" in values:
             self.rows = values["rows"]
 
-    def createPayment(self, paymentDate, amount, sellsyConnector):
-        return sellsyConnector.createPayment(self.id, paymentDate, amount)
+    def createPayment(self, paymentDate, amount, label, sellsyConnector):
+        return sellsyConnector.createPayment(self.id, paymentDate, amount, label)
 
     def deletePayment(self, paymentId, sellsyConnector):
         sellsyConnector.deletePayment(paymentId, self.id)
