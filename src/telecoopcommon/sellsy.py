@@ -104,6 +104,7 @@ sellsyValues = {
         "opportunity_source_registre_excel": 178934,
         "funnel_id_vie_du_contrat": 62579,
         "step_new": 447893,
+        "step_reminder": 694761,
         "step_sim_to_send": 447894,
         "step_sim_to_send_transition": 573010,
         "step_sim_sent": 447895,
@@ -240,6 +241,7 @@ sellsyValues = {
         "opportunity_source_registre_excel": 178841,
         "funnel_id_vie_du_contrat": 60663,
         "step_new": 446190,
+        "step_reminder": 692183,
         "step_sim_to_send": 434062,
         "step_sim_to_send_transition": 566314,
         "step_sim_sent": 444468,
@@ -395,6 +397,7 @@ class TcSellsyConnector:
 
         self.funnelIdVdc = sellsyValues[self.env]["funnel_id_vie_du_contrat"]
         self.stepNew = sellsyValues[self.env]["step_new"]
+        self.stepReminder = sellsyValues[self.env]["step_reminder"]
         self.stepSimToSend = sellsyValues[self.env]["step_sim_to_send"]
         self.stepSimToSendTransition = sellsyValues[self.env][
             "step_sim_to_send_transition"
@@ -1890,6 +1893,7 @@ class SellsyOpportunity:
         state = None
         if self.stepId in [
             sc.stepNew,
+            sc.stepReminder,
             sc.stepSimToSend,
             sc.stepSimToSendTransition,
             sc.stepProSimsInactive,
