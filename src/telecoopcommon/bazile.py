@@ -3,6 +3,20 @@ from datetime import datetime
 from time import sleep
 from json import JSONDecodeError
 
+from enum import Enum
+
+
+class DataStatus(Enum):
+    OFF = "N"
+    ON_2G = "Compteur_2G"
+    ON_4G = "Compteur_4G"
+
+
+class ForeignStatus(Enum):
+    OFF = "N"
+    INTERNATIONAL = "I"
+    ROAMING = "IR"
+
 
 class BazileError(Exception):
     statusCode = None
@@ -66,10 +80,17 @@ class Connector:
         return result
 
     def post(self, service, data):
-        headers = {"Authorization": "Bearer {}".format(self.getToken())}
+        headers = {"Authorization": f"Bearer {self.getToken()}"}
         url = self.host + service
-        self.logger.info("Calling POST {}".format(url))
+        self.logger.info(f"Calling POST {url}")
         response = requests.post(url, json=data, headers=headers)
+        return response.json()
+
+    def patch(self, service, data):
+        headers = {"Authorization": f"Bearer {self.getToken()}"}
+        url = self.host + service
+        self.logger.info(f"Calling PATCH {url}")
+        response = requests.patch(url, json=data, headers=headers)
         return response.json()
 
     def getMarques(self):
@@ -106,14 +127,64 @@ class Connector:
 
         return num
 
+    def palierHF(self, accountId, amount):
+        url = f"/ext/account/{accountId}"
+        params = {"hfmax": amount}
+        return self.patch(url, params)
+
     def getConso(self, accountId, month):
         return self.get(f"/ext/consommation/{accountId}/{month}")
 
-    def getSimPortaHistory(self, nsce):
-        url = f"/ext/sim/portability/history/{nsce}"
-        return self.get(url)
+    def simSwap(self, accountId, msisdn, newNsce):
+        url = "/ext/account/swap-sim"
+        data = {
+            "Accountid": accountId,
+            "Msisdn": msisdn,
+            "Nsce": newNsce,
+        }
+        return self.post(url, data)
 
-    def postChangePlan(self, accountId, plan, startDate):
+    def changeSimOptions(
+        self,
+        msisdn: str,
+        nsce: str,
+        data: DataStatus = None,
+        voicemail: bool = None,
+        foreignStatus: ForeignStatus = None,
+    ):
+        if data is None and voicemail is None and foreignStatus is None:
+            self.logger.info("Nothing to do, exiting")
+        url = "/ext/sim/options"
+        params = {
+            "Msisdn": msisdn,
+            "Nsce": nsce,
+        }
+        if data is not None:
+            params["Data"] = data.value
+        if voicemail is not None:
+            params["Voicemail"] = "Y" if voicemail else "N"
+        if foreignStatus is not None:
+            params["Foreignstatus"] = foreignStatus.value
+
+        return self.post(url, params)
+
+    def simSuspend(self, msisdn, nsce):
+        url = "/ext/sim/suspend"
+        params = {
+            "Msisdn": msisdn,
+            "Nsce": nsce,
+        }
+        return self.post(url, params)
+
+    def simActivate(self, msisdn, nsce):
+        url = "/ext/sim/reactivation"
+        params = {
+            "Msisdn": msisdn,
+            "Nsce": nsce,
+        }
+        return self.post(url, params)
+
+    def changePlan(self, accountId, plan, startDate):
         data = {
             "Fidelisation": {
                 "Account_id": accountId,
@@ -125,6 +196,10 @@ class Connector:
         }
         url = "/ext/fidelisation"
         return self.post(url, data)
+
+    def getSimPortaHistory(self, nsce):
+        url = f"/ext/sim/portability/history/{nsce}"
+        return self.get(url)
 
     def getSimplePortaHistory(self, nsce):
         url = f"/ext/sim/portability/history/{nsce}"
