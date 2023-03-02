@@ -1,7 +1,6 @@
 import requests
 from datetime import datetime
 from time import sleep
-from json import JSONDecodeError
 
 from enum import Enum
 
@@ -62,21 +61,21 @@ class Connector:
                 result = response.json()
                 if "data" not in result:
                     raise BazileError(f"Unknown response from Bazile {result}")
-            except BazileError as e:
+            except BazileError as excp:
                 if response.status_code in [503, 502] and retry >= 1:
                     # When too many calls on Bazile API, we get a 503 error, waiting some time solves the problem
                     self.logger.info(f"Retrying {3-retry+1}/3")
                     retry -= 1
                     sleep(5)
                     continue
-                self.logger.warning(e)
+                self.logger.warning(excp)
                 self.logger.warning(f"Service called was {service}")
-                raise e
-            except JSONDecodeError:
+                raise excp
+            except requests.exceptions.JSONDecodeError as excp:
                 self.logger.warning(
                     f"Calling {service}, got a non json response {response.text}"
                 )
-                raise BazileError("Non JSON response")
+                raise BazileError("Non JSON response") from excp
         return result
 
     def post(self, service, data):
