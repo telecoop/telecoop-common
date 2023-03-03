@@ -1,8 +1,8 @@
-import requests
+import json
 from datetime import datetime
 from time import sleep
-
 from enum import Enum
+import requests
 
 
 class DataStatus(Enum):
@@ -44,7 +44,7 @@ class Connector:
     def get(self, service):
         headers = {"Authorization": "Bearer " + self.getToken()}
         url = self.host + service
-        self.logger.debug("Calling GET {} with headers {}".format(url, headers))
+        self.logger.debug(f"Calling GET {url} with headers {headers}")
         retry = 3
         result = None
         while retry >= 0:
@@ -81,16 +81,30 @@ class Connector:
     def post(self, service, data):
         headers = {"Authorization": f"Bearer {self.getToken()}"}
         url = self.host + service
-        self.logger.info(f"Calling POST {url}")
+        self.logger.debug(f"Calling POST {url} with params {data}")
         response = requests.post(url, json=data, headers=headers)
-        return response.json()
+        try:
+            result = response.json()
+        except json.decoder.JSONDecodeError as excp:
+            self.logger.warning(
+                f"POSTed {url} with {data} and got a non json respons {response.text}"
+            )
+            raise BazileError("Non JSON response") from excp
+        return result
 
     def patch(self, service, data):
         headers = {"Authorization": f"Bearer {self.getToken()}"}
         url = self.host + service
-        self.logger.info(f"Calling PATCH {url}")
+        self.logger.debug(f"Calling PATCH {url} with params {data}")
         response = requests.patch(url, json=data, headers=headers)
-        return response.json()
+        try:
+            result = response.json()
+        except json.decoder.JSONDecodeError as excp:
+            self.logger.warning(
+                f"PATCHed {url} with {data} and got a non json respons {response.text}"
+            )
+            raise BazileError("Non JSON response") from excp
+        return result
 
     def getMarques(self):
         return self.get("/ext/marques")
