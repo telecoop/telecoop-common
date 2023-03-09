@@ -117,12 +117,14 @@ sellsyValues = {
         "funnel_id_membership": 62446,
         "step_membership_asked": 446849,
         "step_membership_sign": 545658,
+        "step_membership_reminder": 699273,
         "step_membership_signed": 632765,
         "step_membership_paid": 447902,
         "step_membership_active": 545659,
         "funnel_id_membership2": 81505,
         "step_membership2_created": 587181,
         "step_membership2_sign": 587182,
+        "step_membership2_reminder": 699274,
         "step_membership2_payment": 587183,
         "step_membership2_verified": 587184,
         "step_membership2_validated": 587185,
@@ -254,12 +256,14 @@ sellsyValues = {
         "funnel_id_membership": 60664,
         "step_membership_asked": 434065,
         "step_membership_sign": 452137,
+        "step_membership_reminder": 641972,
         "step_membership_signed": 632764,
         "step_membership_paid": 434066,
         "step_membership_active": 452138,
         "funnel_id_membership2": 85419,
         "step_membership2_created": 616762,
         "step_membership2_sign": 616763,
+        "step_membership2_reminder": 667822,
         "step_membership2_payment": 616764,
         "step_membership2_verified": 616765,
         "step_membership2_validated": 616766,
@@ -413,12 +417,18 @@ class TcSellsyConnector:
         self.funnelIdMembership = sellsyValues[self.env]["funnel_id_membership"]
         self.stepMembershipAsked = sellsyValues[self.env]["step_membership_asked"]
         self.stepMembershipSign = sellsyValues[self.env]["step_membership_sign"]
+        self.stepMembershipRemainder = sellsyValues[self.env][
+            "step_membership_reminder"
+        ]
         self.stepMembershipPaid = sellsyValues[self.env]["step_membership_paid"]
         self.stepMembershipActive = sellsyValues[self.env]["step_membership_active"]
 
         self.funnelIdMembership2 = sellsyValues[self.env]["funnel_id_membership2"]
         self.stepMembership2Created = sellsyValues[self.env]["step_membership2_created"]
         self.stepMembership2Sign = sellsyValues[self.env]["step_membership2_sign"]
+        self.stepMembership2Remainder = sellsyValues[self.env][
+            "step_membership2_reminder"
+        ]
         self.stepMembership2Payment = sellsyValues[self.env]["step_membership2_payment"]
         self.stepMembership2Verified = sellsyValues[self.env][
             "step_membership2_verified"

@@ -34,11 +34,18 @@ class Connector:
     def getToken(self):
         if self.token is None:
             data = {"login": self.login, "password": self.password}
-            response = requests.post(self.host + "/ext/authentication", json=data)
-            jsonResp = response.json()
+            url = self.host + "/ext/authentication"
+            response = requests.post(url, json=data)
+            try:
+                jsonResp = response.json()
+            except json.decoder.JSONDecodeError as excp:
+                self.logger.warning(
+                    f"POSTed {url} with {data} and got a non json respons {response.text}"
+                )
+                raise BazileError("Non JSON response") from excp
             self.token = jsonResp["data"]["token"]
 
-        self.logger.debug("Token is {}".format(self.token))
+        self.logger.debug(f"Token is {self.token}")
         return self.token
 
     def get(self, service):
