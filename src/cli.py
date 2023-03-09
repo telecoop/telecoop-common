@@ -321,7 +321,9 @@ class Runner:
             opp = SellsyMemberOpportunity(opportunityId)
             opp.load(self.getSellsyConnector())
             print(opp)
-            print(f"{opp.sharesAmount} {opp.paymentDate} {opp.acceptedDate}")
+            print(
+                f"{opp.sharesAmount} {opp.paymentDate} {opp.acceptedDate} {opp.formSentDate}"
+            )
 
         if command == "get-member-opps":
             opps = SellsyMemberOpportunity.getOpportunities(

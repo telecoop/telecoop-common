@@ -76,6 +76,7 @@ sellsyValues = {
             "membership-payment-date": 144644,
             "membership-accepted-date": 144643,
             "membership-category": 170554,
+            "membership-form-sent-date": 195633,
             "pro-nb-sims": 180710,
             "pro-nb-porta": 180712,
             "pro-date-engagement": 180713,
@@ -215,6 +216,7 @@ sellsyValues = {
             "membership-payment-date": 104863,
             "membership-accepted-date": 104864,
             "membership-category": 179117,
+            "membership-form-sent-date": 196623,
             "pro-nb-sims": 183863,
             "pro-nb-porta": 183861,
             "pro-date-engagement": 183869,
@@ -380,6 +382,7 @@ class TcSellsyConnector:
         self.cfidMembershipPaymentDate = customFields["membership-payment-date"]
         self.cfidMembershipAcceptedDate = customFields["membership-accepted-date"]
         self.cfidMembershipCategory = customFields["membership-category"]
+        self.cfidMembershipFormSentDate = customFields["membership-form-sent-date"]
 
         self.cfidSlimpayPaymentDate = customFields["slimpay-date-prelevement"]
         self.cfidSlimpayPaymentLink = customFields["slimpay-lien-prelevement"]
@@ -1054,14 +1057,18 @@ class TcSellsyConnector:
                 "montantparts": {"code": "montantparts", "defaultValue": ""},
                 "dateversementsocietariat": {
                     "code": "dateversementsocietariat",
-                    "timestamptval": "",
+                    "timestampval": 0,
                 },
                 "dateacceptationsocietariat": {
                     "code": "dateacceptationsocietariat",
-                    "timestamptval": "",
+                    "timestampval": 0,
                 },
                 "moyen-de-paiement": {"code": "moyen-de-paiement", "textval": ""},
                 "reference-paiement": {"code": "reference-paiement", "textval": ""},
+                "dateattestationenvoyee": {
+                    "code": "dateattestationenvoyee",
+                    "timestampval": 0,
+                },
             },
         }
 
@@ -1072,7 +1079,11 @@ class TcSellsyConnector:
                     code = field["code"]
                     if (
                         code
-                        in ["dateversementsocietariat", "dateacceptationsocietariat"]
+                        in [
+                            "dateversementsocietariat",
+                            "dateacceptationsocietariat",
+                            "dateattestationenvoyee",
+                        ]
                         and "formatted_ymd" in field
                     ):
                         result["customfields"][code]["formatted_ymd"] = field[
@@ -1954,6 +1965,7 @@ class SellsyMemberOpportunity:
         self.acceptedDate = None
         self.paymentLabel = None
         self.paymentMode = None
+        self.formSentDate = None
 
     @property
     def stepName(self):
@@ -2024,6 +2036,14 @@ class SellsyMemberOpportunity:
                     self.paymentMode = field["textval"]
                 elif code == "reference-paiement":
                     self.paymentLabel = field["textval"]
+                elif (
+                    code == "dateattestationenvoyee"
+                    and "formatted_ymd" in field
+                    and field["formatted_ymd"] != ""
+                ):
+                    self.formSentDate = parisTZ.localize(
+                        datetime.strptime(field["formatted_ymd"], "%Y-%m-%d")
+                    )
 
     def updateStep(self, stepId, connector):
         connector.api(
