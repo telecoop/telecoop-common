@@ -44,6 +44,7 @@ def cmdline():
             "get-client-opportunities",
             "create-client",
             "create-opportunity",
+            "terminate-opp",
             "get-invoice",
             "get-invoices",
             "update-invoice-status",
@@ -206,6 +207,13 @@ class Runner:
             print(values)
             opp = SellsyOpportunity.create(values, sc)
             print(opp)
+
+        if command == "terminate-opp":
+            tsc = self.getSellsyConnector()
+            oppId = self.getArg("Oppontunity id")
+            opp = SellsyOpportunity(oppId)
+            opp.load(tsc)
+            opp.terminate(tsc)
 
         if command == "get-opportunities-in-step":
             step = self.getArg("Step")

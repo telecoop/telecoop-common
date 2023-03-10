@@ -1759,7 +1759,7 @@ class SellsyOpportunity:
             self.prospectId = opp["linkedid"]
         self.reference = opp["ident"]
         self.name = opp["name"]
-        self.funnelId = opp["funnelid"]
+        self.funnelId = int(opp["funnelid"])
         sourceId = (
             opp["sourceid"]
             if "sourceid" in opp
@@ -1939,6 +1939,45 @@ class SellsyOpportunity:
         elif self.stepId in [sc.stepSimTerminated, sc.stepProSimsTerminated]:
             state = "terminated"
         return state
+
+    def terminate(self, connector):
+        allowedFunnelIds = [connector.funnelIdVdc, connector.funnelIdSimsPro]
+        if self.funnelId not in allowedFunnelIds:
+            raise RuntimeError(
+                f"Unable to terminate opportunity {self.id}, {self.funnelId} not in {allowedFunnelIds}"
+            )
+
+        stepTerminated = None
+        if self.funnelId == connector.funnelIdVdc:
+            stepTerminated = connector.stepSimTerminated
+        elif self.funnelId == connector.funnelIdSimsPro:
+            stepTerminated = connector.stepProSimsTerminated
+        self.updateStep(stepTerminated, connector)
+
+        # update client status
+        client = self.getClient(connector)
+        clientOpps = client.getOpportunities(connector)
+        nbActiveLines = 0
+        for clientOpp in clientOpps:
+            if clientOpp.id != self.id and clientOpp.isActive(connector):
+                nbActiveLines += 1
+        if nbActiveLines == 0:
+            connector.updateCustomField(
+                "client",
+                self.clientId,
+                connector.cfIdStatusClientMobile,
+                "Résilié avec dettes ou crédits",
+            )
+
+        connector.updateCustomField(
+            "client", self.clientId, connector.cfidManuelInvoice, "Manuelle"
+        )
+
+    def isActive(self, connector):
+        return (
+            str(connector.stepSimActivated) in self.steps
+            or str(connector.stepProSimsActivated) in self.steps
+        )
 
 
 class SellsyMemberOpportunity:
