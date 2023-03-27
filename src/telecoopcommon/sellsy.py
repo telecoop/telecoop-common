@@ -804,12 +804,12 @@ class TcSellsyConnector:
         clients = self.api(method="Client.getList", params=params)
         client = None
         if clients["result"]:
-            for id, cli in clients["result"].items():
+            for clientId, cli in clients["result"].items():
                 if cli["ident"] == "CLI00001001":
                     # Référence ayant servie de test lors de la mise en prod du parcours souscription
                     continue
                 if cli["email"] == email:
-                    client = SellsyClient(id)
+                    client = SellsyClient(clientId)
                     client.loadWithValues(cli)
                     break
 
@@ -823,21 +823,21 @@ class TcSellsyConnector:
         nbPages = infos["nbpages"]
         currentPage = 1
         while currentPage <= nbPages:
-            self.logger.debug("Processing page {}/{}".format(currentPage, nbPages))
-            for id, client in clients["result"].items():
+            self.logger.debug(f"Processing page {currentPage}/{nbPages}")
+            for clientId, client in clients["result"].items():
                 if client["ident"] == "CLI00001001":
                     # Référence ayant servie de test lors de la mise en prod du parcours souscription
                     continue
 
-                c = SellsyClient(id)
-                c.loadWithValues(client)
+                cli = SellsyClient(clientId)
+                cli.loadWithValues(client)
                 if (
                     client["ident"] is not None and client["ident"] not in ["", "-1"]
-                ) or (c.member and includeMembers):
-                    result[id] = c
+                ) or (cli.member and includeMembers):
+                    result[id] = cli
                 else:
-                    if c.status != "Non abonné":
-                        self.logger.warning(f"Client #{id} has no reference")
+                    if cli.status != "Non abonné":
+                        self.logger.warning(f"Client #{clientId} has no reference")
 
             currentPage += 1
             if infos["pagenum"] <= nbPages:
@@ -2281,7 +2281,7 @@ class SellsyInvoice:
         rateCategories = connector.getRateCategories()
         params = {
             "document": {
-                "doctype": "invoice" if data["amount"] > 0 else "creditnote",
+                "doctype": "invoice" if data["amount"] >= 0 else "creditnote",
                 "thirdid": data["sellsyClientId"],
                 "docspeakerStaffId": connector.ownerId,
                 "subject": data["subject"].format(subject=model["subject"]),
@@ -2347,7 +2347,7 @@ class SellsyInvoice:
         try:
             invoice.load(connector)
 
-            lessThan1 = data["amount"] > 0 and data["amount"] < 1
+            lessThan1 = data["amount"] > 0 and data["amount"] <= 0.2
             if data["automaticValidation"] and not lessThan1 and data["amount"] > 0:
                 logger.info(
                     "Automatic validation enabled : validating invoice and sending mail"
