@@ -834,7 +834,7 @@ class TcSellsyConnector:
                 if (
                     client["ident"] is not None and client["ident"] not in ["", "-1"]
                 ) or (cli.member and includeMembers):
-                    result[id] = cli
+                    result[clientId] = cli
                 else:
                     if cli.status != "Non abonné":
                         self.logger.warning(f"Client #{clientId} has no reference")
