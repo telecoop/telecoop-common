@@ -5,7 +5,10 @@ class TcCursor:
         self.rowcount = None
 
     def execute(self, query, params=None):
-        self.logger.debug(self._cursor.mogrify(query, params).decode())
+        text = self._cursor.mogrify(query, params)
+        if "decode" in dir(text):
+            text = text.decode()
+        self.logger.debug(text)
         self._cursor.execute(query, params)
         self.rowcount = self._cursor.rowcount
 
