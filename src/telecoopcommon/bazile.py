@@ -137,6 +137,19 @@ class Connector:
 
         return isActive
 
+    def isSimAvailable(self, nsce):
+        isAvailable = None
+        try:
+            response = self.getSimInfo(nsce)
+            isAvailable = response["data"]["Sim_information"]["Statut"] in [
+                "Available",
+                "Active",
+            ]
+        except BazileError:
+            isAvailable = False
+
+        return isAvailable
+
     def getNumFromSim(self, nsce):
         num = None
         try:
