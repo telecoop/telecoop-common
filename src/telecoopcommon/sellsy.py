@@ -817,7 +817,7 @@ class TcSellsyConnector:
 
         return client
 
-    def getClients(self, includeMembers=False):
+    def getClients(self, includeMembers=False, includeNoRef=False):
         result = {}
         params = {"pagination": {"nbperpage": 1000, "pagenum": 1}}
         clients = self.api(method="Client.getList", params=params)
@@ -834,7 +834,8 @@ class TcSellsyConnector:
                 cli = SellsyClient(clientId)
                 cli.loadWithValues(client)
                 if (
-                    client["ident"] is not None and client["ident"] not in ["", "-1"]
+                    (client["ident"] is not None or includeNoRef)
+                    and client["ident"] not in ["", "-1"]
                 ) or (cli.member and includeMembers):
                     result[clientId] = cli
                 else:
