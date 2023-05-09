@@ -25,8 +25,8 @@ sellsyValues = {
         "plans": {
             "Sobriété": "PL_807",
             "Transition": "PL_827",
-            "Sobriété Pro": "PL_750_pro",
-            "Transition Pro": "PL_796_pro",
+            "Sobriété Pro": "PL_849",
+            "Transition Pro": "PL_850",
             "Centrale Photovoltaïque": "PL_807",
         },
         "paydate_id": 3691808,
@@ -2351,7 +2351,7 @@ class SellsyInvoice:
             invoice.load(connector)
 
             lessThan1 = data["amount"] > 0 and data["amount"] <= 0.2
-            if data["automaticValidation"] and not lessThan1 and data["amount"] > 0:
+            if data["automaticValidation"] and not lessThan1 and data["amount"] >= 0:
                 logger.info(
                     "Automatic validation enabled : validating invoice and sending mail"
                 )
