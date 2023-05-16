@@ -1962,7 +1962,11 @@ class SellsyOpportunity:
         clientOpps = client.getOpportunities(connector)
         nbActiveLines = 0
         for clientOpp in clientOpps:
-            if clientOpp.id != self.id and clientOpp.isActive(connector):
+            if (
+                clientOpp.id != self.id
+                and clientOpp.funnelId in allowedFunnelIds
+                and clientOpp.isActive(connector)
+            ):
                 nbActiveLines += 1
         if nbActiveLines == 0:
             connector.updateCustomField(
