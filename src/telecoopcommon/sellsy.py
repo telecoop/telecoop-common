@@ -2410,6 +2410,13 @@ class SellsyInvoice:
         }
         sellsyConnector.api(method="Document.update", params=params)
 
+    def enableStripe(self, sellsyConnector):
+        params = {
+            "docid": self.id,
+            "document": {"doctype": "invoice", "enabledPaymentGateways": ["stripe"]},
+        }
+        sellsyConnector.api(method="Document.update", params=params)
+
     def processSEPARejection(
         self, rejectCode, rejectReason, paymentId, sellsyConnector
     ):
@@ -2423,4 +2430,6 @@ class SellsyInvoice:
         )
 
         # Add card payment method for easier recovery process
-        self.addPayMedium("carte bancaire", tsc)
+        # self.addPayMedium("carte bancaire", tsc)
+        # Enable Stripe
+        self.enableStripe(tsc)
