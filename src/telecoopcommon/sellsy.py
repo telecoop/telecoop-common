@@ -110,6 +110,7 @@ sellsyValues = {
         "step_sim_to_send": 447894,
         "step_sim_to_send_transition": 573010,
         "step_sim_sent": 447895,
+        "step_sim_hand_delivered": 726276,
         "step_sim_received": 447896,
         "step_sim_pending_porta": 447897,
         "step_sim_pending_new": 447898,
@@ -251,6 +252,7 @@ sellsyValues = {
         "step_sim_to_send": 434062,
         "step_sim_to_send_transition": 566314,
         "step_sim_sent": 444468,
+        "step_sim_hand_delivered": 726277,
         "step_sim_received": 434063,
         "step_sim_pending_porta": 444469,
         "step_sim_pending_new": 444470,
@@ -412,6 +414,7 @@ class TcSellsyConnector:
             "step_sim_to_send_transition"
         ]
         self.stepSimSent = sellsyValues[self.env]["step_sim_sent"]
+        self.stepSimHandDelivered = sellsyValues[self.env]["step_sim_hand_delivered"]
         self.stepSimReceived = sellsyValues[self.env]["step_sim_received"]
         self.stepSimPendingPorta = sellsyValues[self.env]["step_sim_pending_porta"]
         self.stepSimPendingNew = sellsyValues[self.env]["step_sim_pending_new"]
@@ -1927,6 +1930,7 @@ class SellsyOpportunity:
             sc.stepSimSent,
             sc.stepSimReceived,
             sc.stepProSimsAwaiting,
+            sc.stepSimHandDelivered,
         ]:
             state = "sent"
         elif self.stepId in [

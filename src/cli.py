@@ -98,7 +98,7 @@ class Runner:
         if env in ["DEV", "LOCAL", "DOCKER"]:
             self.confSellsy = config["SellsyDev"]
         elif env == "PROD":
-            self.confSellsy = config["SellsyProd"]
+            self.confSellsy = config["Sellsy"]
 
         self.dbConnStr = []
         for cnf in config.items("Bdd"):
@@ -429,14 +429,15 @@ class Runner:
             )
 
         if command == "script":
-            tsc = self.getSellsyConnector()
             invoiceId = self.getArg("Invoice id")
+            tsc = self.getSellsyConnector()
             invoice = SellsyInvoice(invoiceId)
             invoice.load(tsc)
-            invoice.processSEPARejection("TEST", "testing", None, tsc)
-
-            # import scripts
-            # scripts.initOldTeleCommownClients(self.getSellsyConnector(), self.logger)
+            invoice.enableStripe(tsc)
+            return
+            nsce = self.getArg("NSCE")
+            bzC = self.getBazileConnector()
+            print(bzC.isSimAvailable(nsce))
 
 
 def main():
