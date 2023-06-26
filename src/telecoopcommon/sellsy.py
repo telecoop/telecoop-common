@@ -2363,7 +2363,7 @@ class SellsyInvoice:
                 logger.info(
                     "Automatic validation enabled : validating invoice and sending mail"
                 )
-                invoice.validateAndSend(data["email"], connector)
+                invoice.validate(connector)
                 invoice.sellsyStatus = "due"
         except sellsy_api.SellsyError as exp:
             if exp.sellsy_code_error == "E_OBJ_NOT_LOADABLE":
@@ -2376,10 +2376,11 @@ class SellsyInvoice:
 
         return invoice
 
-    def validateAndSend(self, email, connector):
+    def validate(self, connector):
         params = {"docid": self.id, "document": {"doctype": "invoice", "step": "due"}}
         connector.api(method="Document.updateStep", params=params)
 
+    def sendByMail(self, email, connector):
         if email:
             params = {
                 "docid": self.id,
@@ -2391,12 +2392,16 @@ class SellsyInvoice:
             }
             try:
                 connector.api(method="Document.sendDocByMail", params=params)
-            except sellsy_api.SellsyError as e:
+            except sellsy_api.SellsyError as excp:
                 connector.logger.warning(
-                    f"Whoops, something went wrong sending the email : {e}"
+                    f"Whoops, something went wrong sending the email : {excp}"
                 )
         else:
             connector.logger.warning("Tried to send invoice to client without email")
+
+    def validateAndSend(self, email, connector):
+        self.validate(connector)
+        self.sendByMail(email, connector)
 
     def updateCustomField(self, cfid, value, sellsyConnector):
         sellsyConnector.updateCustomField("document", self.id, cfid, value)
