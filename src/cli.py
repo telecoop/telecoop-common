@@ -98,7 +98,7 @@ class Runner:
         if env in ["DEV", "LOCAL", "DOCKER"]:
             self.confSellsy = config["SellsyDev"]
         elif env == "PROD":
-            self.confSellsy = config["Sellsy"]
+            self.confSellsy = config["SellsyProd"]
 
         self.dbConnStr = []
         for cnf in config.items("Bdd"):
@@ -145,6 +145,7 @@ class Runner:
             o = SellsyOpportunity(id)
             o.load(sellsyConnector)
             print(o)
+            print(o.operator)
             print(o.tags)
             print(o.mobileDataOutOfPlan)
             print(o.sourceId)

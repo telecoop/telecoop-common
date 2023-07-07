@@ -32,6 +32,7 @@ sellsyValues = {
         "paydate_id": 3691808,
         "new_client_mail_template_id": 62573,
         "custom_fields": {
+            "operateur": 232923,
             "refbazile": 103778,
             "numerotelecoop": 103448,
             "nsce": 103775,
@@ -174,6 +175,7 @@ sellsyValues = {
         "paydate_id": 3527781,
         "new_client_mail_template_id": 62591,
         "custom_fields": {
+            "operateur": 232874,
             "refbazile": 103227,
             "numerotelecoop": 103670,
             "nsce": 102689,
@@ -343,6 +345,7 @@ class TcSellsyConnector:
             "new_client_mail_template_id"
         ]
         customFields = sellsyValues[self.env]["custom_fields"]
+        self.cfidOperator = customFields["operateur"]
         self.customFieldBazileNb = customFields["refbazile"]
         self.customFieldTelecomNum = customFields["numerotelecoop"]
         self.cfidMobileDataOutOfPlan = customFields["depassement-forfait-data"]
@@ -531,10 +534,14 @@ class TcSellsyConnector:
                         time.sleep(1)
                     else:
                         raise e
-        except sellsy_api.errors.SellsyAuthenticateError as excp:  # raised if credential keys are not valid
+        except (
+            sellsy_api.errors.SellsyAuthenticateError
+        ) as excp:  # raised if credential keys are not valid
             self.logger.warning(f"Authentication failed ! Details : {excp}")
             raise excp
-        except sellsy_api.errors.SellsyError as excp:  # raised if an error is returned by Sellsy API
+        except (
+            sellsy_api.errors.SellsyError
+        ) as excp:  # raised if an error is returned by Sellsy API
             self.logger.warning(excp)
             raise excp
         # Sellsy API is throttled at 5 requests per second, we take a margin of 0.25s
@@ -898,6 +905,7 @@ class TcSellsyConnector:
                 "nsce": {"code": "nsce", "textval": ""},
                 "numerotelecoop": {"code": "numerotelecoop", "textval": ""},
                 "rio": {"code": "rio", "textval": ""},
+                "operateur": {"code": "operateur", "formatted_value": ""},
                 "refbazile": {"code": "refbazile", "textval": ""},
                 "forfait": {"code": "forfait", "textval": ""},
                 "depassement-forfait-data": {
@@ -1000,6 +1008,7 @@ class TcSellsyConnector:
                         "pro-palier-suspension",
                         "pro-appels-internationaux",
                         "pro-donnees-mobiles",
+                        "operateur",
                     ]
                     dateFields = [
                         "date-activation-sim-souhaitee",
@@ -1290,7 +1299,6 @@ class TcSellsyConnector:
                 method="Document.getOne", params={"doctype": "invoice", "docid": id}
             )
         except sellsy_api.errors.SellsyError:
-
             invoice = self.api(
                 method="Document.getOne", params={"doctype": "creditnote", "docid": id}
             )
@@ -1666,6 +1674,7 @@ class SellsyOpportunity:
         self.status = None
         self.nsce = None
         self.msisdn = None
+        self.operator = None
         self.bazileNum = None
         self.rio = None
         self.plan = None
@@ -1796,6 +1805,8 @@ class SellsyOpportunity:
                     self.nsce = field["textval"]
                 if code == "numerotelecoop":
                     self.msisdn = field["textval"]
+                if code == "operateur":
+                    self.operator = field["formatted_value"]
                 if code == "refbazile":
                     self.bazileNum = field["textval"]
                 if code == "depassement-forfait-data":
@@ -2360,9 +2371,7 @@ class SellsyInvoice:
 
             lessThan1 = data["amount"] > 0 and data["amount"] <= 0.2
             if data["automaticValidation"] and not lessThan1 and data["amount"] >= 0:
-                logger.info(
-                    "Automatic validation enabled : validating invoice and sending mail"
-                )
+                logger.info("Automatic validation enabled : validating invoice")
                 invoice.validate(connector)
                 invoice.sellsyStatus = "due"
         except sellsy_api.SellsyError as exp:
