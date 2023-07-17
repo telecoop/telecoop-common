@@ -1806,7 +1806,8 @@ class SellsyOpportunity:
                 if code == "numerotelecoop":
                     self.msisdn = field["textval"]
                 if code == "operateur":
-                    self.operator = field["formatted_value"]
+                    val = field["formatted_value"]
+                    self.operator = "Bazile" if val == "" else val
                 if code == "refbazile":
                     self.bazileNum = field["textval"]
                 if code == "depassement-forfait-data":
