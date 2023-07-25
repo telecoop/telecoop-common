@@ -57,6 +57,7 @@ def cmdline():
             "update-cf",
             "get-tc-token",
             "get-code",
+            "get-codes",
             "create-code",
             "get-sponsorship-code",
             "link-to-referee",
@@ -372,6 +373,14 @@ class Runner:
             code = self.getArg("code")
             response = self.getTelecoopConnector().getCode(code)
             print(response.text)
+
+        if command == "get-codes":
+            codeType = self.getArg("code type")
+            codeType = int(codeType) if codeType != "-" else None
+            response = self.getTelecoopConnector().getCodes(codeType=codeType)
+            print(response.text)
+            print(response.json())
+            print([c["value"] for c in response.json()])
 
         if command == "create-code":
             type = self.getArg("code type")

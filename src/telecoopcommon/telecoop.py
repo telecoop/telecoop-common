@@ -33,6 +33,12 @@ class Connector:
     def getCode(self, code):
         return self.connector.get(f"/promo_codes/codes/{code}")
 
+    def getCodes(self, codeType=None):
+        url = "/promo_codes/codes"
+        if codeType is not None:
+            url += f"?code_type={codeType}"
+        return self.connector.get(url)
+
     def useCode(self, code, client):
         return self.connector.post(f"/promo_codes/code/{code}/used-by/{client}")
 
