@@ -1959,7 +1959,7 @@ class SellsyOpportunity:
             state = "terminated"
         return state
 
-    def terminate(self, connector):
+    def terminate(self, connector, internal=False):
         allowedFunnelIds = [connector.funnelIdVdc, connector.funnelIdSimsPro]
         if self.funnelId not in allowedFunnelIds:
             raise RuntimeError(
@@ -1971,7 +1971,10 @@ class SellsyOpportunity:
             stepTerminated = connector.stepSimTerminated
         elif self.funnelId == connector.funnelIdSimsPro:
             stepTerminated = connector.stepProSimsTerminated
-        self.updateStep(stepTerminated, connector)
+        # If ligne is transfered from one of our operators to another, we don't want to mark the line as terminated
+        # mostly not to send the client a termination email
+        if not internal:
+            self.updateStep(stepTerminated, connector)
 
         # update client status
         client = self.getClient(connector)
