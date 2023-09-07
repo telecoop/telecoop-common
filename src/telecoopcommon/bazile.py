@@ -165,6 +165,11 @@ class Connector:
         params = {"hfmax": amount}
         return self.patch(url, params)
 
+    def authorizeHF(self, accountId, authorize=True):
+        url = f"/ext/account/{accountId}"
+        params = {"hfautorise": "oui" if authorize else "non"}
+        return self.patch(url, params)
+
     def getConso(self, accountId, month):
         return self.get(f"/ext/consommation/{accountId}/{month}")
 
@@ -242,8 +247,7 @@ class Connector:
             if exp.statusCode == 404:
                 self.logger.warning(f"SIM {nsce} not found")
                 return
-            else:
-                raise exp
+            raise exp
         history = {}
         if response["returnCode"] == 200:
             h = response["data"]["Historique"]
@@ -260,3 +264,11 @@ class Connector:
                     )
 
         return history
+
+    def getActivationDate(self, nsce):
+        history = self.getSimplePortaHistory(nsce)
+        activationDate = None
+        if "activated" in history:
+            activationDate = history["activated"]
+
+        return activationDate

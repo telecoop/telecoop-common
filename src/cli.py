@@ -65,6 +65,7 @@ def cmdline():
             "get-updated-opportunities",
             "bazile-get-conso",
             "bazile-get-simple-porta-history",
+            "authorize-hf",
             "script",
         ],
         help="command",
@@ -146,6 +147,8 @@ class Runner:
             o = SellsyOpportunity(id)
             o.load(sellsyConnector)
             print(o)
+            print(o.status)
+            print(o.getSimStateFromStep(sellsyConnector))
             print(o.operator)
             print(o.tags)
             print(o.mobileDataOutOfPlan)
@@ -428,6 +431,18 @@ class Runner:
                     indent=2,
                 )
             )
+
+        if command == "authorize-hf":
+            accountId = self.getArg("Account id")
+            authorize = self.getArg("Authorize")
+            if authorize in ("oui", "non"):
+                auth = authorize == "oui"
+            else:
+                self.logger.critical("Authorize should be 'oui' or 'non'")
+                return
+
+            bazileConnector = self.getBazileConnector()
+            print(json.dumps(bazileConnector.authorizeHF(accountId, authorize=auth)))
 
         if command == "bazile-get-simple-porta-history":
             nsce = self.getArg("NSCE")
