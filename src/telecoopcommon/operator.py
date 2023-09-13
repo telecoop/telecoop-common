@@ -200,7 +200,8 @@ class PhenixConnector:
             raise exp
         return response
 
-    def getActivationDate(self, msisdn):
+    def getActivationDate(self, nsce):
+        msisdn = self.getNumFromSim(nsce)
         response = self.getLineInfo(msisdn)
         if "dateActivation" not in response:
             raise PhenixError("Unexpected response")
