@@ -16,6 +16,7 @@ from telecoopcommon.sellsy import (
 )
 from telecoopcommon.sellsy import SellsyMemberOpportunity
 from telecoopcommon.telecoop import Connector as TcConnector
+from telecoopcommon.operator import Connector as TelecomConnector
 from telecoopcommon.bazile import Connector as BazileConnector
 
 # Script utils
@@ -66,6 +67,7 @@ def cmdline():
             "bazile-get-conso",
             "bazile-get-simple-porta-history",
             "authorize-hf",
+            "get-sim-info",
             "script",
         ],
         help="command",
@@ -114,6 +116,9 @@ class Runner:
 
     def getTelecoopConnector(self):
         return TcConnector(self.config["TeleCoopApi"], self.logger)
+
+    def getTelecomConnector(self):
+        return TelecomConnector(self.config, self.logger)
 
     def getArg(self, name, type="str", help=None):
         if len(self.args.arguments) == 0:
@@ -452,6 +457,14 @@ class Runner:
                     bazileConnector.getSimplePortaHistory(nsce), indent=2, default=str
                 )
             )
+
+        if command == "get-sim-info":
+            operator = self.getArg("Operator")
+            nsce = self.getArg("Sim num")
+            tlC = self.getTelecomConnector()
+
+            tlC.setDefaultOperator(operator)
+            print(json.dumps(tlC.getSimInfo(nsce=nsce), indent=2))
 
         if command == "script":
             invoiceId = self.getArg("Invoice id")
