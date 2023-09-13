@@ -176,14 +176,20 @@ class PhenixConnector:
             "pin1": response["pin1"],
             "puk2": response["puk2"],
             "pin2": response["pin2"],
-            "state": response["etat"],
+            "status": response["etat"].lower(),
             "msisdn": response["msisdn"],
             "clientCode": response["codeClient"],
             "orderSimId": response["commandeSimId"],
+            "international": None,
+            "sva": None,
+            "wha": None,
+            "roaming": None,
+            "voicemail": None,
+            "oopAmount": None,
         }
         return result
 
-    def getActivationDate(self, msisdn):
+    def getLineInfo(self, msisdn):
         url = "/GsmApi/V2/MsisdnConsult"
         try:
             response = self.get(url, data={"msisdn": msisdn})
@@ -192,6 +198,10 @@ class PhenixConnector:
                 self.logger.warning(f"Msisdn {msisdn} not found")
                 return None
             raise exp
+        return response
+
+    def getActivationDate(self, msisdn):
+        response = self.getLineInfo(msisdn)
         if "dateActivation" not in response:
             raise PhenixError("Unexpected response")
 
@@ -211,6 +221,12 @@ class PhenixConnector:
 
         return num
 
+    def getLineStatus(self, msisdn, nsce):
+        response = self.getLineInfo(msisdn)
+        if nsce != response["simsn"]:
+            raise PhenixError("msisdn and nsce mismatch")
+        return response["etat"].lower()
+
 
 class NormalizedBazileConnector(BazileConnector):
     def getSimInfo(self, nsce):
@@ -228,7 +244,7 @@ class NormalizedBazileConnector(BazileConnector):
             "pin1": simInfo["Pin1"].strip(),
             "puk2": simInfo["Puck2"].strip(),
             "pin2": simInfo["Pin2"].strip(),
-            "state": simInfo["Statut"].strip(),
+            "status": simInfo["Statut"].strip().lower(),
             "msisdn": simInfo["Numero"].strip(),
             "clientCode": simInfo["Account_id"].strip(),
             "international": simInfo["Appels_internationaux"].strip(),
@@ -241,3 +257,9 @@ class NormalizedBazileConnector(BazileConnector):
             "oopDataAuth": simInfo["HF Data autorisé"].strip(),
         }
         return result
+
+    def getLineStatus(self, msisdn, nsce):
+        response = self.getSimInfo(nsce)
+        if msisdn != response["msisdn"]:
+            raise BazileError("msisdn and nsce mismatch")
+        return response["status"]
