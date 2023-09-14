@@ -236,26 +236,36 @@ class NormalizedBazileConnector(BazileConnector):
         if "data" not in response:
             raise BazileError(f"Unknown respons from Bazile {response}")
         simInfo = response["data"]["Sim_information"]
+
+        def sanitize(value: str, lower=False):
+            result = None
+            if value:
+                result = value.strip()
+                if lower:
+                    result = result.lower()
+            return result
+
         result = {
             "nsce": simInfo["Sim_serial"].strip(),
             "imsi": None,
             "typeSim": "SIM",
             "operator": "ORANGE",
-            "puk1": simInfo["Puck1"].strip(),
-            "pin1": simInfo["Pin1"].strip(),
-            "puk2": simInfo["Puck2"].strip(),
-            "pin2": simInfo["Pin2"].strip(),
-            "status": simInfo["Statut"].strip().lower(),
-            "msisdn": simInfo["Numero"].strip(),
-            "clientCode": simInfo["Account_id"].strip(),
-            "international": simInfo["Appels_internationaux"].strip(),
+            "puk1": sanitize(simInfo["Puck1"]),
+            "pin1": sanitize(simInfo["Pin1"]),
+            "puk2": sanitize(simInfo["Puck2"]),
+            "pin2": sanitize(simInfo["Pin2"]),
+            "status": sanitize(simInfo["Statut"]),
+            "msisdn": sanitize(simInfo["Numero"]),
+            "clientCode": sanitize(simInfo["Account_id"]),
+            "international": sanitize(simInfo["Appels_internationaux"]),
+            # Those too are ints so no need to sanitize
             "sva": simInfo["Sva"],
             "wha": simInfo["Wha"],
-            "roaming": simInfo["Data_statut"].strip(),
-            "voicemail": simInfo["Messagerie_vocale"].strip(),
-            "rio": simInfo["RIO"].strip(),
-            "oopAmount": simInfo["Palier_HF"].strip(),
-            "oopDataAuth": simInfo["HF Data autorisé"].strip(),
+            "roaming": sanitize(simInfo["Data_statut"]),
+            "voicemail": sanitize(simInfo["Messagerie_vocale"]),
+            "rio": sanitize(simInfo["RIO"]),
+            "oopAmount": sanitize(simInfo["Palier_HF"]),
+            "oopDataAuth": sanitize(simInfo["HF Data autorisé"]),
         }
         return result
 
