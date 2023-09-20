@@ -113,6 +113,12 @@ class Connector:
             raise BazileError("Non JSON response") from excp
         return result
 
+    @classmethod
+    def formatMsisdn(cls, msisdn):
+        if msisdn[0:1] == "0":
+            msisdn = "33" + msisdn[1:]
+        return msisdn
+
     def getMarques(self):
         return self.get("/ext/marques")
 
@@ -177,7 +183,7 @@ class Connector:
         url = "/ext/account/swap-sim"
         data = {
             "Accountid": accountId,
-            "Msisdn": msisdn,
+            "Msisdn": self.formatMsisdn(msisdn),
             "Nsce": newNsce,
         }
         return self.post(url, data)
@@ -194,7 +200,7 @@ class Connector:
             self.logger.info("Nothing to do, exiting")
         url = "/ext/sim/options"
         params = {
-            "Msisdn": msisdn,
+            "Msisdn": self.formatMsisdn(msisdn),
             "Nsce": nsce,
         }
         if data is not None:
@@ -209,7 +215,7 @@ class Connector:
     def simSuspend(self, msisdn, nsce):
         url = "/ext/sim/suspend"
         params = {
-            "Msisdn": msisdn,
+            "Msisdn": self.formatMsisdn(msisdn),
             "Nsce": nsce,
         }
         return self.post(url, params)
@@ -217,7 +223,7 @@ class Connector:
     def simActivate(self, msisdn, nsce):
         url = "/ext/sim/reactivation"
         params = {
-            "Msisdn": msisdn,
+            "Msisdn": self.formatMsisdn(msisdn),
             "Nsce": nsce,
         }
         return self.post(url, params)
