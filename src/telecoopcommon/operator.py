@@ -247,6 +247,11 @@ class NormalizedBazileConnector(BazileConnector):
                     result = result.lower()
             return result
 
+        status = sanitize(simInfo["Statut"])
+        msisdn = sanitize(simInfo["Numero"])
+        if status is None and msisdn is None:
+            status = "terminated"
+
         result = {
             "nsce": simInfo["Sim_serial"].strip(),
             "imsi": None,
@@ -256,8 +261,8 @@ class NormalizedBazileConnector(BazileConnector):
             "pin1": sanitize(simInfo["Pin1"]),
             "puk2": sanitize(simInfo["Puck2"]),
             "pin2": sanitize(simInfo["Pin2"]),
-            "status": sanitize(simInfo["Statut"]),
-            "msisdn": sanitize(simInfo["Numero"]),
+            "status": status,
+            "msisdn": msisdn,
             "clientCode": sanitize(simInfo["Account_id"]),
             "international": sanitize(simInfo["Appels_internationaux"]),
             # Those too are ints so no need to sanitize
