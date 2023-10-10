@@ -1694,7 +1694,7 @@ class SellsyOpportunity:
         self.nsce = None
         self.msisdn = None
         self.operator = None
-        self.bazileNum = None
+        self.operatorRef = None
         self.rio = None
         self.plan = None
         self.planItem = None
@@ -1828,7 +1828,7 @@ class SellsyOpportunity:
                     val = field["formatted_value"]
                     self.operator = "Bazile" if val == "" else val
                 if code == "refbazile":
-                    self.bazileNum = field["textval"]
+                    self.operatorRef = field["textval"]
                 if code == "depassement-forfait-data":
                     self.mobileDataOutOfPlan = field["formatted_value"]
                 if code == "achatsimphysique":
