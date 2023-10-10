@@ -187,6 +187,7 @@ class PhenixConnector:
         result.update(
             {
                 "operatorRef": responseLine["numAbo"],
+                "rio": responseLine["rio"],
                 "international": None,
                 "sva": None,
                 "wha": None,
