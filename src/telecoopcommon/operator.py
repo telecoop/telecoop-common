@@ -163,30 +163,38 @@ class PhenixConnector:
         return result
 
     def getSimInfo(self, nsce):
-        url = "/GsmApi/V2/GetInfoSim"
-        response = self.get(url, data={"simSN": nsce.replace(" ", "")})
-        if "etat" not in response:
-            raise PhenixError(f"Unknown response from Phenix {response}")
+        urlSim = "/GsmApi/V2/GetInfoSim"
+        responseSim = self.get(urlSim, data={"simSN": nsce.replace(" ", "")})
+        if "etat" not in responseSim:
+            raise PhenixError(f"Unknown response from Phenix {responseSim}")
         result = {
-            "nsce": response["simSN"],
-            "imsi": response["imsi"],
-            "typeSim": response["typeSim"],
-            "operator": response["operateur"],
-            "puk1": response["puk1"],
-            "pin1": response["pin1"],
-            "puk2": response["puk2"],
-            "pin2": response["pin2"],
-            "status": response["etat"].lower(),
-            "msisdn": response["msisdn"],
-            "clientCode": response["codeClient"],
-            "orderSimId": response["commandeSimId"],
-            "international": None,
-            "sva": None,
-            "wha": None,
-            "roaming": None,
-            "voicemail": None,
-            "oopAmount": None,
+            "nsce": responseSim["simSN"],
+            "imsi": responseSim["imsi"],
+            "typeSim": responseSim["typeSim"],
+            "operator": responseSim["operateur"],
+            "puk1": responseSim["puk1"],
+            "pin1": responseSim["pin1"],
+            "puk2": responseSim["puk2"],
+            "pin2": responseSim["pin2"],
+            "status": responseSim["etat"].lower(),
+            "msisdn": responseSim["msisdn"],
+            "orderSimId": responseSim["commandeSimId"],
         }
+        urlLine = "/GsmApi/V2/MsisdnConsult"
+        responseLine = self.get(urlLine, data={"msisdn": result["msisdn"]})
+        if "etat" not in responseLine:
+            raise PhenixError(f"Unknown response from Phenix {responseLine}")
+        result.update(
+            {
+                "operatorRef": responseLine["numAbo"],
+                "international": None,
+                "sva": None,
+                "wha": None,
+                "roaming": None,
+                "voicemail": None,
+                "oopAmount": None,
+            }
+        )
         return result
 
     def getLineInfo(self, msisdn):
@@ -263,7 +271,7 @@ class NormalizedBazileConnector(BazileConnector):
             "pin2": sanitize(simInfo["Pin2"]),
             "status": status.lower(),
             "msisdn": msisdn,
-            "clientCode": sanitize(simInfo["Account_id"]),
+            "operatorRef": sanitize(simInfo["Account_id"]),
             "international": sanitize(simInfo["Appels_internationaux"]),
             # Those too are ints so no need to sanitize
             "sva": simInfo["Sva"],
