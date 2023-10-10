@@ -261,7 +261,7 @@ class NormalizedBazileConnector(BazileConnector):
             "pin1": sanitize(simInfo["Pin1"]),
             "puk2": sanitize(simInfo["Puck2"]),
             "pin2": sanitize(simInfo["Pin2"]),
-            "status": status,
+            "status": status.lower(),
             "msisdn": msisdn,
             "clientCode": sanitize(simInfo["Account_id"]),
             "international": sanitize(simInfo["Appels_internationaux"]),
