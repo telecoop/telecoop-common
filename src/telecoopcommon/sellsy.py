@@ -730,6 +730,9 @@ class TcSellsyConnector:
         # Contacts
         if "contacts" in cli and mainContactId in cli["contacts"]:
             result["contacts"][mainContactId] = cli["contacts"][mainContactId]
+            for contactId, contact in cli["contacts"].items():
+                if contact["isBillingContact"]:
+                    result["contacts"][contactId] = contact
         elif "contact" in cli:
             result["contacts"][mainContactId] = cli["contact"]
         for addr in cli["address"]:
@@ -841,6 +844,13 @@ class TcSellsyConnector:
                     # Référence ayant servie de test lors de la mise en prod du parcours souscription
                     continue
 
+                # Fetching billing contact if needed
+                if "contacts" in client and len(client["contacts"]) > 1:
+                    billingContact = self.api(
+                        method="Client.getBillingContact", params={"clientid": clientId}
+                    )
+                    if billingContact:
+                        client["contacts"][billingContact["id"]] = billingContact
                 cli = SellsyClient(clientId)
                 cli.loadWithValues(client)
                 if (
@@ -1400,6 +1410,7 @@ class SellsyClient:
         self.firstname = None
         self.companyName = None
         self.email = None
+        self.invoiceEmail = None
         self.phoneNumber = None
         # Should delete this one, but not sur if used somewhere
         self.msisdn = None
@@ -1518,6 +1529,7 @@ class SellsyClient:
     def loadWithValues(self, cli):
         parisTZ = pytz.timezone("Europe/Paris")
         email = cli["email"]
+        invoiceEmail = None
         name = cli["people_name"]
         firstname = cli["people_forename"]
         civility = cli.get("people_civil")
@@ -1530,6 +1542,12 @@ class SellsyClient:
                     name = contact["name"]
                     firstname = contact["forename"]
                     civility = contact["civil"]
+                elif (
+                    "isBillingContact" in contact and contact["isBillingContact"] == "Y"
+                ):
+                    invoiceEmail = contact["email"]
+        if invoiceEmail is None:
+            invoiceEmail = email
 
         actif = cli.get("actif")
         self.creationDate = parisTZ.localize(datetime.fromisoformat(cli["joindate"]))
@@ -1546,6 +1564,7 @@ class SellsyClient:
         self.civility = civility
         self.companyName = cli["name"] if self.type == "corporation" else None
         self.email = email
+        self.invoiceEmail = invoiceEmail
         self.phoneNumber = cli["mobile"]
         self.web = cli.get("web")
         self.msisdn = cli["mobile"]
