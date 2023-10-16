@@ -114,7 +114,7 @@ class PhenixConnector:
                 retry = -1
                 result = response.json()
                 if "etat" not in result:
-                    raise PhenixError(f"Unknown response from Bazile {result}")
+                    raise PhenixError(f"Unknown response from Phenix {result}")
             except PhenixError as excp:
                 if response.status_code in [503, 502] and retry >= 1:
                     # When too many calls on Bazile API, we get a 503 error, waiting some time solves the problem
@@ -123,7 +123,7 @@ class PhenixConnector:
                     sleep(5)
                     continue
                 self.logger.warning(excp)
-                self.logger.warning(f"Service called was {service}")
+                self.logger.warning(f"Service called was {service} with {params}")
                 raise excp
             except requests.exceptions.JSONDecodeError as excp:
                 self.logger.warning(
@@ -179,23 +179,26 @@ class PhenixConnector:
             "status": responseSim["etat"].lower(),
             "msisdn": responseSim["msisdn"],
             "orderSimId": responseSim["commandeSimId"],
+            "operatorRef": None,
+            "rio": None,
         }
         urlLine = "/GsmApi/V2/MsisdnConsult"
-        responseLine = self.get(urlLine, data={"msisdn": result["msisdn"]})
-        if "etat" not in responseLine:
-            raise PhenixError(f"Unknown response from Phenix {responseLine}")
-        result.update(
-            {
-                "operatorRef": responseLine["numAbo"],
-                "rio": responseLine["rio"],
-                "international": None,
-                "sva": None,
-                "wha": None,
-                "roaming": None,
-                "voicemail": None,
-                "oopAmount": None,
-            }
-        )
+        if result["msisdn"]:
+            responseLine = self.get(urlLine, data={"msisdn": result["msisdn"]})
+            if "etat" not in responseLine:
+                raise PhenixError(f"Unknown response from Phenix {responseLine}")
+            result.update(
+                {
+                    "operatorRef": responseLine["numAbo"],
+                    "rio": responseLine["rio"],
+                    "international": None,
+                    "sva": None,
+                    "wha": None,
+                    "roaming": None,
+                    "voicemail": None,
+                    "oopAmount": None,
+                }
+            )
         return result
 
     def getLineInfo(self, msisdn):
@@ -211,13 +214,15 @@ class PhenixConnector:
 
     def getActivationDate(self, nsce):
         msisdn = self.getNumFromSim(nsce)
-        response = self.getLineInfo(msisdn)
-        if "dateActivation" not in response:
-            raise PhenixError("Unexpected response")
+        activationDate = None
+        if msisdn:
+            response = self.getLineInfo(msisdn)
+            if "dateActivation" not in response:
+                raise PhenixError("Unexpected response")
 
-        activationDate = pytz.timezone("Europe/Paris").localize(
-            datetime.fromisoformat(response["dateActivation"])
-        )
+            activationDate = pytz.timezone("Europe/Paris").localize(
+                datetime.fromisoformat(response["dateActivation"])
+            )
 
         return activationDate
 
