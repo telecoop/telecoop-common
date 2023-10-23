@@ -206,7 +206,7 @@ class PhenixConnector:
         try:
             response = self.get(url, data={"msisdn": msisdn})
         except PhenixError as exp:
-            if exp.statusCode == 404:
+            if exp.statusCode in [404, 400]:
                 self.logger.warning(f"Msisdn {msisdn} not found")
                 return None
             raise exp
@@ -217,12 +217,10 @@ class PhenixConnector:
         activationDate = None
         if msisdn:
             response = self.getLineInfo(msisdn)
-            if "dateActivation" not in response:
-                raise PhenixError("Unexpected response")
-
-            activationDate = pytz.timezone("Europe/Paris").localize(
-                datetime.fromisoformat(response["dateActivation"])
-            )
+            if "dateActivation" in response:
+                activationDate = pytz.timezone("Europe/Paris").localize(
+                    datetime.fromisoformat(response["dateActivation"])
+                )
 
         return activationDate
 
