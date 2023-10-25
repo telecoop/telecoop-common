@@ -164,7 +164,13 @@ class PhenixConnector:
 
     def getSimInfo(self, nsce):
         urlSim = "/GsmApi/V2/GetInfoSim"
-        responseSim = self.get(urlSim, data={"simSN": nsce.replace(" ", "")})
+        try:
+            responseSim = self.get(urlSim, data={"simSN": nsce.replace(" ", "")})
+        except PhenixError as exp:
+            if exp.statusCode in [404, 400]:
+                self.logger.warning(f"Nsce {nsce} not found")
+                return None
+            raise exp
         if "etat" not in responseSim:
             raise PhenixError(f"Unknown response from Phenix {responseSim}")
         result = {
