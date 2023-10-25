@@ -235,12 +235,15 @@ class PhenixConnector:
         return num
 
     def getLineStatus(self, msisdn, nsce):
+        result = None
         response = self.getLineInfo(msisdn)
-        if response["simsn"] and nsce != response["simsn"]:
-            self.logger.warning(
-                f"msisdn ({msisdn}) and nsce mismatch ({nsce} ≠ {response['simsn']})"
-            )
-        return response["etat"].lower()
+        if response:
+            if response["simsn"] and nsce != response["simsn"]:
+                self.logger.warning(
+                    f"msisdn ({msisdn}) and nsce mismatch ({nsce} ≠ {response['simsn']})"
+                )
+            result = response["etat"].lower()
+        return result
 
 
 class NormalizedBazileConnector(BazileConnector):
