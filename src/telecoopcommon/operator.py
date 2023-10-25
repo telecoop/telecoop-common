@@ -181,6 +181,12 @@ class PhenixConnector:
             "orderSimId": responseSim["commandeSimId"],
             "operatorRef": None,
             "rio": None,
+            "international": None,
+            "sva": None,
+            "wha": None,
+            "roaming": None,
+            "voicemail": None,
+            "oopAmount": None,
         }
         urlLine = "/GsmApi/V2/MsisdnConsult"
         if result["msisdn"]:
