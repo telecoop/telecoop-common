@@ -238,11 +238,13 @@ class PhenixConnector:
 
     def getNumFromSim(self, nsce):
         num = None
+        response = None
         try:
             response = self.getSimInfo(nsce)
-            num = response["msisdn"]
         except PhenixError:
             num = None
+        if response:
+            num = response["msisdn"]
 
         return num
 
