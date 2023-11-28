@@ -2332,7 +2332,9 @@ class SellsyInvoice:
                 "subject": data["subject"].format(subject=model["subject"]),
                 "doclayout": model["doclayout"],
                 "payMediums": data["payMediums"],
-                "enabledPaymentGateways": [],
+                "enabledPaymentGateways": data["gateways"]
+                if "gateways" in data
+                else [],
                 "notes": data["notes"].format(notes=model["notes"]),
                 "hidePayment": "Y",
                 "rateCategory": rateCategories["Tarif HT"]
@@ -2384,7 +2386,12 @@ class SellsyInvoice:
         if data["isLastInvoice"]:
             params["document"]["tags"] = "derniere-facture"
 
-        result = connector.api(method="Document.create", params=params)
+        method = "Document.create"
+        if "docId" in data:
+            method = "Document.update"
+            params["docid"] = data["docId"]
+
+        result = connector.api(method=method, params=params)
         # print(json.dumps(result, indent=2))
         invoice = SellsyInvoice(result["doc_id"])
 
@@ -2393,13 +2400,18 @@ class SellsyInvoice:
             invoice.load(connector)
 
             lessThan1 = data["amount"] > 0 and data["amount"] <= 0.2
-            if data["automaticValidation"] and not lessThan1 and data["amount"] >= 0:
+            if (
+                method == "Document.create"
+                and data["automaticValidation"]
+                and not lessThan1
+                and data["amount"] >= 0
+            ):
                 logger.info("Automatic validation enabled : validating invoice")
                 invoice.validate(connector)
                 invoice.sellsyStatus = "due"
         except sellsy_api.SellsyError as exp:
             if exp.sellsy_code_error == "E_OBJ_NOT_LOADABLE":
-                # Sellsy object was created (we have the docId) but accessible yet through API
+                # Sellsy object was created (we have the docId) but not accessible yet through API
                 # -> we use the docId as a reference and another process will check later
                 #    to finish the validation of the invoice
                 invoice.reference = invoice.id
@@ -2439,9 +2451,9 @@ class SellsyInvoice:
         sellsyConnector.updateCustomField("document", self.id, cfid, value)
 
     def addPayMedium(self, payMedium, sellsyConnector):
-        tsc = sellsyConnector
+        syC = sellsyConnector
         self.payMediums.append(payMedium)
-        allPayMediums = tsc.getPayMediums()
+        allPayMediums = syC.getPayMediums()
         payMediums = []
         for medium in self.payMediums:
             payMediums.append(allPayMediums[medium])
@@ -2451,26 +2463,26 @@ class SellsyInvoice:
         }
         sellsyConnector.api(method="Document.update", params=params)
 
-    def enableStripe(self, sellsyConnector):
-        params = {
-            "docid": self.id,
-            "document": {"doctype": "invoice", "enabledPaymentGateways": ["stripe"]},
-        }
-        sellsyConnector.api(method="Document.update", params=params)
+    def enableStripe(self, sellsyConnector, invoiceData, logger):
+        if "gateways" not in invoiceData:
+            invoiceData["gateways"] = []
+        invoiceData["gateways"] += ["stripe"]
+        invoiceData["docId"] = self.id
+        self.generate(invoiceData, sellsyConnector, logger)
 
     def processSEPARejection(
-        self, rejectCode, rejectReason, paymentId, sellsyConnector
+        self, rejectCode, rejectReason, paymentId, sellsyConnector, invoiceData, logger
     ):
-        tsc = sellsyConnector
+        syC = sellsyConnector
         # For payment rejected before paymentDate, we won't have created the payment in Sellsy yet
         if paymentId is not None:
-            self.deletePayment(paymentId, tsc)
+            self.deletePayment(paymentId, syC)
 
         self.updateCustomField(
-            tsc.cfidSlimpayRejectReason, f"{rejectCode} - {rejectReason}", tsc
+            syC.cfidSlimpayRejectReason, f"{rejectCode} - {rejectReason}", syC
         )
 
         # Add card payment method for easier recovery process
-        # self.addPayMedium("carte bancaire", tsc)
+        # self.addPayMedium("carte bancaire", syC)
         # Enable Stripe
-        self.enableStripe(tsc)
+        self.enableStripe(syC, invoiceData, logger)

@@ -90,7 +90,7 @@ class PhenixConnector:
                 raise PhenixError("Non JSON response") from excp
             self.token = jsonResp["access_token"]
 
-        self.logger.debug(f"Token is {self.token}")
+        self.logger.debug(f"Token is {self.token[:10]}…")
         return self.token
 
     def get(self, service, data={}):
@@ -98,7 +98,7 @@ class PhenixConnector:
         url = self.host + service
         params = data
         params["partenaireId"] = self.partnerId
-        self.logger.debug(f"Calling GET {url} with headers {headers}")
+        self.logger.debug(f"Calling GET {url} with headers {headers[:10]}_")
         retry = 3
         result = None
         while retry >= 0:
@@ -196,7 +196,13 @@ class PhenixConnector:
         }
         urlLine = "/GsmApi/V2/MsisdnConsult"
         if result["msisdn"]:
-            responseLine = self.get(urlLine, data={"msisdn": result["msisdn"]})
+            try:
+                responseLine = self.get(urlLine, data={"msisdn": result["msisdn"]})
+            except PhenixError as exp:
+                if exp.statusCode in [404, 400]:
+                    self.logger.warning(f"Nsce {nsce} not found")
+                    return None
+                raise exp
             if "etat" not in responseLine:
                 raise PhenixError(f"Unknown response from Phenix {responseLine}")
             result.update(
@@ -229,7 +235,7 @@ class PhenixConnector:
         activationDate = None
         if msisdn:
             response = self.getLineInfo(msisdn)
-            if "dateActivation" in response:
+            if "dateActivation" in response and response["dateActivation"]:
                 activationDate = pytz.timezone("Europe/Paris").localize(
                     datetime.fromisoformat(response["dateActivation"])
                 )
@@ -290,7 +296,7 @@ class NormalizedBazileConnector(BazileConnector):
             "pin1": sanitize(simInfo["Pin1"]),
             "puk2": sanitize(simInfo["Puck2"]),
             "pin2": sanitize(simInfo["Pin2"]),
-            "status": status.lower(),
+            "status": status,
             "msisdn": msisdn,
             "operatorRef": sanitize(simInfo["Account_id"]),
             "international": sanitize(simInfo["Appels_internationaux"]),
