@@ -2393,7 +2393,11 @@ class SellsyInvoice:
 
         result = connector.api(method=method, params=params)
         # print(json.dumps(result, indent=2))
-        invoice = SellsyInvoice(result["doc_id"])
+        if method == "Document.create":
+            docId = result["doc_id"]
+        else:
+            docId = data["docId"]
+        invoice = SellsyInvoice(docId)
 
         logger.info("Fetching invoice reference")
         try:
