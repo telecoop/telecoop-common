@@ -2463,12 +2463,13 @@ class SellsyInvoice:
         }
         sellsyConnector.api(method="Document.update", params=params)
 
-    def enableStripe(self, sellsyConnector, invoiceData, logger):
+    @classmethod
+    def enableStripe(cls, docId, invoiceData, sellsyConnector, logger):
         if "gateways" not in invoiceData:
             invoiceData["gateways"] = []
         invoiceData["gateways"] += ["stripe"]
-        invoiceData["docId"] = self.id
-        self.generate(invoiceData, sellsyConnector, logger)
+        invoiceData["docId"] = docId
+        cls.generate(invoiceData, sellsyConnector, logger)
 
     def processSEPARejection(
         self, rejectCode, rejectReason, paymentId, sellsyConnector, invoiceData, logger
@@ -2485,4 +2486,4 @@ class SellsyInvoice:
         # Add card payment method for easier recovery process
         # self.addPayMedium("carte bancaire", syC)
         # Enable Stripe
-        self.enableStripe(syC, invoiceData, logger)
+        self.enableStripe(self.id, invoiceData, syC, logger)
