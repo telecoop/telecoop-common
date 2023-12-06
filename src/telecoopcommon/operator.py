@@ -98,7 +98,9 @@ class PhenixConnector:
         url = self.host + service
         params = data
         params["partenaireId"] = self.partnerId
-        self.logger.debug(f"Calling GET {url} with headers {headers[:10]}_")
+        self.logger.debug(
+            f"Calling GET {url} with headers 'Authorization': 'Bearer {self.getToken()[:10]}'"
+        )
         retry = 3
         result = None
         while retry >= 0:
@@ -282,7 +284,7 @@ class NormalizedBazileConnector(BazileConnector):
                     result = result.lower()
             return result
 
-        status = sanitize(simInfo["Statut"])
+        status = sanitize(simInfo["Statut"], lower=True)
         msisdn = sanitize(simInfo["Numero"])
         if status is None and msisdn is None:
             status = "terminated"
