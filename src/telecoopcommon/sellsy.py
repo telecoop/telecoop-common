@@ -361,7 +361,10 @@ class TcSellsyConnector:
             "new_client_mail_template_id"
         ]
         customFields = sellsyValues[self.env]["custom_fields"]
+        self.cfidOnSite = customFields["achatsimphysique"]
         self.cfidOperator = customFields["operateur"]
+        self.cfidRio = customFields["rio"]
+        self.cfidNsce = customFields["nsce"]
         self.customFieldBazileNb = customFields["refbazile"]
         self.customFieldTelecomNum = customFields["numerotelecoop"]
         self.cfidMobileDataOutOfPlan = customFields["depassement-forfait-data"]
@@ -1716,6 +1719,7 @@ class SellsyOpportunity:
         self.planItem = None
         self.mobileDataOutOfPlan = None
         self.achatSimPhysique = None
+        self.onSite = None  # Same as above
         self.dateActivationSimAsked = None
         self.optinTeleCommown = None
         self.telecommownStart = None
@@ -1852,6 +1856,7 @@ class SellsyOpportunity:
                         self.achatSimPhysique = field["boolval"]
                     else:
                         self.achatSimPhysique = field["boolval"] == "Y"
+                    self.onSite = self.achatSimPhysique
                 if (
                     code == "date-activation-sim-souhaitee"
                     and "formatted_ymd" in field
