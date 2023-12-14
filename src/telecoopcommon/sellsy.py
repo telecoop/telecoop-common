@@ -167,7 +167,7 @@ sellsyValues = {
         "staff": {
             "support-client": 170799,
             "support-client-2": 280575,
-            "support-client-3": 236435,
+            "support-client-3": 284480,
             "societariat": 212354,
             "support-societaire": 183494,
             "finance": 174036,
