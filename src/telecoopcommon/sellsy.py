@@ -494,6 +494,23 @@ class TcSellsyConnector:
         self.stepProSimsSuspended = sellsyValues[self.env]["step_pro_sims_suspended"]
         self.stepProSimsTerminated = sellsyValues[self.env]["step_pro_sims_terminated"]
 
+        self.funnelIdOperatorChange = sellsyValues[self.env][
+            "funnel_id_operator_change"
+        ]
+        self.stepEsimOperatorChange = sellsyValues[self.env][
+            "step_esim_operator_change"
+        ]
+        self.stepEsimNewClient = sellsyValues[self.env][
+            "step_esim_new_client_esim_vowifi"
+        ]
+        self.stepEsimVowifiRequest = sellsyValues[self.env]["step_esim_vowifi_request"]
+        self.stepEsimEsimRequest = sellsyValues[self.env]["step_esim_esim_request"]
+        self.stepEsimSimSent = sellsyValues[self.env][
+            "step_esim_vowifi_request_sim_sent"
+        ]
+        self.stepEsimPending = sellsyValues[self.env]["step_esim_pending"]
+        self.stepEsimActivated = sellsyValues[self.env]["step_esim_activated"]
+
         self.services = None
         self.itemIds = None
         self.modelIds = None
