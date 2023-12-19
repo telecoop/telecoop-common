@@ -1993,6 +1993,10 @@ class SellsyOpportunity:
             sc.stepSimToSend,
             sc.stepSimToSendTransition,
             sc.stepProSimsInactive,
+            sc.stepEsimOperatorChange,
+            sc.stepEsimNewClient,
+            sc.stepEsimVowifiRequest,
+            sc.stepEsimEsimRequest,
         ]:
             state = "new"
         elif self.stepId in [
@@ -2000,15 +2004,21 @@ class SellsyOpportunity:
             sc.stepSimReceived,
             sc.stepProSimsAwaiting,
             sc.stepSimHandDelivered,
+            sc.stepEsimSimSent,
         ]:
             state = "sent"
         elif self.stepId in [
             sc.stepSimPendingPorta,
             sc.stepSimPendingNew,
             sc.stepProSimActivating,
+            sc.stepEsimPending,
         ]:
             state = "porta"
-        elif self.stepId in [sc.stepSimActivated, sc.stepProSimsActivated]:
+        elif self.stepId in [
+            sc.stepSimActivated,
+            sc.stepProSimsActivated,
+            sc.stepEsimActivated,
+        ]:
             state = "active"
         elif self.stepId in [sc.stepSimSuspended, sc.stepProSimsSuspended]:
             state = "suspended"
