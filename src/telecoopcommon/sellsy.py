@@ -2538,4 +2538,9 @@ class SellsyInvoice:
         # Add card payment method for easier recovery process
         # self.addPayMedium("carte bancaire", syC)
         # Enable Stripe
-        self.enableStripe(self.id, invoiceData, syC, logger)
+        if invoiceData is not None:
+            self.enableStripe(self.id, invoiceData, syC, logger)
+        else:
+            logger.warning(
+                "Cannot enable Stripe because we don't have invoice content in db"
+            )
