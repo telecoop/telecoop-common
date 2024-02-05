@@ -40,7 +40,7 @@ async def worker(natsUrl, topic, queue, handler, logger, connectors={}):
         reply = msg.reply
         data = msg.data.decode()
         logger.info(f"Received message {subject} {reply} - {data}")
-        await handler(data, reply, connectors, nCli, logger)
+        await handler(subject, data, reply, connectors, nCli, logger)
 
     print("Awaiting messages")
     await nCli.subscribe(topic, queue, msgHandler)

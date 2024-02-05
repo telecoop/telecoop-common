@@ -274,7 +274,7 @@ class Connector:
     def getActivationDate(self, nsce):
         history = self.getSimplePortaHistory(nsce)
         activationDate = None
-        if "activated" in history:
+        if history and "activated" in history:
             activationDate = history["activated"]
 
         return activationDate
