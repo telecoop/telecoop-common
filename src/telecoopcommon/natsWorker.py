@@ -46,7 +46,7 @@ async def worker(natsUrl, topic, queue, handler, logger, connectors={}):
     await nCli.subscribe(topic, queue, msgHandler)
 
 
-async def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}):
+def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(worker(natsUrl, topic, queue, handler, logger, connectors))
     loop.run_forever()
