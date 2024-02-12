@@ -49,6 +49,8 @@ async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=Non
 
 def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(worker(natsUrl, topic, queue, handler, logger, connectors))
+    loop.run_until_complete(
+        worker(natsUrl, topic, queue, handler, logger, connectors, cred)
+    )
     loop.run_forever()
     loop.close()
