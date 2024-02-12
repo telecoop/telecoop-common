@@ -3,7 +3,7 @@ import signal
 from nats.aio.client import Client as NATS
 
 
-async def worker(natsUrl, topic, queue, handler, logger, connectors={}):
+async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
     nCli = NATS()
 
     async def stop():
@@ -30,6 +30,7 @@ async def worker(natsUrl, topic, queue, handler, logger, connectors={}):
 
     await nCli.connect(
         natsUrl,
+        user_credentials=cred,
         reconnected_cb=reconnectedCb,
         disconnected_cb=disconnectedCb,
         max_reconnect_attempts=-1,
@@ -46,7 +47,7 @@ async def worker(natsUrl, topic, queue, handler, logger, connectors={}):
     await nCli.subscribe(topic, queue, msgHandler)
 
 
-def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}):
+def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(worker(natsUrl, topic, queue, handler, logger, connectors))
     loop.run_forever()
