@@ -346,6 +346,7 @@ class TcSellsyConnector:
         self.env = "PROD" if env == "PROD" else "DEV"
         self.conf = conf
         self.logger = logger
+        self.values = sellsyValues[self.env]
         self._client = sellsy_api.Client(
             conf["consumer_token"],
             conf["consumer_secret"],

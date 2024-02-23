@@ -28,29 +28,37 @@ class Connector:
         }
         if value is not None:
             data["value"] = value
-        return self.connector.post("/promo_codes/codes/", json=data)
+        return self.connector.post(
+            "/promo_codes/codes/", json=data, allow_redirects=True
+        )
 
     def getCode(self, code):
-        return self.connector.get(f"/promo_codes/codes/{code}")
+        return self.connector.get(f"/promo_codes/codes/{code}", allow_redirects=True)
 
     def getCodes(self, codeType=None):
         url = "/promo_codes/codes"
         if codeType is not None:
             url += f"?code_type={codeType}"
-        return self.connector.get(url)
+        return self.connector.get(url, allow_redirects=True)
 
     def useCode(self, code, client):
-        return self.connector.post(f"/promo_codes/code/{code}/used-by/{client}")
+        return self.connector.post(
+            f"/promo_codes/code/{code}/used-by/{client}", allow_redirects=True
+        )
 
     def getSponsorshipCode(self, referer):
-        return self.connector.get(f"/promo_codes/sponsorships/{referer}")
+        return self.connector.get(
+            f"/promo_codes/sponsorships/{referer}", allow_redirects=True
+        )
 
     def linkToReferee(self, referer, referee):
         return self.connector.post(
-            f"/promo_codes/sponsorships/{referer}/linkedTo/{referee}"
+            f"/promo_codes/sponsorships/{referer}/linkedTo/{referee}",
+            allow_redirects=True,
         )
 
     def appliedToReferee(self, referer, referee):
         return self.connector.post(
-            f"/promo_codes/sponsorships/{referer}/applied/{referee}"
+            f"/promo_codes/sponsorships/{referer}/applied/{referee}",
+            allow_redirects=True,
         )
