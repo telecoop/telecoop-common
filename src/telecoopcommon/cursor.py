@@ -23,3 +23,12 @@ class TcCursor:
 
     def __iter__(self):
         return iter(self._cursor)
+
+    # Use only if self._cursor is from psycopg 3
+    @property
+    def row_factory(self):
+        return self._cursor.row_factory
+
+    @row_factory.setter
+    def row_factory(self, rowStyle):
+        self._cursor.row_factory = rowStyle
