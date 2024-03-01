@@ -2015,15 +2015,15 @@ class SellsyOpportunity:
             sc.stepEsimPending,
         ]:
             state = "porta"
-        elif self.stepId in [
-            sc.stepSimActivated,
-            sc.stepProSimsActivated,
-            sc.stepEsimActivated,
-        ]:
+        elif self.stepId in [sc.stepSimActivated, sc.stepProSimsActivated]:
             state = "active"
         elif self.stepId in [sc.stepSimSuspended, sc.stepProSimsSuspended]:
             state = "suspended"
-        elif self.stepId in [sc.stepSimTerminated, sc.stepProSimsTerminated]:
+        elif self.stepId in [
+            sc.stepSimTerminated,
+            sc.stepProSimsTerminated,
+            sc.stepEsimActivated,
+        ]:
             state = "terminated"
         return state
 
