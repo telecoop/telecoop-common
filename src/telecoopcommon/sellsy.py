@@ -2354,8 +2354,9 @@ class SellsyInvoice:
         return result
 
     @classmethod
-    def generate(cls, data, connector, logger):
-        logger.info("Fetching invoice from model")
+    def generate(cls, invoiceId, data, connector, logger):
+        logger.info(f"[Invoice #{invoiceId}] Generating in Sellsy")
+
         modelIds = connector.getModelIds()
         isPro = data["isPro"]
         modelId = modelIds["Forfait Sobriété"]
@@ -2369,8 +2370,6 @@ class SellsyInvoice:
             "thirdid": data["sellsyClientId"],
         }
         model = connector.api(method="Document.getModel", params=params)
-
-        logger.info("Creating invoice")
 
         rateCategories = connector.getRateCategories()
         params = {
@@ -2448,7 +2447,7 @@ class SellsyInvoice:
             docId = data["docId"]
         invoice = SellsyInvoice(docId)
 
-        logger.info("Fetching invoice reference")
+        logger.info(f"[Invoice #{invoiceId}] Fetching reference")
         try:
             invoice.load(connector)
 
@@ -2459,7 +2458,9 @@ class SellsyInvoice:
                 and not lessThan1
                 and data["amount"] >= 0
             ):
-                logger.info("Automatic validation enabled : validating invoice")
+                logger.info(
+                    f"[Invoice #{invoiceId}] Automatic validation enabled : validating invoice"
+                )
                 invoice.validate(connector)
                 invoice.sellsyStatus = "due"
         except sellsy_api.SellsyError as exp:
