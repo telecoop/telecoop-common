@@ -258,7 +258,6 @@ class Connector:
         if response["returnCode"] == 200:
             h = response["data"]["Historique"]
             h.sort(key=lambda e: e["date"])
-            print(h)
             for event in h:
                 if event["type"] == "IN" and event["statut"] == "PORTING DONE":
                     if "activated" not in history:
