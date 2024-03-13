@@ -465,7 +465,7 @@ class Runner:
             tlC = self.getTelecomConnector()
 
             tlC.setDefaultOperator(operator)
-            print(json.dumps(tlC.getSimInfo(nsce=nsce), indent=2))
+            print(json.dumps(tlC.getSimInfo(nsce=nsce), indent=2, default=str))
 
         if command == "script":
             invoiceId = self.getArg("Invoice id")

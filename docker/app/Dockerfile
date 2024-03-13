@@ -1,4 +1,4 @@
-FROM python:3.12-bullseye
+FROM python:3.11-bullseye
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install locales openvpn

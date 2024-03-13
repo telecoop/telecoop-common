@@ -258,13 +258,16 @@ class Connector:
         if response["returnCode"] == 200:
             h = response["data"]["Historique"]
             h.sort(key=lambda e: e["date"])
+            print(h)
             for event in h:
-                if event["statut"] == "PORTING DONE":
+                if event["type"] == "IN" and event["statut"] == "PORTING DONE":
                     if "activated" not in history:
                         history["activated"] = datetime.fromisoformat(
                             event["date"].replace("Z", "+00:00")
                         )
-                if event["statut"] == "terminaison":
+                if (
+                    event["type"] == "OUT" and event["statut"] == "PORTING DONE"
+                ) or event["statut"] == "terminaison":
                     if "terminated" not in history:
                         history["terminated"] = datetime.fromisoformat(
                             event["date"].replace("Z", "+00:00")
