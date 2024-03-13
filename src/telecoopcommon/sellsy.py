@@ -2523,7 +2523,7 @@ class SellsyInvoice:
             invoiceData["gateways"] = []
         invoiceData["gateways"] += ["stripe"]
         invoiceData["docId"] = docId
-        cls.generate(invoiceData, sellsyConnector, logger)
+        cls.generate(docId, invoiceData, sellsyConnector, logger)
 
     def processSEPARejection(
         self, rejectCode, rejectReason, paymentId, sellsyConnector, invoiceData, logger

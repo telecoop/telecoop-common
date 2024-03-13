@@ -164,6 +164,14 @@ class PhenixConnector:
             raise PhenixError("Non JSON response") from excp
         return result
 
+    @classmethod
+    def textToDate(cls, dateTxt):
+        return (
+            pytz.timezone("Europe/Paris").localize(datetime.fromisoformat(dateTxt))
+            if dateTxt is not None
+            else None
+        )
+
     def getSimInfo(self, nsce):
         urlSim = "/GsmApi/V2/GetInfoSim"
         try:
@@ -217,6 +225,8 @@ class PhenixConnector:
                     "roaming": None,
                     "voicemail": None,
                     "oopAmount": None,
+                    "activationDate": self.textToDate(responseLine["dateActivation"]),
+                    "terminationDate": self.textToDate(responseLine["dateResiliation"]),
                 }
             )
         return result
@@ -238,11 +248,19 @@ class PhenixConnector:
         if msisdn:
             response = self.getLineInfo(msisdn)
             if "dateActivation" in response and response["dateActivation"]:
-                activationDate = pytz.timezone("Europe/Paris").localize(
-                    datetime.fromisoformat(response["dateActivation"])
-                )
+                activationDate = self.textToDate(response["dateActivation"])
 
         return activationDate
+
+    def getTerminationDate(self, nsce):
+        msisdn = self.getNumFromSim(nsce)
+        terminationDate = None
+        if msisdn:
+            response = self.getLineInfo(msisdn)
+            if "dateResiliation" in response and response["dateResiliation"]:
+                terminationDate = self.textToDate(response["dateResiliation"])
+
+        return terminationDate
 
     def getNumFromSim(self, nsce):
         num = None
@@ -310,7 +328,15 @@ class NormalizedBazileConnector(BazileConnector):
             "rio": sanitize(simInfo["RIO"]),
             "oopAmount": sanitize(simInfo["Palier_HF"]),
             "oopDataAuth": sanitize(simInfo["HF Data autorisé"]),
+            "activationDate": None,
+            "terminationDate": None,
         }
+
+        history = self.getSimplePortaHistory(nsce)
+        if "activated" in history:
+            result["activationDate"] = history["activated"]
+        if "terminated" in history:
+            result["terminationDate"] = history["terminated"]
         return result
 
     def getLineStatus(self, msisdn, nsce):

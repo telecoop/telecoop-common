@@ -264,6 +264,11 @@ class Connector:
                         history["activated"] = datetime.fromisoformat(
                             event["date"].replace("Z", "+00:00")
                         )
+                if event["statut"] == "terminaison":
+                    if "terminated" not in history:
+                        history["terminated"] = datetime.fromisoformat(
+                            event["date"].replace("Z", "+00:00")
+                        )
                 else:
                     history[event["statut"]] = datetime.fromisoformat(
                         event["date"].replace("Z", "+00:00")
@@ -276,5 +281,13 @@ class Connector:
         activationDate = None
         if history and "activated" in history:
             activationDate = history["activated"]
+
+        return activationDate
+
+    def getTerminationDate(self, nsce):
+        history = self.getSimplePortaHistory(nsce)
+        activationDate = None
+        if history and "terminated" in history:
+            activationDate = history["terminated"]
 
         return activationDate
