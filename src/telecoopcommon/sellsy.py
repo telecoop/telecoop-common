@@ -31,6 +31,8 @@ sellsyValues = {
         },
         "paydate_id": 3691808,
         "new_client_mail_template_id": 62573,
+        "last_invoice_template_id": 90447,
+        "last_creditnote_template_id": 90447,
         "custom_fields": {
             "operateur": 232923,
             "refbazile": 103778,
@@ -94,6 +96,7 @@ sellsyValues = {
             "pro-achats-contenu": 181291,
             "pro-achats-surtaxes": 181289,
             "slimpay-date-prelevement": 189294,
+            "slimpay-refund-date": 268491,
             "slimpay-lien-prelevement": 189295,
             "slimpay-reject-reason": 199792,
             "slimpay-payment-status": 199793,
@@ -182,6 +185,8 @@ sellsyValues = {
         },
         "paydate_id": 3527781,
         "new_client_mail_template_id": 62591,
+        "last_invoice_template_id": 57480,
+        "last_creditnote_template_id": 57483,
         "custom_fields": {
             "operateur": 232874,
             "refbazile": 103227,
@@ -245,6 +250,7 @@ sellsyValues = {
             "pro-achats-contenu": 183874,
             "pro-achats-surtaxes": 183873,
             "slimpay-date-prelevement": 189309,
+            "slimpay-refund-data": 268489,
             "slimpay-lien-prelevement": 189312,
             "slimpay-reject-reason": 199780,
             "slimpay-payment-status": 199787,
@@ -361,6 +367,8 @@ class TcSellsyConnector:
         self.sellsyNewClientMailTemplateId = sellsyValues[self.env][
             "new_client_mail_template_id"
         ]
+        self.emailLastInvoice = sellsyValues[self.env]["last_invoice_template_id"]
+        self.emailLastCreditnote = sellsyValues[self.env]["last_creditnote_template_id"]
         customFields = sellsyValues[self.env]["custom_fields"]
         self.cfidOnSite = customFields["achatsimphysique"]
         self.cfidOperator = customFields["operateur"]
@@ -412,6 +420,7 @@ class TcSellsyConnector:
         self.cfidMembershipFormSentDate = customFields["membership-form-sent-date"]
 
         self.cfidSlimpayPaymentDate = customFields["slimpay-date-prelevement"]
+        self.cfidSlimpayRefundDate = customFields["slimpay-refund-date"]
         self.cfidSlimpayPaymentLink = customFields["slimpay-lien-prelevement"]
         self.cfidSlimpayRejectReason = customFields["slimpay-reject-reason"]
         self.cfidSlimpayPaymentStatus = customFields["slimpay-payment-status"]
@@ -518,6 +527,12 @@ class TcSellsyConnector:
         self.taxId = None
         self.payMediums = None
         self.rateCategories = None
+
+        self.funnelIdSim = [
+            self.funnelIdVdc,
+            self.funnelIdSimsPro,
+            self.funnelIdOperatorChange,
+        ]
 
     def getConnector(self):
         if self._connector is None:
@@ -628,6 +643,60 @@ class TcSellsyConnector:
             ],
         }
         return self.api(method="CustomFields.recordValues", params=params)
+
+    def createTask(self, data):
+        """Wrapper to create a task in Sellsy with pre-defined owners"""
+
+        self.logger.info(
+            "Creating task in Sellsy ({} #{})".format(
+                data["eventType"], data["eventId"]
+            )
+        )
+
+        result = self.api(method="Agenda.getAvailableLabels")
+        labelId = None
+        for id, label in result.items():
+            if "value" in label and label["value"] == "Rappel":
+                labelId = id
+                break
+
+        description = data["description"]
+
+        params = {
+            "type": "task",
+            "task": {
+                "description": description,
+                "label": labelId,
+                "allDay": "N",
+                "start": round(datetime.today().timestamp()),
+                "end": round(datetime.today().timestamp()),
+                "isPrivate": "N",
+                "canEdit": "Y",
+                "staffids": [
+                    self.staff["support-client"],
+                    self.staff["support-societaire"],
+                ],
+                "staffs": [
+                    {"id": self.staff["support-client"], "canEdit": "Y"},
+                    {"id": self.staff["support-client-2"], "canEdit": "Y"},
+                    {"id": self.staff["support-client-3"], "canEdit": "Y"},
+                ],
+            },
+        }
+        if data["eventType"] == "facture":
+            params["task"]["relatedtype"] = "invoice"
+            params["task"]["relatedid"] = data["eventId"]
+        elif data["eventType"] == "creditnote":
+            params["task"]["relatedtype"] = "creditnote"
+            params["task"]["relatedid"] = data["eventId"]
+        elif data["eventType"] in ["acompte", "avoir", "line-out"]:
+            params["task"]["relatedtype"] = "third"
+            params["task"]["relatedid"] = data["sellsyId"]
+        self.logger.debug(params)
+
+        result = self.api(method="Agenda.create", params=params)
+        self.logger.debug(result)
+        return result["taskid"]
 
     def getClientRef(self, clientId):
         response = self.api(method="Client.getOne", params={"clientid": clientId})
@@ -945,9 +1014,11 @@ class TcSellsyConnector:
             "statusLabel": opp["statusLabel"],
             "stepEnterDate": opp["stepEnterDate"],
             "stepid": opp["stepid"],
-            "smarttags": ",".join([o["word"] for o in opp["tags"].values()])
-            if isinstance(opp["tags"], dict)
-            else "",
+            "smarttags": (
+                ",".join([o["word"] for o in opp["tags"].values()])
+                if isinstance(opp["tags"], dict)
+                else ""
+            ),
             "customfields": {
                 "nsce": {"code": "nsce", "textval": ""},
                 "numerotelecoop": {"code": "numerotelecoop", "textval": ""},
@@ -1708,6 +1779,24 @@ class SellsyClient:
             opp.client = self
         return opps
 
+    def updateStatus(self, connector, context=None):
+        clientOpps = self.getOpportunities(connector)
+        nbActiveLines = 0
+        for clientOpp in clientOpps:
+            if clientOpp.funnelId in connector.funnelIdSim and clientOpp.isActive(
+                connector
+            ):
+                nbActiveLines += 1
+        if nbActiveLines == 0:
+            status = "Résilié"
+            if context is None:
+                status = "Résilié"
+            elif context == "termination":
+                status = "Résilié avec dettes ou crédits"
+            connector.updateCustomField(
+                "client", self.id, connector.cfIdStatusClientMobile, status
+            )
+
 
 class SellsyOpportunity:
     def __init__(self, id):
@@ -2028,10 +2117,9 @@ class SellsyOpportunity:
         return state
 
     def terminate(self, connector, internal=False):
-        allowedFunnelIds = [connector.funnelIdVdc, connector.funnelIdSimsPro]
-        if self.funnelId not in allowedFunnelIds:
+        if self.funnelId not in connector.funnelIdSim:
             raise RuntimeError(
-                f"Unable to terminate opportunity {self.id}, {self.funnelId} not in {allowedFunnelIds}"
+                f"Unable to terminate opportunity {self.id}, {self.funnelId} not in {connector.funnelIdSim}"
             )
 
         stepTerminated = None
@@ -2046,26 +2134,7 @@ class SellsyOpportunity:
 
         # update client status
         client = self.getClient(connector)
-        clientOpps = client.getOpportunities(connector)
-        nbActiveLines = 0
-        for clientOpp in clientOpps:
-            if (
-                clientOpp.id != self.id
-                and clientOpp.funnelId in allowedFunnelIds
-                and clientOpp.isActive(connector)
-            ):
-                nbActiveLines += 1
-        if nbActiveLines == 0:
-            connector.updateCustomField(
-                "client",
-                self.clientId,
-                connector.cfIdStatusClientMobile,
-                "Résilié avec dettes ou crédits",
-            )
-
-        connector.updateCustomField(
-            "client", self.clientId, connector.cfidManuelInvoice, "Manuelle"
-        )
+        client.updateStatus(connector, context="termination")
 
     def isActive(self, connector):
         return (
@@ -2380,14 +2449,14 @@ class SellsyInvoice:
                 "subject": data["subject"].format(subject=model["subject"]),
                 "doclayout": model["doclayout"],
                 "payMediums": data["payMediums"],
-                "enabledPaymentGateways": data["gateways"]
-                if "gateways" in data
-                else [],
+                "enabledPaymentGateways": (
+                    data["gateways"] if "gateways" in data else []
+                ),
                 "notes": data["notes"].format(notes=model["notes"]),
                 "hidePayment": "Y",
-                "rateCategory": rateCategories["Tarif HT"]
-                if isPro
-                else rateCategories["Tarif TTC"],
+                "rateCategory": (
+                    rateCategories["Tarif HT"] if isPro else rateCategories["Tarif TTC"]
+                ),
             },
             "paydate": {
                 "id": model["paydate"],
@@ -2478,18 +2547,36 @@ class SellsyInvoice:
         params = {"docid": self.id, "document": {"doctype": "invoice", "step": "due"}}
         connector.api(method="Document.updateStep", params=params)
 
-    def sendByMail(self, email, connector):
+    def sendByMail(self, email, connector, isLastInvoice, docType):
         if email:
-            params = {
-                "docid": self.id,
-                "email": {
-                    "doctype": "invoice",
-                    "emails": [email],
-                    "includeAttachments": "N",
-                },
-            }
+            if not isLastInvoice:
+                method = "Document.sendDocByMail"
+                params = {
+                    "docid": self.id,
+                    "email": {
+                        "doctype": "invoice",
+                        "emails": [email],
+                        "includeAttachments": "N",
+                    },
+                }
+            else:
+                method = "Email.sendOne"
+                params = {
+                    "email": {
+                        "linkedtype": "third",
+                        "linkedid": self.clientId,
+                        "relatedtype": docType,
+                        "relatedid": self.id,
+                        "emails": [email],
+                        "templateId": (
+                            connector.emailLastInvoice
+                            if docType == "invoice"
+                            else connector.emailLastCreditnote
+                        ),
+                    }
+                }
             try:
-                connector.api(method="Document.sendDocByMail", params=params)
+                connector.api(method=method, params=params)
             except sellsy_api.SellsyError as excp:
                 connector.logger.warning(
                     f"Whoops, something went wrong sending the email : {excp}"
@@ -2499,7 +2586,7 @@ class SellsyInvoice:
 
     def validateAndSend(self, email, connector):
         self.validate(connector)
-        self.sendByMail(email, connector)
+        self.sendByMail(email, connector, False, None)
 
     def updateCustomField(self, cfid, value, sellsyConnector):
         sellsyConnector.updateCustomField("document", self.id, cfid, value)
