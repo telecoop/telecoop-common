@@ -324,7 +324,7 @@ sellsyValues = {
 
 def stepNameFromId(stepId: int):
     """Get step name from step id"""
-    env = "PROD" if os.getenv("ENV") == "PROD" else "DEV"
+    env = "PROD" if os.getenv("ENV") in ["PROD", "LOCAL_PROD"] else "DEV"
     result = None
     for key, value in sellsyValues[env].items():
         if value == stepId:
@@ -334,7 +334,7 @@ def stepNameFromId(stepId: int):
 
 def sourceNameFromId(sourceId: int):
     """Get source name from source id"""
-    env = "PROD" if os.getenv("ENV") == "PROD" else "DEV"
+    env = "PROD" if os.getenv("ENV") in ["PROD", "LOCAL_PROD"] else "DEV"
     result = None
     for key, value in sellsyValues[env].items():
         if value == sourceId:
@@ -984,7 +984,7 @@ class TcSellsyConnector:
     @classmethod
     def getSourceIdFromValue(cls, source):
         env = os.getenv("ENV", "LOCAL")
-        env = "PROD" if env == "PROD" else "DEV"
+        env = "PROD" if env in ["PROD", "LOCAL_PROD"] else "DEV"
         sourceId = None
         if source == "Site web":
             sourceId = sellsyValues[env]["opportunity_source_site_web"]
@@ -1801,7 +1801,7 @@ class SellsyClient:
 class SellsyOpportunity:
     def __init__(self, id):
         env = os.getenv("ENV", "LOCAL")
-        self.env = "PROD" if env == "PROD" else "DEV"
+        self.env = "PROD" if env in ["PROD", "LOCAL_PROD"] else "DEV"
 
         self.id = id
         self.reference = None
@@ -1945,7 +1945,10 @@ class SellsyOpportunity:
                     # O joy.
                     if self.env == "DEV" and "formatted_value" in field:
                         self.plan = field["formatted_value"]
-                    elif self.env == "PROD" and "formatted_value" in field:
+                    elif (
+                        self.env in ["PROD", "LOCAL_PROD"]
+                        and "formatted_value" in field
+                    ):
                         self.plan = field["formatted_value"]
                 if code == "nsce":
                     self.nsce = field["textval"]
@@ -2146,7 +2149,7 @@ class SellsyOpportunity:
 class SellsyMemberOpportunity:
     def __init__(self, id):
         env = os.getenv("ENV", "LOCAL")
-        self.env = "PROD" if env == "PROD" else "DEV"
+        self.env = "PROD" if env in ["PROD", "LOCAL_PROD"] else "DEV"
 
         self.id = id
         self.reference = None
@@ -2309,7 +2312,7 @@ class SellsyMemberOpportunity:
 class SellsyInvoice:
     def __init__(self, invoiceId):
         env = os.getenv("ENV", "LOCAL")
-        self.env = "PROD" if env == "PROD" else "DEV"
+        self.env = "PROD" if env in ["PROD", "LOCAL_PROD"] else "DEV"
 
         self.id = invoiceId
         self.reference = None
