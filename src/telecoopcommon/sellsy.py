@@ -936,9 +936,11 @@ class TcSellsyConnector:
 
         return client
 
-    def getClients(self, includeMembers=False, includeNoRef=False):
+    def getClients(self, includeMembers=False, includeNoRef=False, searchParams=None):
         result = {}
         params = {"pagination": {"nbperpage": 1000, "pagenum": 1}}
+        if searchParams:
+            params["search"] = searchParams
         clients = self.api(method="Client.getList", params=params)
         infos = clients["infos"]
         nbPages = infos["nbpages"]
