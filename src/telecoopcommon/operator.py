@@ -1,6 +1,7 @@
 import json
 import pytz
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from time import sleep
 import requests
 from .bazile import Connector as BazileConnector, BazileError
@@ -21,19 +22,25 @@ class Connector:
     _connectors = {}
     defaultOperator: str = None
 
-    def __init__(self, conf: dict, logger):
+    def __init__(self, conf: dict, logger, cachetimeout=1):
+        """cachetimeout controls the number of hours connectors will be kept in cache"""
         self.conf = conf
         self.logger = logger
+        self.cachetimeout = cachetimeout
 
     def initConnector(self, operator):
         if operator.lower() == "bazile":
-            self._connectors["bazile"] = NormalizedBazileConnector(
-                self.conf["BazileAPI"], self.logger
-            )
+            self._connectors["bazile"] = {
+                "connector": NormalizedBazileConnector(
+                    self.conf["BazileAPI"], self.logger
+                ),
+                "lastCalled": None,
+            }
         elif operator.lower() == "phenix":
-            self._connectors["phenix"] = PhenixConnector(
-                self.conf["PhenixAPI"], self.logger
-            )
+            self._connectors["phenix"] = {
+                "connector": PhenixConnector(self.conf["PhenixAPI"], self.logger),
+                "lastCalled": None,
+            }
         else:
             raise RuntimeError(f"Unknown operator {operator}")
 
@@ -46,11 +53,18 @@ class Connector:
         ope = operator or self.defaultOperator
         self.logger.debug(ope)
         if ope:
-            if ope not in self._connectors:
+            # If no connector exists, or if connector was last called for more than self.cachetimeout hours
+            if (
+                ope not in self._connectors
+                or self._connectors[ope]["lastCalled"]
+                + relativedelta(hours=self.cachetimeout)
+                < datetime.now()
+            ):
                 self.initConnector(ope)
 
+            self._connectors[ope]["lastCalled"] = datetime.now()
             self.logger.debug(self._connectors)
-            func = getattr(self._connectors[ope], self.calledMethod)
+            func = getattr(self._connectors[ope]["connector"], self.calledMethod)
         else:
             raise RuntimeError("No operator specified")
         return func(**kwargs)
