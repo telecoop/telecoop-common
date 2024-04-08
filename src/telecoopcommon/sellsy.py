@@ -2562,7 +2562,10 @@ class SellsyInvoice:
     def validate(self, connector):
         params = {
             "docid": self.id,
-            "document": {"doctype": self.docType, "step": "due"},
+            "document": {
+                "doctype": self.docType,
+                "step": "due" if self.docType == "invoice" else "stored",
+            },
         }
         connector.api(method="Document.updateStep", params=params)
 
