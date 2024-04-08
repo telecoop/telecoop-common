@@ -68,6 +68,7 @@ def cmdline():
             "bazile-get-simple-porta-history",
             "authorize-hf",
             "get-sim-info",
+            "get-conso",
             "script",
         ],
         help="command",
@@ -466,6 +467,15 @@ class Runner:
 
             tlC.setDefaultOperator(operator)
             print(json.dumps(tlC.getSimInfo(nsce=nsce), indent=2, default=str))
+
+        if command == "get-conso":
+            msisdn = self.getArg("msisdn")
+            month = self.getArg("month", "date")
+            tlC = self.getTelecomConnector()
+
+            tlC.setDefaultOperator("phenix")
+            response = tlC.getConso(msisdn=msisdn, month=month)
+            print(json.dumps(response, indent=2, default=str))
 
         if command == "script":
             invoiceId = self.getArg("Invoice id")

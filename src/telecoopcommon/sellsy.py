@@ -2338,6 +2338,17 @@ class SellsyInvoice:
         display += f" : {round(self.amountTTC, 2)} € TTC ({round(self.amountHT, 2)} € HT) | {self.subject}"
         return display
 
+    @property
+    def docType(self):
+        splits = self.reference.split("-")
+        rawType = splits.pop(0)
+        result = None
+        if rawType == "FACT":
+            result = "invoice"
+        elif rawType == "AVR":
+            result == "creditnote"
+        return result
+
     def load(self, sellsyConnector):
         values = sellsyConnector.getInvoiceValues(self.id)
         self.loadWithValues(values)
@@ -2549,7 +2560,10 @@ class SellsyInvoice:
         return invoice
 
     def validate(self, connector):
-        params = {"docid": self.id, "document": {"doctype": "invoice", "step": "due"}}
+        params = {
+            "docid": self.id,
+            "document": {"doctype": self.docType, "step": "due"},
+        }
         connector.api(method="Document.updateStep", params=params)
 
     def sendByMail(self, email, connector, isLastInvoice, docType):

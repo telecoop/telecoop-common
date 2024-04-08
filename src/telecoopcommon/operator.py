@@ -129,7 +129,7 @@ class PhenixConnector:
                 # We only want to retry when we got a 503 http code
                 retry = -1
                 result = response.json()
-                if "etat" not in result:
+                if "Conso" not in service and "etat" not in result:
                     raise PhenixError(f"Unknown response from Phenix {result}")
             except PhenixError as excp:
                 if response.status_code in [503, 502] and retry >= 1:
@@ -249,6 +249,18 @@ class PhenixConnector:
         url = "/GsmApi/V2/MsisdnConsult"
         try:
             response = self.get(url, data={"msisdn": msisdn})
+        except PhenixError as exp:
+            if exp.statusCode in [404, 400]:
+                self.logger.warning(f"Msisdn {msisdn} not found")
+                return None
+            raise exp
+        return response
+
+    def getConso(self, msisdn, month):
+        url = "/GsmApi/GetConsoMsisdnFromCDR"
+        data = {"msisdn": msisdn, "moisAnnee": month.strftime("%m%Y")}
+        try:
+            response = self.get(url, data=data)
         except PhenixError as exp:
             if exp.statusCode in [404, 400]:
                 self.logger.warning(f"Msisdn {msisdn} not found")
