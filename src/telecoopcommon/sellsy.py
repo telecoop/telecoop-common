@@ -2346,7 +2346,7 @@ class SellsyInvoice:
         if rawType == "FACT":
             result = "invoice"
         elif rawType == "AVR":
-            result == "creditnote"
+            result = "creditnote"
         return result
 
     def load(self, sellsyConnector):

@@ -292,6 +292,7 @@ class Runner:
             invoice = SellsyInvoice(invoiceId)
             invoice.load(self.getSellsyConnector())
             print(invoice)
+            print(invoice.docType)
             print(invoice.payMediums)
 
         if command == "get-invoices":
