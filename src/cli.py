@@ -50,6 +50,7 @@ def cmdline():
             "get-invoices",
             "update-invoice-status",
             "update-invoice-paydate",
+            "send-invoice",
             "create-payment",
             "delete-payment",
             "get-member-opp",
@@ -141,6 +142,8 @@ class Runner:
             except ValueError:
                 self.logger.critical(f"{name} (YYYY-MM-DD HH-MI-SS) needed")
                 sys.exit(1)
+        elif type == "bool":
+            value = valueStr == "true"
         else:
             value = valueStr
         return value
@@ -320,6 +323,17 @@ class Runner:
             invoiceId = self.getArg("Invoice id")
             nbDays = self.getArg("Nb days")
             self.getSellsyConnector().updateInvoicePaymentDate(invoiceId, nbDays)
+
+        if command == "send-invoice":
+            invoiceId = self.getArg("Invoice id")
+            email = self.getArg("email")
+            isLastInvoice = self.getArg("is last invoice", "bool")
+            docType = self.getArg("Doc type")
+
+            syC = self.getSellsyConnector()
+            invoice = SellsyInvoice(invoiceId)
+            invoice.load(syC)
+            invoice.sendByMail(email, syC, isLastInvoice, docType)
 
         if command == "create-payment":
             invoiceId = self.getArg("Invoice id")

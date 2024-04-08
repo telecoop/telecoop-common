@@ -2541,7 +2541,7 @@ class SellsyInvoice:
                 method == "Document.create"
                 and data["automaticValidation"]
                 and not lessThan1
-                and data["amount"] >= 0
+                and data["amount"] != 0
             ):
                 logger.info(
                     f"[Invoice #{invoiceId}] Automatic validation enabled : validating invoice"
@@ -2579,7 +2579,7 @@ class SellsyInvoice:
                     },
                 }
             else:
-                method = "Email.sendOne"
+                method = "Mails.sendOne"
                 params = {
                     "email": {
                         "linkedtype": "third",
