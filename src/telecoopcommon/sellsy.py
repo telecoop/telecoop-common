@@ -1268,7 +1268,10 @@ class TcSellsyConnector:
         while currentPage <= nbPages:
             self.logger.debug(f"Processing page {currentPage}/{nbPages}")
             for id, opp in opportunities["result"].items():
-                o = SellsyOpportunity(id)
+                if funnelId in [self.funnelIdMembership, self.funnelIdMembership2]:
+                    o = SellsyMemberOpportunity(id)
+                else:
+                    o = SellsyOpportunity(id)
                 o.loadWithValues(opp)
                 result.append(o)
                 if limit is not None and limit <= len(result):

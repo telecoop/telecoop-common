@@ -231,6 +231,7 @@ class Runner:
             opp.terminate(tsc)
 
         if command == "get-opportunities-in-step":
+            funnelId = self.getArg("Funnel id")
             step = self.getArg("Step")
             startDate = None
             if len(self.args.arguments) > 0:
@@ -244,7 +245,7 @@ class Runner:
             # searchParams = {'status': ['open', 'won', 'lost', 'late', 'closed']}
             searchParams = None
             opps = connector.getOpportunitiesInStep(
-                connector.funnelIdVdc,
+                funnelId,
                 stepId,
                 limit=limit,
                 startDate=startDate,
