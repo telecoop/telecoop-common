@@ -460,6 +460,7 @@ class TcSellsyConnector:
         self.stepMembershipRemainder = sellsyValues[self.env][
             "step_membership_reminder"
         ]
+        self.stepMembershipSigned = sellsyValues[self.env]["step_membership_signed"]
         self.stepMembershipPaid = sellsyValues[self.env]["step_membership_paid"]
         self.stepMembershipActive = sellsyValues[self.env]["step_membership_active"]
 
