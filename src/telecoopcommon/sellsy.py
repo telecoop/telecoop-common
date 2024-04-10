@@ -279,7 +279,7 @@ sellsyValues = {
         "step_membership_asked": 434065,
         "step_membership_sign": 452137,
         "step_membership_reminder": 641972,
-        "step_membership_signed": 632764,
+        "step_membership_signed": 672053,
         "step_membership_paid": 434066,
         "step_membership_active": 452138,
         "funnel_id_membership2": 85419,
@@ -2362,9 +2362,12 @@ class SellsyInvoice:
         self.tva = Decimal(values["taxesAmountSum"])
         self.amountTTC = Decimal(values["totalAmount"])
         self.amountDue = Decimal(values["dueAmount"])
-        self.paymentDate = parisTZ.localize(
-            datetime.fromisoformat(values["payDateCustom"])
-        )
+        try:
+            self.paymentDate = parisTZ.localize(
+                datetime.fromisoformat(values["payDateCustom"])
+            )
+        except ValueError:
+            self.paymentDate = None
         self.clientRef = values["thirdident"]
         self.clientId = int(values["thirdid"])
         self.subject = values["subject"]
@@ -2400,41 +2403,44 @@ class SellsyInvoice:
         fetchLines=False,
     ):
         result = []
-        params = {
-            "doctype": "invoice",
-            "pagination": {"nbperpage": 1000, "pagenum": 1},
-            "search": {},
-        }
-        if startDate is not None:
-            params["search"]["periodecreationDate_start"] = startDate.timestamp()
-        if searchParams is not None:
-            for k, value in searchParams.items():
-                params["search"][k] = value
+        for doctype in ["invoice", "creditnote"]:
+            params = {
+                "doctype": doctype,
+                "pagination": {"nbperpage": 1000, "pagenum": 1},
+                "search": {},
+            }
+            if startDate is not None:
+                params["search"]["periodecreationDate_start"] = startDate.timestamp()
+            if searchParams is not None:
+                for k, value in searchParams.items():
+                    params["search"][k] = value
 
-        invoices = sellsyConnector.api(method="Document.getList", params=params)
-        infos = invoices["infos"]
-        nbPages = infos["nbpages"]
-        currentPage = 1
-        while currentPage <= nbPages:
-            logger.debug(f"Processing page {currentPage}/{nbPages}")
-            for invoiceId, invoice in invoices["result"].items():
-                i = SellsyInvoice(invoiceId)
-                if fetchLines:
-                    # Invoice lines are only present in Sellsy API call Document.getOne, so we must call getOne for each invoice
-                    # … yeah, lame, I know
-                    i.load(sellsyConnector)
-                else:
-                    i.loadWithValues(invoice)
-                if paymentMedium is None or paymentMedium in i.payMediums:
-                    result.append(i)
-                if limit is not None and limit <= len(result):
-                    return result
+            invoices = sellsyConnector.api(method="Document.getList", params=params)
+            infos = invoices["infos"]
+            nbPages = infos["nbpages"]
+            currentPage = 1
+            while currentPage <= nbPages:
+                logger.debug(f"Processing page {currentPage}/{nbPages}")
+                for invoiceId, invoice in invoices["result"].items():
+                    i = SellsyInvoice(invoiceId)
+                    if fetchLines:
+                        # Invoice lines are only present in Sellsy API call Document.getOne, so we must call getOne for each invoice
+                        # … yeah, lame, I know
+                        i.load(sellsyConnector)
+                    else:
+                        i.loadWithValues(invoice)
+                    if paymentMedium is None or paymentMedium in i.payMediums:
+                        result.append(i)
+                    if limit is not None and limit <= len(result):
+                        return result
 
-            currentPage += 1
-            if infos["pagenum"] <= nbPages:
-                params["pagination"]["pagenum"] = currentPage
-                invoices = sellsyConnector.api(method="Document.getList", params=params)
-                infos = invoices["infos"]
+                currentPage += 1
+                if infos["pagenum"] <= nbPages:
+                    params["pagination"]["pagenum"] = currentPage
+                    invoices = sellsyConnector.api(
+                        method="Document.getList", params=params
+                    )
+                    infos = invoices["infos"]
 
         return result
 
