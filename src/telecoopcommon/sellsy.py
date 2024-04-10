@@ -2244,7 +2244,7 @@ class SellsyMemberOpportunity:
                         datetime.strptime(field["formatted_ymd"], "%Y-%m-%d")
                     )
                 elif code == "moyen-de-paiement":
-                    self.paymentMode = field["textval"]
+                    self.paymentMode = field["formatted_value"]
                 elif code == "reference-paiement":
                     self.paymentLabel = field["textval"]
                 elif (
