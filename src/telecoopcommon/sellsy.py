@@ -1417,16 +1417,18 @@ class TcSellsyConnector:
                         email = contact["email"]
                 return [id, email]
 
-    def getInvoiceValues(self, id):
+    def getInvoiceValues(self, id, docType="invoice"):
         try:
             invoice = self.api(
-                method="Document.getOne", params={"doctype": "invoice", "docid": id}
+                method="Document.getOne", params={"doctype": docType, "docid": id}
             )
         except sellsy_api.errors.SellsyError:
+            docType = "creditnote"
             invoice = self.api(
-                method="Document.getOne", params={"doctype": "creditnote", "docid": id}
+                method="Document.getOne", params={"doctype": docType, "docid": id}
             )
         result = {
+            "docType": docType,
             "ident": invoice["ident"],
             "status": invoice["status"],
             "step_id": invoice["step"],
@@ -1466,30 +1468,30 @@ class TcSellsyConnector:
 
         return result
 
-    def updateInvoiceStatus(self, invoiceId, status):
+    def updateInvoiceStatus(self, invoiceId, status, docType="invoice"):
         params = {
             "docid": invoiceId,
-            "document": {"doctype": "invoice", "step": status},
+            "document": {"doctype": docType, "step": status},
         }
         self.api(method="Document.updateStep", params=params)
 
-    def updateInvoicePaymentDate(self, invoiceId, nbDays):
+    def updateInvoicePaymentDate(self, invoiceId, nbDays, docType="invoice"):
         params = {
             "docid": invoiceId,
             "document": {
-                "doctype": "invoice",
+                "doctype": docType,
             },
             "paydate": {"id": self.paydateId, "xdays": nbDays},
         }
         self.api(method="Document.update", params=params)
 
-    def createPayment(self, invoiceId, paymentDate, amount, label):
+    def createPayment(self, invoiceId, paymentDate, amount, label, doctype):
         params = {
             "payment": {
                 "date": paymentDate.timestamp(),
                 "amount": f"{amount}",
                 "medium": 1,
-                "doctype": "invoice",
+                "doctype": doctype,
                 "docid": invoiceId,
                 "ident": label,
             }
@@ -1499,11 +1501,11 @@ class TcSellsyConnector:
         sellsyPaymentId = response["payrelid"]
         return sellsyPaymentId
 
-    def deletePayment(self, paymentId, invoiceId):
+    def deletePayment(self, paymentId, invoiceId, docType):
         params = {
             "payment": {
                 "payid": paymentId,
-                "doctype": "invoice",
+                "doctype": docType,
                 "docid": invoiceId,
             }
         }
@@ -2316,11 +2318,12 @@ class SellsyMemberOpportunity:
 
 
 class SellsyInvoice:
-    def __init__(self, invoiceId):
+    def __init__(self, invoiceId, docType):
         env = os.getenv("ENV", "LOCAL")
         self.env = "PROD" if env in ["PROD", "LOCAL_PROD"] else "DEV"
 
         self.id = invoiceId
+        self.docType = docType
         self.reference = None
         self.sellsyStatus = None
         self.status = None
@@ -2342,19 +2345,8 @@ class SellsyInvoice:
         display += f" : {round(self.amountTTC, 2)} € TTC ({round(self.amountHT, 2)} € HT) | {self.subject}"
         return display
 
-    @property
-    def docType(self):
-        splits = self.reference.split("-")
-        rawType = splits.pop(0)
-        result = None
-        if rawType == "FACT":
-            result = "invoice"
-        elif rawType == "AVR":
-            result = "creditnote"
-        return result
-
     def load(self, sellsyConnector):
-        values = sellsyConnector.getInvoiceValues(self.id)
+        values = sellsyConnector.getInvoiceValues(self.id, self.docType)
         self.loadWithValues(values)
 
     def loadWithValues(self, values):
@@ -2390,10 +2382,12 @@ class SellsyInvoice:
             self.rows = values["rows"]
 
     def createPayment(self, paymentDate, amount, label, sellsyConnector):
-        return sellsyConnector.createPayment(self.id, paymentDate, amount, label)
+        return sellsyConnector.createPayment(
+            self.id, paymentDate, amount, label, self.docType
+        )
 
     def deletePayment(self, paymentId, sellsyConnector):
-        sellsyConnector.deletePayment(paymentId, self.id)
+        sellsyConnector.deletePayment(paymentId, self.id, self.docType)
 
     @classmethod
     def getInvoices(
@@ -2407,9 +2401,9 @@ class SellsyInvoice:
         fetchLines=False,
     ):
         result = []
-        for doctype in ["invoice", "creditnote"]:
+        for docType in ["invoice", "creditnote"]:
             params = {
-                "doctype": doctype,
+                "doctype": docType,
                 "pagination": {"nbperpage": 1000, "pagenum": 1},
                 "search": {},
             }
@@ -2426,7 +2420,7 @@ class SellsyInvoice:
             while currentPage <= nbPages:
                 logger.debug(f"Processing page {currentPage}/{nbPages}")
                 for invoiceId, invoice in invoices["result"].items():
-                    i = SellsyInvoice(invoiceId)
+                    i = SellsyInvoice(invoiceId, docType)
                     if fetchLines:
                         # Invoice lines are only present in Sellsy API call Document.getOne, so we must call getOne for each invoice
                         # … yeah, lame, I know
@@ -2467,9 +2461,10 @@ class SellsyInvoice:
         model = connector.api(method="Document.getModel", params=params)
 
         rateCategories = connector.getRateCategories()
+        docType = ("invoice" if data["amount"] >= 0 else "creditnote",)
         params = {
             "document": {
-                "doctype": "invoice" if data["amount"] >= 0 else "creditnote",
+                "doctype": docType,
                 "thirdid": data["sellsyClientId"],
                 "docspeakerStaffId": connector.ownerId,
                 "subject": data["subject"].format(subject=model["subject"]),
@@ -2540,7 +2535,7 @@ class SellsyInvoice:
             docId = result["doc_id"]
         else:
             docId = data["docId"]
-        invoice = SellsyInvoice(docId)
+        invoice = SellsyInvoice(docId, docType)
 
         logger.info(f"[Invoice #{invoiceId}] Fetching reference")
         try:
@@ -2579,7 +2574,7 @@ class SellsyInvoice:
         }
         connector.api(method="Document.updateStep", params=params)
 
-    def sendByMail(self, email, connector, isLastInvoice, docType):
+    def sendByMail(self, email, connector, isLastInvoice):
         if email:
             if not isLastInvoice:
                 method = "Document.sendDocByMail"
@@ -2597,12 +2592,12 @@ class SellsyInvoice:
                     "email": {
                         "linkedtype": "third",
                         "linkedid": self.clientId,
-                        "relatedtype": docType,
+                        "relatedtype": self.docType,
                         "relatedid": self.id,
                         "emails": [email],
                         "templateId": (
                             connector.emailLastInvoice
-                            if docType == "invoice"
+                            if self.docType == "invoice"
                             else connector.emailLastCreditnote
                         ),
                     }
@@ -2632,7 +2627,7 @@ class SellsyInvoice:
             payMediums.append(allPayMediums[medium])
         params = {
             "docid": self.id,
-            "document": {"doctype": "invoice", "payMediums": payMediums},
+            "document": {"doctype": self.docType, "payMediums": payMediums},
         }
         sellsyConnector.api(method="Document.update", params=params)
 

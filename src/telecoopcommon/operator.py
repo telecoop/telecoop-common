@@ -359,10 +359,11 @@ class NormalizedBazileConnector(BazileConnector):
         }
 
         history = self.getSimplePortaHistory(nsce)
-        if "activated" in history:
-            result["activationDate"] = history["activated"]
-        if "terminated" in history:
-            result["terminationDate"] = history["terminated"]
+        if history:
+            if "activated" in history:
+                result["activationDate"] = history["activated"]
+            if "terminated" in history:
+                result["terminationDate"] = history["terminated"]
         return result
 
     def getLineStatus(self, msisdn, nsce):

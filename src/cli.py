@@ -290,7 +290,8 @@ class Runner:
 
         if command == "get-invoice":
             invoiceId = self.getArg("Invoice id")
-            invoice = SellsyInvoice(invoiceId)
+            docType = self.getArg("Doc type")
+            invoice = SellsyInvoice(invoiceId, docType)
             invoice.load(self.getSellsyConnector())
             print(invoice)
             print(invoice.docType)
@@ -328,29 +329,32 @@ class Runner:
 
         if command == "send-invoice":
             invoiceId = self.getArg("Invoice id")
+            docType = self.getArg("Doc Type")
             email = self.getArg("email")
             isLastInvoice = self.getArg("is last invoice", "bool")
             docType = self.getArg("Doc type")
 
             syC = self.getSellsyConnector()
-            invoice = SellsyInvoice(invoiceId)
+            invoice = SellsyInvoice(invoiceId, docType)
             invoice.load(syC)
-            invoice.sendByMail(email, syC, isLastInvoice, docType)
+            invoice.sendByMail(email, syC, isLastInvoice)
 
         if command == "create-payment":
             invoiceId = self.getArg("Invoice id")
+            docType = self.getArg("Doc type")
             amount = float(self.getArg("Amount"))
             label = self.getArg("Label")
             paymentDate = datetime.now()
             paymentId = self.getSellsyConnector().createPayment(
-                invoiceId, paymentDate, amount, label
+                invoiceId, paymentDate, amount, label, docType
             )
             print(paymentId)
 
         if command == "delete-payment":
             paymentId = self.getArg("Payment id")
             invoiceId = self.getArg("Invoice id")
-            self.getSellsyConnector().deletePayment(paymentId, invoiceId)
+            docType = self.getArg("Doc type")
+            self.getSellsyConnector().deletePayment(paymentId, invoiceId, docType)
 
         if command == "get-member-opp":
             opportunityId = self.getArg("Opportunity id")
@@ -494,12 +498,6 @@ class Runner:
             print(json.dumps(response, indent=2, default=str))
 
         if command == "script":
-            invoiceId = self.getArg("Invoice id")
-            tsc = self.getSellsyConnector()
-            invoice = SellsyInvoice(invoiceId)
-            invoice.load(tsc)
-            invoice.enableStripe(tsc)
-            return
             nsce = self.getArg("NSCE")
             bzC = self.getBazileConnector()
             print(bzC.isSimAvailable(nsce))
