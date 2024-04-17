@@ -17,6 +17,7 @@ sellsyValues = {
             "support-client": 170761,
             "support-client-2": 170761,
             "support-client-3": 170761,
+            "support-client-4": 170761,
             "societariat": 170714,
             "support-societaire": 170714,
             "finance": 170714,
@@ -169,9 +170,10 @@ sellsyValues = {
         "owner_id": 170799,
         "staff": {
             "support-client": 170799,
-            "support-client-2": 280575,
-            "support-client-3": 284480,
-            "societariat": 212354,
+            "support-client-2": 280575,  # Rinah
+            "support-client-3": 284480,  # Hademou
+            "support-client-4": 212354,  # Inès
+            "societariat": 
             "support-societaire": 183494,
             "finance": 174036,
             "technique": 168911,
@@ -681,6 +683,7 @@ class TcSellsyConnector:
                     {"id": self.staff["support-client"], "canEdit": "Y"},
                     {"id": self.staff["support-client-2"], "canEdit": "Y"},
                     {"id": self.staff["support-client-3"], "canEdit": "Y"},
+                    {"id": self.staff["support-client-4"], "canEdit": "Y"},
                 ],
             },
         }
