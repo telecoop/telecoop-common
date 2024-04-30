@@ -173,7 +173,7 @@ sellsyValues = {
             "support-client-2": 280575,  # Rinah
             "support-client-3": 284480,  # Hademou
             "support-client-4": 212354,  # Inès
-            "societariat": 
+            "societariat": 212354,
             "support-societaire": 183494,
             "finance": 174036,
             "technique": 168911,
@@ -2464,7 +2464,7 @@ class SellsyInvoice:
         model = connector.api(method="Document.getModel", params=params)
 
         rateCategories = connector.getRateCategories()
-        docType = ("invoice" if data["amount"] >= 0 else "creditnote",)
+        docType = "invoice" if data["amount"] >= 0 else "creditnote"
         params = {
             "document": {
                 "doctype": docType,
