@@ -266,7 +266,7 @@ class Connector:
                         )
                 if (
                     event["type"] == "OUT" and event["statut"] == "PORTING DONE"
-                ) or event["statut"] == "terminaison":
+                ) or event["statut"].lower() == "terminaison":
                     if "terminated" not in history:
                         history["terminated"] = datetime.fromisoformat(
                             event["date"].replace("Z", "+00:00")
