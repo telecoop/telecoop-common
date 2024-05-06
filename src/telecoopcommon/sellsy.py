@@ -2593,8 +2593,10 @@ class SellsyInvoice:
                 method = "Mails.sendOne"
                 params = {
                     "email": {
-                        "linkedtype": "third",
-                        "linkedid": self.clientId,
+                        # We should specify only document informations if we want the template filled with its information
+                        # If we supply client information, document id is ignored
+                        # "linkedtype": "third",
+                        # "linkedid": self.clientId,
                         "relatedtype": self.docType,
                         "relatedid": self.id,
                         "emails": [email],
