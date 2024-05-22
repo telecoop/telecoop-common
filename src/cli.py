@@ -70,6 +70,7 @@ def cmdline():
             "authorize-hf",
             "get-sim-info",
             "get-conso",
+            "get-phenix-options",
             "script",
         ],
         help="command",
@@ -496,6 +497,12 @@ class Runner:
             tlC.setDefaultOperator("phenix")
             response = tlC.getConso(msisdn=msisdn, month=month)
             print(json.dumps(response, indent=2, default=str))
+
+        if command == "get-phenix-options":
+            provider = self.getArg("Provider")
+            tlC = self.getTelecomConnector()
+            tlC.setDefaultOperator("phenix")
+            print(json.dumps(tlC.getOptions(provider=provider), indent=2, default=str))
 
         if command == "script":
             nsce = self.getArg("NSCE")

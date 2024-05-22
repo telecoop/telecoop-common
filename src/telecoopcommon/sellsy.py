@@ -651,16 +651,14 @@ class TcSellsyConnector:
         """Wrapper to create a task in Sellsy with pre-defined owners"""
 
         self.logger.info(
-            "Creating task in Sellsy ({} #{})".format(
-                data["eventType"], data["eventId"]
-            )
+            f"Creating task in Sellsy ({data['eventType']} #{data['eventId']})"
         )
 
         result = self.api(method="Agenda.getAvailableLabels")
         labelId = None
-        for id, label in result.items():
+        for lId, label in result.items():
             if "value" in label and label["value"] == "Rappel":
-                labelId = id
+                labelId = lId
                 break
 
         description = data["description"]

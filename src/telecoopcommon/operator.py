@@ -85,6 +85,7 @@ class PhenixConnector:
         self.login = conf["login"]
         self.password = conf["password"]
         self.partnerId = conf["partnerId"]
+        self.purchaseCostCode = conf["purchaseCostCode"]
         self.logger = logger
 
         self.token = None
@@ -93,7 +94,7 @@ class PhenixConnector:
         if self.token is None:
             data = {"username": self.login, "password": self.password}
             url = self.host + "/Auth/authenticate"
-            response = requests.post(url, json=data)
+            response = requests.post(url, json=data, timeout=30)
             self.logger.debug(f"Response from phenix: {response.text}")
             try:
                 jsonResp = response.json()
@@ -119,7 +120,7 @@ class PhenixConnector:
         result = None
         while retry >= 0:
             try:
-                response = requests.get(url, headers=headers, params=params)
+                response = requests.get(url, headers=headers, params=params, timeout=30)
                 if response.status_code != 200:
                     exc = PhenixError(
                         f"Got code {response.status_code} \n{response.text}"
@@ -129,7 +130,11 @@ class PhenixConnector:
                 # We only want to retry when we got a 503 http code
                 retry = -1
                 result = response.json()
-                if "Conso" not in service and "etat" not in result:
+                if (
+                    "Conso" not in service
+                    and "Produits" not in service
+                    and "etat" not in result
+                ):
                     raise PhenixError(f"Unknown response from Phenix {result}")
             except PhenixError as excp:
                 if response.status_code in [503, 502] and retry >= 1:
@@ -153,7 +158,7 @@ class PhenixConnector:
         url = self.host + service
         data["partenaireId"] = self.partnerId
         self.logger.debug(f"Calling POST {url} with params {data}")
-        response = requests.post(url, json=data, headers=headers)
+        response = requests.post(url, json=data, headers=headers, timeout=30)
         try:
             result = response.json()
         except json.decoder.JSONDecodeError as excp:
@@ -168,7 +173,7 @@ class PhenixConnector:
         url = self.host + service
         data["partenaireId"] = self.partnerId
         self.logger.debug(f"Calling PATCH {url} with params {data}")
-        response = requests.patch(url, json=data, headers=headers)
+        response = requests.patch(url, json=data, headers=headers, timeout=30)
         try:
             result = response.json()
         except json.decoder.JSONDecodeError as excp:
@@ -310,6 +315,16 @@ class PhenixConnector:
                 )
             result = response["etat"].lower()
         return result
+
+    def getOptions(self, provider):
+        url = "/GsmApi/V2/GetGsmProduitsByOperator"
+        data = {"operateur": provider.upper()}
+        return self.get(url, data=data)
+
+    def requestActivation(self, params):
+        url = "/GsmApi/V2/MsisdnActivate"
+        data = params
+        return self.post(url, data)
 
 
 class NormalizedBazileConnector(BazileConnector):
