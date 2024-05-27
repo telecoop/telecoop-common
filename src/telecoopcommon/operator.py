@@ -222,6 +222,7 @@ class PhenixConnector:
             "roaming": None,
             "voicemail": None,
             "oopAmount": None,
+            "imei": None,
         }
         urlLine = "/GsmApi/V2/MsisdnConsult"
         if result["msisdn"]:
@@ -371,6 +372,7 @@ class NormalizedBazileConnector(BazileConnector):
             "oopDataAuth": sanitize(simInfo["HF Data autorisé"]),
             "activationDate": None,
             "terminationDate": None,
+            "imei": simInfo["IMEI"],
         }
 
         history = self.getSimplePortaHistory(nsce)
