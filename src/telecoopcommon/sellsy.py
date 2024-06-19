@@ -30,10 +30,23 @@ sellsyValues = {
             "Transition Pro": "PL_850",
             "Centrale Photovoltaïque": "PL_807",
         },
+        "emailTemplates": {
+            "default": 158668,
+            "part_PL_750": 158671,
+            "part_PL_796": 158672,
+            "part_multi": 158673,
+            "part_family": 158674,
+            "smallPro_PL_750": 158675,
+            "smallPro_PL_796": 158676,
+            "smallPro_multi": 158677,
+            "pro_PL_849": 158678,
+            "pro_PL_850": 158679,
+            "pro_multi": 158680,
+            "last_invoice": 90447,
+            "last_creditnote": 90447,
+        },
         "paydate_id": 3691808,
         "new_client_mail_template_id": 62573,
-        "last_invoice_template_id": 90447,
-        "last_creditnote_template_id": 90447,
         "custom_fields": {
             "operateur": 232923,
             "refbazile": 103778,
@@ -185,10 +198,23 @@ sellsyValues = {
             "Transition Pro": "PL_850",
             "Centrale Photovoltaïque": "PL_750",
         },
+        "emailTemplates": {
+            "default": 0,
+            "part_PL_750": 0,
+            "part_PL_796": 0,
+            "part_multi": 0,
+            "part_family": 0,
+            "smallPro_PL_750": 0,
+            "smallPro_PL_796": 0,
+            "smallPro_multi": 0,
+            "pro_PL_849": 0,
+            "pro_PL_850": 0,
+            "pro_multi": 0,
+            "last_invoice": 57480,
+            "last_creditnote": 57483,
+        },
         "paydate_id": 3527781,
         "new_client_mail_template_id": 62591,
-        "last_invoice_template_id": 57480,
-        "last_creditnote_template_id": 57483,
         "custom_fields": {
             "operateur": 232874,
             "refbazile": 103227,
@@ -349,7 +375,7 @@ class TcSellsyError(Exception):
 
 
 class TcSellsyConnector:
-    def __init__(self, conf, logger):
+    def __init__(self, conf, logger, emailTemplates=None):
         env = os.getenv("ENV", "LOCAL")
         self.env = "PROD" if env in ["PROD", "LOCAL_PROD"] else "DEV"
         self.conf = conf
@@ -369,8 +395,6 @@ class TcSellsyConnector:
         self.sellsyNewClientMailTemplateId = sellsyValues[self.env][
             "new_client_mail_template_id"
         ]
-        self.emailLastInvoice = sellsyValues[self.env]["last_invoice_template_id"]
-        self.emailLastCreditnote = sellsyValues[self.env]["last_creditnote_template_id"]
         customFields = sellsyValues[self.env]["custom_fields"]
         self.cfidOnSite = customFields["achatsimphysique"]
         self.cfidOperator = customFields["operateur"]
@@ -536,6 +560,19 @@ class TcSellsyConnector:
             self.funnelIdSimsPro,
             self.funnelIdOperatorChange,
         ]
+
+        self.emailTemplates = sellsyValues[self.env]["emailTemplates"]
+        # if specific config is given, update default ones
+        if emailTemplates is not None:
+            # we could use .update() but we want to be sure given keys exists
+            for key, value in dict(emailTemplates).items():
+                # update only if key is known
+                if key in self.emailTemplates:
+                    self.emailTemplates[key] = value
+                else:
+                    self.logger.warning(
+                        f"unknown email template was spcified in conf file ({key})"
+                    )
 
     def getConnector(self):
         if self._connector is None:
@@ -2575,9 +2612,22 @@ class SellsyInvoice:
         }
         connector.api(method="Document.updateStep", params=params)
 
-    def sendByMail(self, email, connector, isLastInvoice):
+    def sendByMail(self, email, connector, templateId=None):
         if email:
-            if not isLastInvoice:
+            method = "Mails.sendOne"
+            params = {
+                "email": {
+                    # We should specify only document informations if we want the template filled with its information
+                    # If we supply client information, document id is ignored
+                    # "linkedtype": "third",
+                    # "linkedid": self.clientId,
+                    "relatedtype": self.docType,
+                    "relatedid": self.id,
+                    "emails": [email],
+                    "templateId": templateId,
+                }
+            }
+            if templateId is None:
                 method = "Document.sendDocByMail"
                 params = {
                     "docid": self.id,
@@ -2586,24 +2636,6 @@ class SellsyInvoice:
                         "emails": [email],
                         "includeAttachments": "N",
                     },
-                }
-            else:
-                method = "Mails.sendOne"
-                params = {
-                    "email": {
-                        # We should specify only document informations if we want the template filled with its information
-                        # If we supply client information, document id is ignored
-                        # "linkedtype": "third",
-                        # "linkedid": self.clientId,
-                        "relatedtype": self.docType,
-                        "relatedid": self.id,
-                        "emails": [email],
-                        "templateId": (
-                            connector.emailLastInvoice
-                            if self.docType == "invoice"
-                            else connector.emailLastCreditnote
-                        ),
-                    }
                 }
             try:
                 connector.api(method=method, params=params)
