@@ -332,13 +332,13 @@ class Runner:
             invoiceId = self.getArg("Invoice id")
             docType = self.getArg("Doc Type")
             email = self.getArg("email")
-            isLastInvoice = self.getArg("is last invoice", "bool")
-            docType = self.getArg("Doc type")
+            templateCode = self.getArg("Template code")
 
             syC = self.getSellsyConnector()
+            templateId = syC.emailTemplates[templateCode]
             invoice = SellsyInvoice(invoiceId, docType)
             invoice.load(syC)
-            invoice.sendByMail(email, syC, isLastInvoice)
+            invoice.sendByMail(email, syC, templateId)
 
         if command == "create-payment":
             invoiceId = self.getArg("Invoice id")
