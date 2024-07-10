@@ -1831,8 +1831,9 @@ class SellsyClient:
         clientOpps = self.getOpportunities(connector)
         nbActiveLines = 0
         for clientOpp in clientOpps:
-            if clientOpp.funnelId in connector.funnelIdSim and clientOpp.isActive(
-                connector
+            if (
+                clientOpp.funnelId in connector.funnelIdSim
+                and clientOpp.isActiveOrSuspended(connector)
             ):
                 nbActiveLines += 1
         if nbActiveLines == 0:
@@ -2192,6 +2193,15 @@ class SellsyOpportunity:
             str(connector.stepSimActivated) in self.steps
             or str(connector.stepProSimsActivated) in self.steps
         )
+
+    def isSuspended(self, connector):
+        return (
+            str(connector.stepSimSuspended) in self.steps
+            or str(connector.stepProSimsSuspended) in self.steps
+        )
+
+    def isActiveOrSuspended(self, connector):
+        return self.isActive(connector) or self.isSuspended(connector)
 
 
 class SellsyMemberOpportunity:
