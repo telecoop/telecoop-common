@@ -29,6 +29,9 @@ sellsyValues = {
             "Sobriété Pro": "PL_849",
             "Transition Pro": "PL_850",
             "Centrale Photovoltaïque": "PL_807",
+            "Enfant 1": "kid1",
+            "Enfant 2": "kid2",
+            "Enfant 3": "kid3",
         },
         "emailTemplates": {
             "default": 158668,
@@ -198,6 +201,9 @@ sellsyValues = {
             "Sobriété Pro": "PL_849",
             "Transition Pro": "PL_850",
             "Centrale Photovoltaïque": "PL_750",
+            "Enfant 1": "kid1",
+            "Enfant 2": "kid2",
+            "Enfant 3": "kid3",
         },
         "emailTemplates": {
             "default": 50567,

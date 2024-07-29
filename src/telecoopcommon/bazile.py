@@ -119,6 +119,13 @@ class Connector:
             msisdn = "33" + msisdn[1:]
         return msisdn
 
+    @classmethod
+    def getBazilePlanItem(cls, planItem):
+        result = planItem
+        if planItem[:-1] == "kid":
+            result = "PL_750"
+        return result
+
     def getMarques(self):
         return self.get("/ext/marques")
 
