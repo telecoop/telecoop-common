@@ -157,6 +157,7 @@ class Runner:
             o = SellsyOpportunity(id)
             o.load(sellsyConnector)
             print(o)
+            print(o.planItem)
             print(o.status)
             print(o.getSimStateFromStep(sellsyConnector))
             print(o.operator)
