@@ -1339,7 +1339,7 @@ class TcSellsyConnector:
                     clientId,
                 ]
             },
-            "pagination": {"nbperpage": 200},
+            "pagination": {"nbperpage": 1000},
         }
         opportunities = self.api(method="Opportunities.getList", params=params)
         if len(opportunities["result"]) == 0:
