@@ -404,6 +404,7 @@ class TcSellsyConnector:
             "new_client_mail_template_id"
         ]
         customFields = sellsyValues[self.env]["custom_fields"]
+        self.cfidPlan = customFields["forfait"]
         self.cfidOnSite = customFields["achatsimphysique"]
         self.cfidOperator = customFields["operateur"]
         self.cfidRio = customFields["rio"]
