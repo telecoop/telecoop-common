@@ -1,4 +1,3 @@
-version: "3.8"
 services:
     app:
         build:
@@ -13,16 +12,16 @@ services:
         environment:
             - ENV=DOCKER
 
-    postgres:
+    postgres-logs:
         image: postgres:13
         ports:
-            - 5438:5432
+            - 5439:5432
         environment:
-            - POSTGRES_USER=common
-            - POSTGRES_DB=common
-            - POSTGRES_PASSWORD=common
+            - POSTGRES_HOST_AUTH_METHOD=trust
+            - POSTGRES_USER=logs
+            - POSTGRES_DB=logs
         volumes:
-          - ./docker/postgres/initdb:/docker-entrypoint-initdb.d
+          - ./docker/postgres-logs/initdb:/docker-entrypoint-initdb.d
 
     testDb:
         image: postgres:13

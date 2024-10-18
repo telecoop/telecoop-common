@@ -29,10 +29,9 @@ modules = {
         "module": facturation,
     },
 }
-"""
-modules = {}
 
-additionalCommands = []
+additionalCommands = ['test', 'my-special-command']
+"""
 
 
 def toCamelCase(text):
@@ -40,7 +39,7 @@ def toCamelCase(text):
     return s[0] + "".join(t.capitalize() for t in s[1:])
 
 
-def cmdline():
+def cmdline(modules, additionalCommands=[]):
     parser = argparse.ArgumentParser(description="TeleCoop Invoicing Manager")
     parser.add_argument(
         "--log-level",
@@ -52,15 +51,18 @@ def cmdline():
     parser.add_argument(
         "--no-log", action="store_true", help="Log command to monitoring db"
     )
+
     parser.add_argument(
         "command",
         metavar="COMMAND",
         choices=[
-            f"{p}:{c}" if module["main"] else f"{moduleRef}.{c}"
+            f"{p}:{c}" if moduleRef == "main" else f"{moduleRef}.{c}"
             for moduleRef, module in modules.items()
             for p in module["module"].__all__
             if p not in module["excluded"]
-            for c in getattr(globals()[p], "commands")
+            for c in getattr(
+                importlib.import_module(f".{p}", package=module["name"]), "commands"
+            )
         ]
         + additionalCommands,
         help="command",
@@ -72,24 +74,25 @@ def cmdline():
 
 
 class TcRunner:
-    def __init__(self, env, config, logger, args):
+    def __init__(self, env, config, logger, args, modules):
         self.config = config
         self.logger = logger
         self.args = args
         self.noConfirm = None
         self.postgres = None
+        self.modules = modules
 
         self.env = "PROD" if env == "PROD" else "DEV"
 
         self.dbConnStrs = {}
 
-        for section in config.sections:
+        for section in config.sections():
             if section[0:3] == "Bdd":
                 connName = section[3:].lower() if section[3:] else "main"
                 connStr = []
                 for cnf in config.items(section):
                     connStr.append(f"{cnf[0]}={cnf[1]}")
-                self.dbConnStr[connName] = connStr
+                self.dbConnStrs[connName] = connStr
 
     def getArg(self, name, type="str", help=None):
         if len(self.args.arguments) == 0:
@@ -153,13 +156,14 @@ class TcRunner:
 
     def execWithLogs(self, command, func, noLog, *args, **kargs):
         cursorLogs = self.getCursor("logs")
-        if command == "run":
-            query = "SELECT count(*) FROM monitoring.service_log WHERE service_name = 'run' AND status = 'pending'"
-            cursorLogs.execute(query)
-            (nbRunningServices,) = cursorLogs.fetchone()
-            if nbRunningServices > 0:
-                self.logger.warning("Invoicing process already running")
-                return
+        # checking if command is already running
+        query = "SELECT count(*) FROM monitoring.service_log WHERE service_name = %s AND status = 'pending'"
+        cursorLogs.execute(query, [command])
+        (nbRunningServices,) = cursorLogs.fetchone()
+        if nbRunningServices > 0:
+            self.logger.warning("Invoicing process already running")
+            return
+
         if not noLog:
             cursorLogs.execute(
                 "INSERT INTO monitoring.service_log (service_name, status) VALUES (%s, 'pending') RETURNING id",
@@ -202,14 +206,15 @@ class TcRunner:
             if hasattr(self, command):
                 self.logger.info(f"Executing command {command}")
                 func = getattr(self, command)
-                args = [
-                    self,
-                ]
+                args = []
                 # func(self)
         elif len(operands) == 2:
             module, command = operands
+            key = module
+            if module not in self.modules:
+                key = "main"
 
-            moduleName = f"{modules[module]['name']}.{module}"
+            moduleName = f"{self.modules[key]['name']}.{module}"
             mName = importlib.import_module(moduleName)
             self.logger.info(f"Executing command {moduleName}.{command}")
             func = getattr(mName, "execute")
@@ -218,10 +223,8 @@ class TcRunner:
         self.execWithLogs(arg, func, noLog, *args)
 
 
-def main(appName, runnerClass):
-    args = cmdline()
-
-    logger = logs.initLogs(appName, args.log_level)
+def main(appName, runnerClass, modules, additionalCommands):
+    args = cmdline(modules, additionalCommands)
 
     fileDir = os.path.dirname(os.path.realpath(__file__))
     root = fileDir
@@ -237,7 +240,9 @@ def main(appName, runnerClass):
     config = configparser.ConfigParser()
     config.read(confFile)
 
-    runner = runnerClass(env, config, logger, args)
+    logger = logs.initLogs(appName, config["Log"], args.log_level)
+
+    runner = runnerClass(env, config, logger, args, modules)
 
     command = args.command
 

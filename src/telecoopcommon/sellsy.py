@@ -2714,3 +2714,31 @@ class SellsyInvoice:
             logger.warning(
                 "Cannot enable Stripe because we don't have invoice content in db"
             )
+
+
+def getOpportunity(runner):
+    id = runner.getArg("Opportunity id")
+    sellsyConnector = runner.getSellsyConnector()
+    # o = SellsyMemberOpportunity(id)
+    o = SellsyOpportunity(id)
+    o.load(sellsyConnector)
+    print(o)
+    print(o.planItem)
+    print(o.status)
+    print(o.getSimStateFromStep(sellsyConnector))
+    print(o.operator)
+    print(o.tags)
+    print(o.mobileDataOutOfPlan)
+    print(o.sourceId)
+    print(o.sourceName)
+    print(o.stepName)
+
+
+commands = {
+    "get-opportunity": lambda runner: getOpportunity(runner),
+}
+
+
+def execute(runner, command):
+    if command in commands:
+        commands[command](runner)

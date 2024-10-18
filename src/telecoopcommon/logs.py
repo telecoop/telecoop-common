@@ -36,25 +36,10 @@ def getLogLevel(strLevel):
     return logLevel
 
 
-def initLogs(appName, strDesiredLogLevel, consoleOnly=False):
-    # __file__ can be a relative path, in which case working directory
-    # MUSTN'T be changed anywhere except the main script,
-    # certainly not in a lib
-    fileDir = os.path.dirname(os.path.realpath(__file__))
-    config = configparser.ConfigParser()
-    env = os.getenv("ENV", "LOCAL")
-    confFile = None
-    if env in ["DOCKER", "PROD", "LOCAL_PROD"]:
-        confFile = f"/etc/{appName}/conf.cfg"
-    elif env is None or env == "LOCAL":
-        confFile = os.path.join(fileDir, "../conf/conf.cfg")
-    if not os.path.isfile(confFile):
-        raise IOError("{} : file not found".format(confFile))
-    config.read(confFile)
-
+def initLogs(appName, config, strDesiredLogLevel, consoleOnly=False):
     logLevel = None
     if strDesiredLogLevel == "CONFIG":
-        logLevel = getLogLevel(config["Log"]["log-level"])
+        logLevel = getLogLevel(config["log-level"])
     else:
         logLevel = getLogLevel(strDesiredLogLevel)
 
@@ -65,7 +50,7 @@ def initLogs(appName, strDesiredLogLevel, consoleOnly=False):
     logger.setLevel(logLevel)
 
     if not consoleOnly:
-        logfile = os.path.join(config["Log"]["folder"], f"{appName}.log")
+        logfile = os.path.join(config["folder"], f"{appName}.log")
         ch = logging.handlers.TimedRotatingFileHandler(logfile, when="D", utc=True)
         ch.setLevel(logLevel)
         # create formatter
@@ -78,7 +63,7 @@ def initLogs(appName, strDesiredLogLevel, consoleOnly=False):
         if not len(logger.handlers):
             logger.addHandler(ch)
 
-    if config["Log"]["console"] == "True" or consoleOnly:
+    if config["console"] == "True" or consoleOnly:
         # create console handler and set level to debug
         chOther = logging.StreamHandler()
         chOther.setLevel(logLevel)
