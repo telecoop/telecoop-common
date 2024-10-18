@@ -2,13 +2,13 @@ import sys
 import os
 import importlib
 
-import logs
+from . import logs
 
 # import phonenumbers
 import traceback
 from datetime import datetime, date
 
-from cursor import TcCursor
+from .cursor import TcCursor
 
 # Script utils
 import argparse
