@@ -620,7 +620,7 @@ class TcSellsyConnector:
                 try:
                     result = self._client.api(method, params)
                     retry = -1
-                except JSONDecodeError as e:
+                except (JSONDecodeError, TypeError) as e:
                     if retry < 1:
                         self.logger.warning(e)
                         raise e
