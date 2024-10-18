@@ -9,6 +9,7 @@ ENV LANGUAGE fr_FR:fr
 ENV LC_ALL fr_FR.UTF-8
 
 RUN pip install pytest
+RUN pip install psycopg2-binary
 
 RUN mkdir /opt/telecoop-common
 COPY . /opt/telecoop-common
