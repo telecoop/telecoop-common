@@ -1714,7 +1714,10 @@ class SellsyClient:
 
         actif = cli.get("actif")
         self.creationDate = parisTZ.localize(datetime.fromisoformat(cli["joindate"]))
-        if cli["dateTransformProspect"] is not None:
+        if (
+            cli["dateTransformProspect"] is not None
+            and cli["dateTransformProspect"][0:4] != "0000"
+        ):
             self.conversionToClientDate = parisTZ.localize(
                 datetime.fromisoformat(cli["dateTransformProspect"])
             )
@@ -2556,8 +2559,11 @@ class SellsyInvoice:
         elif data["paymentMethod"] == "Virement":
             params["document"]["payMediums"] = [data["payMediums"]["virement bancaire"]]
 
+        hasKidPlan = False
         for i, row in enumerate(data["rows"]):
             if row["type"] == "item":
+                if row["item"][0:3] == "kid":
+                    hasKidPlan = True
                 params["row"][i] = {
                     "row_type": row["type"],
                     "row_linkedid": row["serviceId"],
@@ -2578,8 +2584,12 @@ class SellsyInvoice:
                     "row_type": row["type"],
                 }
 
+        tags = []
         if data["isLastInvoice"]:
-            params["document"]["tags"] = "derniere-facture"
+            tags.append("derniere-facture")
+        if hasKidPlan:
+            tags.append("forfait-enfant")
+        params["document"]["tags"] = ",".join(tags)
 
         method = "Document.create"
         if "docId" in data:
