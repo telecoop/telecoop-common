@@ -222,6 +222,7 @@ class PhenixConnector:
             "roaming": None,
             "voicemail": None,
             "oopAmount": None,
+            "oopDataAuth": None,
             "imei": None,
         }
         urlLine = "/GsmApi/V2/MsisdnConsult"
@@ -245,6 +246,7 @@ class PhenixConnector:
                     "roaming": None,
                     "voicemail": None,
                     "oopAmount": None,
+                    "oopDataAuth": None,
                     "activationDate": self.textToDate(responseLine["dateActivation"]),
                     "terminationDate": self.textToDate(responseLine["dateResiliation"]),
                 }

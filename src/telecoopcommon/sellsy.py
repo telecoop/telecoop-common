@@ -182,6 +182,13 @@ sellsyValues = {
         "step_esim_vowifi_request_sim_sent": 0,
         "step_esim_pending": 0,
         "step_esim_activated": 0,
+        "funnel_id_plan_change": 78902,
+        "step_plan_change_received_tran": 863295,
+        "step_plan_change_received_sobr": 567867,
+        "step_plan_change_received_pro": 863294,
+        "step_plan_change_cond_accepted": 567868,
+        "step_plan_change_in_progress": 567869,
+        "step_plan_change_active": 567870,
     },
     "PROD": {
         "owner_id": 170799,
@@ -354,6 +361,13 @@ sellsyValues = {
         "step_esim_vowifi_request_sim_sent": 791139,
         "step_esim_pending": 791140,
         "step_esim_activated": 791141,
+        "funnel_id_plan_change": 78901,
+        "step_plan_change_received_tran": 567863,
+        "step_plan_change_received_sobr": 576332,
+        "step_plan_change_received_pro": 646623,
+        "step_plan_change_cond_accepted": 567864,
+        "step_plan_change_in_progress": 567865,
+        "step_plan_change_active": 567866,
     },
 }
 
@@ -569,6 +583,14 @@ class TcSellsyConnector:
             self.funnelIdSimsPro,
             self.funnelIdOperatorChange,
         ]
+
+        self.funnelIdPlanChange = ["funnel_id_plan_change"]
+        self.stepPlanChangeReceivedTran = ["step_plan_change_received_tran"]
+        self.stepPlanChangeReceivedSobr = ["step_plan_change_received_sobr"]
+        self.stepPlanChangeReceivedPro = ["step_plan_change_received_pro"]
+        self.stepPlanChangeCondAccepted = ["step_plan_change_cond_accepted"]
+        self.stepPlanChangeInProgress = ["step_plan_change_in_progress"]
+        self.stepPlanChangeActive = ["step_plan_change_active"]
 
         self.emailTemplates = sellsyValues[self.env]["emailTemplates"]
         # if specific config is given, update default ones
@@ -1960,6 +1982,14 @@ class SellsyOpportunity:
         opp = SellsyOpportunity(oppId)
         opp.load(sc)
         return opp
+
+    @classmethod
+    def createPlanChange(cls, values, sellsyConnector: TcSellsyConnector):
+        sc = sellsyConnector
+        values["name"] = "changement de forfait"
+        values["funnelId"] = sc.funnelIdPlanChange
+        values["stepId"] = sc.stepPlanChangeInProgress
+        return cls.create(values, sc)
 
     def load(self, connector):
         values = connector.getOpportunityValues(self.id)
