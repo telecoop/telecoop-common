@@ -371,7 +371,7 @@ class NormalizedBazileConnector(BazileConnector):
             "voicemail": sanitize(simInfo["Messagerie_vocale"]),
             "rio": sanitize(simInfo["RIO"]),
             "oopAmount": sanitize(simInfo["Palier_HF"]),
-            "oopDataAuth": sanitize(simInfo["HF Data autorisé"]),
+            "oopDataAuth": sanitize(simInfo["HF Data autorisé"]) == "Oui",
             "activationDate": None,
             "terminationDate": None,
             "imei": simInfo["IMEI"],
