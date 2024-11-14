@@ -219,7 +219,7 @@ class PhenixConnector:
             "international": None,
             "sva": None,
             "wha": None,
-            "roaming": None,
+            "data": None,
             "voicemail": None,
             "oopAmount": None,
             "oopDataAuth": None,
@@ -240,17 +240,44 @@ class PhenixConnector:
                 {
                     "operatorRef": responseLine["numAbo"],
                     "rio": responseLine["rio"],
-                    "international": None,
-                    "sva": None,
-                    "wha": None,
-                    "roaming": None,
-                    "voicemail": None,
+                    "international": False,
+                    "sva": True,
+                    "wha": True,
+                    "data": "N",
+                    "voicemail": False,
                     "oopAmount": None,
                     "oopDataAuth": None,
                     "activationDate": self.textToDate(responseLine["dateActivation"]),
                     "terminationDate": self.textToDate(responseLine["dateResiliation"]),
                 }
             )
+            for product in responseLine["produits"]:
+                code = None
+                if "code" in product:
+                    code = product["code"]
+                if "codeProduit" in product:
+                    code = product["codeProduit"]
+                if not code:
+                    self.logger.warning(f"Unknown product format {product}")
+                # Roaming option
+                if code == "RM":
+                    result["international"] = "IR"
+                if code == "ISVA":
+                    result["sva"] = False
+                if code == "BWHA":
+                    result["wha"] = False
+                # Mode voice international without data.
+                # Don't touch if it was already initialized (e.g. by RM)
+                if code == "MVI" and not result["international"]:
+                    result["international"] = "IV"
+                if code == "WV":
+                    result["voicemail"] = None
+                # "Accès international" calls FR -> INT
+                if code == "INT" and not result["international"]:
+                    result["international"] = "I"
+                if code == "SDC" or code == "DATA":
+                    result["data"] = "4G"
+
         return result
 
     def getLineInfo(self, msisdn):
@@ -329,6 +356,11 @@ class PhenixConnector:
         data = params
         return self.post(url, data)
 
+    def getProductsOrange(self):
+        url = "/GsmApi/V2/GetGsmProduitsByOperator"
+        data = {"operateur": "ORANGE"}
+        return self.get(url, data)
+
 
 class NormalizedBazileConnector(BazileConnector):
     def getSimInfo(self, nsce):
@@ -365,9 +397,9 @@ class NormalizedBazileConnector(BazileConnector):
             "operatorRef": sanitize(simInfo["Account_id"]),
             "international": sanitize(simInfo["Appels_internationaux"]),
             # Those too are ints so no need to sanitize
-            "sva": simInfo["Sva"],
-            "wha": simInfo["Wha"],
-            "roaming": sanitize(simInfo["Data_statut"]),
+            "sva": int(simInfo["Sva"]) == 1,
+            "wha": int(simInfo["Wha"]) == 1,
+            "data": sanitize(simInfo["Data_statut"]),
             "voicemail": sanitize(simInfo["Messagerie_vocale"]),
             "rio": sanitize(simInfo["RIO"]),
             "oopAmount": sanitize(simInfo["Palier_HF"]),
@@ -392,3 +424,18 @@ class NormalizedBazileConnector(BazileConnector):
                 f"msisdn and nsce ({nsce}) mismatch ({msisdn} ≠ {response['msisdn']})"
             )
         return response["status"]
+
+
+# Commands
+commands = {
+    "get-products-orange": lambda runner: print(
+        json.dumps(
+            runner.getTelecomConnector().getProductsOrange(operator="phenix"), indent=2
+        )
+    )
+}
+
+
+def execute(runner, command):
+    if command in commands:
+        commands[command](runner)

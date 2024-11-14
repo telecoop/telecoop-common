@@ -4,6 +4,7 @@
 import json
 
 import pytz
+import nats
 import psycopg2
 from datetime import datetime
 
@@ -28,10 +29,8 @@ modules = {
         "name": "telecoopcommon",
         "excluded": [
             "bazile",
-            "operator",
             "runner",
             "cursor",
-            "natsWorker",
             "telecoop",
             "logs",
         ],
@@ -99,6 +98,17 @@ class Runner(TcRunner):
 
     def getTelecomConnector(self):
         return TelecomConnector(self.config, self.logger)
+
+    async def getNatsConnection(self):
+        if self.config["Nats"]["cred"]:
+            nConn = await nats.connect(
+                self.config["Nats"]["url"],
+                user_credentials=self.config["Nats"]["cred"],
+                connect_timeout=10,
+            )
+        else:
+            nConn = await nats.connect(self.config["Nats"]["url"])
+        return nConn
 
     def getClient(self):
         id = self.getArg("Client id")

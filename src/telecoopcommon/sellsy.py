@@ -584,13 +584,23 @@ class TcSellsyConnector:
             self.funnelIdOperatorChange,
         ]
 
-        self.funnelIdPlanChange = ["funnel_id_plan_change"]
-        self.stepPlanChangeReceivedTran = ["step_plan_change_received_tran"]
-        self.stepPlanChangeReceivedSobr = ["step_plan_change_received_sobr"]
-        self.stepPlanChangeReceivedPro = ["step_plan_change_received_pro"]
-        self.stepPlanChangeCondAccepted = ["step_plan_change_cond_accepted"]
-        self.stepPlanChangeInProgress = ["step_plan_change_in_progress"]
-        self.stepPlanChangeActive = ["step_plan_change_active"]
+        self.funnelIdPlanChange = sellsyValues[self.env]["funnel_id_plan_change"]
+        self.stepPlanChangeReceivedTran = sellsyValues[self.env][
+            "step_plan_change_received_tran"
+        ]
+        self.stepPlanChangeReceivedSobr = sellsyValues[self.env][
+            "step_plan_change_received_sobr"
+        ]
+        self.stepPlanChangeReceivedPro = sellsyValues[self.env][
+            "step_plan_change_received_pro"
+        ]
+        self.stepPlanChangeCondAccepted = sellsyValues[self.env][
+            "step_plan_change_cond_accepted"
+        ]
+        self.stepPlanChangeInProgress = sellsyValues[self.env][
+            "step_plan_change_in_progress"
+        ]
+        self.stepPlanChangeActive = sellsyValues[self.env]["step_plan_change_active"]
 
         self.emailTemplates = sellsyValues[self.env]["emailTemplates"]
         # if specific config is given, update default ones
@@ -2643,7 +2653,7 @@ class SellsyInvoice:
                 method == "Document.create"
                 and data["automaticValidation"]
                 and not lessThan1
-                and data["amount"] != 0
+                and (data["isLastInvoice"] or data["amount"] > 0)
             ):
                 logger.info(
                     f"[Invoice #{invoiceId}] Automatic validation enabled : validating invoice"

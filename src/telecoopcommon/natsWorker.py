@@ -1,5 +1,6 @@
 import asyncio
 import signal
+import json
 from nats.aio.client import Client as NATS
 
 
@@ -54,3 +55,24 @@ def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}, cred=Non
     )
     loop.run_forever()
     loop.close()
+
+
+async def publish(getNCli, channel, message):
+    nCli = await getNCli()
+
+    await nCli.publish(channel, json.dumps(json.loads(message)).encode("utf-8"))
+
+
+# Commands
+commands = {
+    "publish": lambda runner: asyncio.run(
+        publish(
+            runner.getNatsConnection, runner.getArg("channel"), runner.getArg("message")
+        )
+    )
+}
+
+
+def execute(runner, command):
+    if command in commands:
+        commands[command](runner)

@@ -1,4 +1,5 @@
 conf/conf.cfg
+conf/*creds
 var
 __pycache__
 venv/
