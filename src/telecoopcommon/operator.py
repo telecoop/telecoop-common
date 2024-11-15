@@ -397,8 +397,8 @@ class NormalizedBazileConnector(BazileConnector):
             "operatorRef": sanitize(simInfo["Account_id"]),
             "international": sanitize(simInfo["Appels_internationaux"]),
             # Those too are ints so no need to sanitize
-            "sva": int(simInfo["Sva"]) == 1,
-            "wha": int(simInfo["Wha"]) == 1,
+            "sva": simInfo["sva"] and int(simInfo["Sva"]) == 1,
+            "wha": simInfo["wha"] and int(simInfo["Wha"]) == 1,
             "data": sanitize(simInfo["Data_statut"]),
             "voicemail": sanitize(simInfo["Messagerie_vocale"]),
             "rio": sanitize(simInfo["RIO"]),

@@ -56,7 +56,7 @@ def cmdline(modules, additionalCommands=[]):
         "command",
         metavar="COMMAND",
         choices=[
-            f"{p}:{c}" if moduleRef == "main" else f"{moduleRef}.{c}"
+            f"{p}:{c}" if moduleRef == "main" else f"{moduleRef}:{c}"
             for moduleRef, module in modules.items()
             for p in module["module"].__all__
             if p not in module["excluded"]
