@@ -22,6 +22,7 @@ sellsyValues = {
             "support-societaire": 170714,
             "finance": 170714,
             "technique": 170761,
+            "process": 297301,
         },
         "plans": {
             "Sobriété": "PL_807",
@@ -201,6 +202,7 @@ sellsyValues = {
             "support-societaire": 183494,
             "finance": 174036,
             "technique": 168911,
+            "process": 257254,
         },
         "plans": {
             "Sobriété": "PL_750",
