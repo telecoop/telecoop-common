@@ -80,6 +80,14 @@ class PhenixError(Exception):
 
 
 class PhenixConnector:
+    statusTranslate = {
+        "disponible": "available",
+        "active": "active",
+        "réservée": "reserved",
+        "suspendue": "suspended",
+        "résiliée": "terminated",
+    }
+
     def __init__(self, conf, logger):
         self.host = conf["host"]
         self.login = conf["login"]
@@ -211,7 +219,7 @@ class PhenixConnector:
             "pin1": responseSim["pin1"],
             "puk2": responseSim["puk2"],
             "pin2": responseSim["pin2"],
-            "status": responseSim["etat"].lower(),
+            "status": self.statusTranslate[responseSim["etat"].lower()],
             "msisdn": responseSim["msisdn"],
             "orderSimId": responseSim["commandeSimId"],
             "operatorRef": None,
