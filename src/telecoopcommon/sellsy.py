@@ -1975,6 +1975,7 @@ class SellsyOpportunity:
             ("stepid", "stepId"),
             ("contacts", "contacts"),
             ("potential", "amount"),
+            ("dueDate", "dueDate"),
         ]
         for fldSellsy, fld in fields:
             if fld in values:
