@@ -86,6 +86,10 @@ class PhenixConnector:
         "réservée": "reserved",
         "suspendue": "suspended",
         "résiliée": "terminated",
+        "delete": "deleted",
+        "reserved": "reserved",
+        "send": "send",
+        "suspend": "suspend",
     }
 
     def __init__(self, conf, logger):
@@ -210,6 +214,7 @@ class PhenixConnector:
             raise exp
         if "etat" not in responseSim:
             raise PhenixError(f"Unknown response from Phenix {responseSim}")
+        print(json.dumps(responseSim, indent=2))
         result = {
             "nsce": responseSim["simSN"],
             "imsi": responseSim["imsi"],
@@ -405,8 +410,8 @@ class NormalizedBazileConnector(BazileConnector):
             "operatorRef": sanitize(simInfo["Account_id"]),
             "international": sanitize(simInfo["Appels_internationaux"]),
             # Those too are ints so no need to sanitize
-            "sva": simInfo["Sva"] and int(simInfo["Sva"]) == 1,
-            "wha": simInfo["Wha"] and int(simInfo["Wha"]) == 1,
+            "sva": bool(simInfo["Sva"] and int(simInfo["Sva"]) == 1),
+            "wha": bool(simInfo["Wha"] and int(simInfo["Wha"]) == 1),
             "data": sanitize(simInfo["Data_statut"]),
             "voicemail": sanitize(simInfo["Messagerie_vocale"]),
             "rio": sanitize(simInfo["RIO"]),
