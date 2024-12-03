@@ -214,7 +214,6 @@ class PhenixConnector:
             raise exp
         if "etat" not in responseSim:
             raise PhenixError(f"Unknown response from Phenix {responseSim}")
-        print(json.dumps(responseSim, indent=2))
         result = {
             "nsce": responseSim["simSN"],
             "imsi": responseSim["imsi"],

@@ -415,6 +415,11 @@ class TcSellsyConnector:
         self.ownerId = sellsyValues[self.env]["owner_id"]
         self.staff = sellsyValues[self.env]["staff"]
         self.plans = sellsyValues[self.env]["plans"]
+        self.plansByRef = {
+            v: k
+            for k, v in sellsyValues[self.env]["plans"].items()
+            if k != "Centrale Photovoltaïque"
+        }
         self.paydateId = sellsyValues[self.env]["paydate_id"]
         self.sellsyNewClientMailTemplateId = sellsyValues[self.env][
             "new_client_mail_template_id"
