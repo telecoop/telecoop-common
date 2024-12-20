@@ -1772,7 +1772,7 @@ class SellsyClient:
         self.invoiceEmail = invoiceEmail
         self.phoneNumber = cli["mobile"]
         self.web = cli.get("web")
-        self.msisdn = cli["mobile"]
+        self.msisdn = cli["mobile"].replace("+33", "0") if cli["mobile"] else None
         self.mainContactId = mainContactId
         self.address = cli["addr_part1"]
         self.zipCode = cli["addr_zip"]
