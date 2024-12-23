@@ -90,6 +90,7 @@ class PhenixConnector:
         "reserved": "reserved",
         "send": "send",
         "suspend": "suspend",
+        "available": "available",
     }
 
     def __init__(self, conf, logger):
