@@ -237,6 +237,8 @@ class PhenixConnector:
             "oopAmount": None,
             "oopDataAuth": None,
             "imei": None,
+            "activationDate": None,
+            "terminationDate": None,
         }
         urlLine = "/GsmApi/V2/MsisdnConsult"
         if result["msisdn"]:
