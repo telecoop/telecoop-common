@@ -81,6 +81,8 @@ sellsyValues = {
             "code-promo": 143564,
             "pack-depannage": 145684,
             "pack-depannage-used": 209177,
+            "pack-data-roaming-available": 288912,
+            "pack-data-romaing-used": 288913,
             "slimpay-mandate-status": 154395,
             "member": 103773,
             "phone-model": 103462,
@@ -261,6 +263,8 @@ sellsyValues = {
             "code-promo": 144015,
             "pack-depannage": 145683,
             "pack-depannage-used": 209130,
+            "pack-data-roaming-available": 287422,
+            "pack-data-roaming-used": 287423,
             "slimpay-mandate-status": 171542,
             "member": 103406,
             "phone-model": 102178,
@@ -450,6 +454,8 @@ class TcSellsyConnector:
         self.cfidPromoCode = customFields["code-promo"]
         self.cfidPackDepannage = customFields["pack-depannage"]
         self.cfidPackDepannageUsed = customFields["pack-depannage-used"]
+        self.cfidPackInter = customFields["pack-data-roaming-available"]
+        self.cfidPackInterUsed = customFields["pack-data-roaming-used"]
         self.cfidSlimpayMandateStatus = customFields["slimpay-mandate-status"]
         self.cfidProNbSims = customFields["pro-nb-sims"]
         self.cfidProNbPorta = customFields["pro-nb-porta"]
