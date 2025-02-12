@@ -659,11 +659,12 @@ class TcSellsyConnector:
     def api(self, method, params={}):
         try:
             self.logger.debug(f"Calling Sellsy {method} with params {params}")
-            retry = 3
+            MAX_RETRIES = 10  # Max 8 minutes
+            retry = MAX_RETRIES
             result = None
             while retry >= 0:
-                if retry < 3:
-                    self.logger.info(f"Retrying for the {3-retry}th time")
+                if retry < MAX_RETRIES:
+                    self.logger.info(f"Retrying for the {MAX_RETRIES-retry}th time")
                 try:
                     result = self._client.api(method, params)
                     retry = -1
@@ -672,14 +673,14 @@ class TcSellsyConnector:
                         self.logger.warning(e)
                         raise e
                     retry -= 1
-                    time.sleep(1)
+                    time.sleep(pow(2, MAX_RETRIES - retry))
                 except sellsy_api.errors.SellsyError as e:
                     if e.sellsy_code_error == "E_OBJ_NOT_LOADABLE":
                         if retry < 1:
                             self.logger.warning(e)
                             raise e
                         retry -= 1
-                        time.sleep(1)
+                        time.sleep(pow(2, MAX_RETRIES - retry))
                     else:
                         raise e
         except (
