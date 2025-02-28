@@ -3,6 +3,7 @@ import time
 import pytz
 import os
 import phpserialize
+import requests
 from json import JSONDecodeError
 from datetime import datetime, date
 from decimal import Decimal
@@ -199,7 +200,7 @@ sellsyValues = {
         "staff": {
             "support-client": 170799,
             "support-client-2": 280575,  # Rinah
-            "support-client-3": 500679,  # Hademou
+            "support-client-3": 500679,  # Sophie
             "support-client-4": 304191,  # Inès
             "societariat": 212354,
             "support-societaire": 183494,
@@ -668,7 +669,7 @@ class TcSellsyConnector:
                 try:
                     result = self._client.api(method, params)
                     retry = -1
-                except (JSONDecodeError, TypeError) as e:
+                except (requests.JSONDecodeError, JSONDecodeError, TypeError) as e:
                     if retry < 1:
                         self.logger.warning(e)
                         raise e
@@ -2578,6 +2579,9 @@ class SellsyInvoice:
         model = connector.api(method="Document.getModel", params=params)
 
         rateCategories = connector.getRateCategories()
+        docType = (
+            "creditnote" if data["amount"] < 0 and data["isLastInvoice"] else "invoice"
+        )
         docType = "invoice" if data["amount"] >= 0 else "creditnote"
         params = {
             "document": {
