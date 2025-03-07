@@ -665,7 +665,7 @@ class TcSellsyConnector:
             result = None
             while retry >= 0:
                 if retry < MAX_RETRIES:
-                    self.logger.info(f"Retrying for the {MAX_RETRIES-retry}th time")
+                    self.logger.info(f"Retrying for the {MAX_RETRIES - retry}th time")
                 try:
                     result = self._client.api(method, params)
                     retry = -1
@@ -1417,7 +1417,7 @@ class TcSellsyConnector:
             params = {
                 "type": "service",
                 "pagination": {
-                    "nbperpage": 100,
+                    "nbperpage": 500,
                 },
             }
             services = self.api(method="Catalogue.getList", params=params)
