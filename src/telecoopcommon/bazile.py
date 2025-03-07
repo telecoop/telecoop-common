@@ -67,7 +67,9 @@ class Connector:
                 retry = -1
                 result = response.json()
                 if "data" not in result:
-                    raise BazileError(f"Unknown response from Bazile {result}")
+                    error = BazileError(f"Unknown response from Bazile {result}")
+                    error.statusCode = 500
+                    raise error
             except BazileError as excp:
                 if response.status_code in [503, 502] and retry >= 1:
                     # When too many calls on Bazile API, we get a 503 error, waiting some time solves the problem
@@ -82,7 +84,9 @@ class Connector:
                 self.logger.warning(
                     f"Calling {service}, got a non json response {response.text}"
                 )
-                raise BazileError("Non JSON response") from excp
+                error = BazileError("Non JSON response") from excp
+                error.statusCode = 500
+                raise error
         return result
 
     def post(self, service, data):
