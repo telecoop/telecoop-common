@@ -2650,6 +2650,8 @@ class SellsyInvoice:
             tags.append("derniere-facture")
         if hasKidPlan:
             tags.append("forfait-enfant")
+        if "tags" in data:
+            tags += data["tags"]
         params["document"]["tags"] = ",".join(tags)
 
         method = "Document.create"
