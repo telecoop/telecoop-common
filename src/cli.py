@@ -23,7 +23,6 @@ from telecoopcommon.operator import Connector as TelecomConnector
 from telecoopcommon.bazile import Connector as BazileConnector
 from telecoopcommon.runner import TcRunner, main
 
-print(globals().keys())
 modules = {
     "main": {
         "name": "telecoopcommon",

@@ -4,6 +4,7 @@ import pytz
 import os
 import phpserialize
 import requests
+import json
 from json import JSONDecodeError
 from datetime import datetime, date
 from decimal import Decimal
@@ -1430,6 +1431,8 @@ class TcSellsyConnector:
                         "taxId": service["taxid"],
                         "notes": service["notes"],
                         "tradename": service["tradename"],
+                        "type": service["type"],
+                        "quantity": service["qt"],
                     }
             self.services = data
 
@@ -2809,6 +2812,9 @@ def getOpportunity(runner):
 
 commands = {
     "get-opportunity": lambda runner: getOpportunity(runner),
+    "get-services": lambda runner: print(
+        json.dumps(runner.getSellsyConnector().getServices(), indent=2)
+    ),
 }
 
 

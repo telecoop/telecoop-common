@@ -84,9 +84,9 @@ class Connector:
                 self.logger.warning(
                     f"Calling {service}, got a non json response {response.text}"
                 )
-                error = BazileError("Non JSON response") from excp
+                error = BazileError("Non JSON response")
                 error.statusCode = 500
-                raise error
+                raise error from excp
         return result
 
     def post(self, service, data):
