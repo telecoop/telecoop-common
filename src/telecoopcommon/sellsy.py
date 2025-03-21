@@ -2810,11 +2810,19 @@ def getOpportunity(runner):
     print(o.stepName)
 
 
+def testV2(runner):
+    syC = runner.getSellsyConnector()
+
+    events = syC.api2Get("/webhooks/events")
+    print(json.dumps(events.json(), indent=2))
+
+
 commands = {
     "get-opportunity": lambda runner: getOpportunity(runner),
     "get-services": lambda runner: print(
         json.dumps(runner.getSellsyConnector().getServices(), indent=2)
     ),
+    "test-v2": testV2,
 }
 
 

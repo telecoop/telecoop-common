@@ -4,8 +4,8 @@
 import json
 
 import pytz
-import nats
 import psycopg2
+from nats import NATS
 from datetime import datetime
 
 from telecoopcommon.sellsy import (
@@ -22,6 +22,7 @@ from telecoopcommon.telecoop import Connector as TcConnector
 from telecoopcommon.operator import Connector as TelecomConnector
 from telecoopcommon.bazile import Connector as BazileConnector
 from telecoopcommon.runner import TcRunner, main
+from telecoopcommon.natsWorker import TcNatsConnector
 
 modules = {
     "main": {
@@ -99,15 +100,16 @@ class Runner(TcRunner):
         return TelecomConnector(self.config, self.logger)
 
     async def getNatsConnection(self):
-        if self.config["Nats"]["cred"]:
-            nConn = await nats.connect(
+        nConn = NATS()
+        if "cred" in self.config["Nats"]:
+            await nConn.connect(
                 self.config["Nats"]["url"],
                 user_credentials=self.config["Nats"]["cred"],
                 connect_timeout=10,
             )
         else:
-            nConn = await nats.connect(self.config["Nats"]["url"])
-        return nConn
+            await nConn.connect(self.config["Nats"]["url"])
+        return TcNatsConnector(nConn)
 
     def getClient(self):
         id = self.getArg("Client id")

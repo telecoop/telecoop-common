@@ -3,6 +3,19 @@ import signal
 import json
 from nats.aio.client import Client as NATS
 
+class TcNatsConnector():
+    def __init__(self, nCli):
+        self._nCli = nCli
+
+    async def publish(self, subject: str, data: dict):
+        payload = json.dumps(data).encode("utf-8")
+        await self._nCli.publish(subject, payload)
+
+    async def request(self, subject: str, data: dict, timeout: int =10):
+        payload = json.dumps(data).encode("utf-8")
+        response = await self._nCli.request(subject, payload, timeout=timeout)
+        result = json.loads(response.data.decode())
+        return result
 
 async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
     nCli = NATS()
@@ -42,7 +55,7 @@ async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=Non
         reply = msg.reply
         data = msg.data.decode()
         logger.info(f"Received message {subject} {reply} - {data}")
-        await handler(subject, data, reply, connectors, nCli, logger)
+        await handler(subject, data, reply, connectors, TcNatsConnector(nCli), logger)
 
     logger.info("Awaiting messages")
     await nCli.subscribe(topic, queue, msgHandler)
@@ -60,8 +73,28 @@ def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}, cred=Non
 async def publish(getNCli, channel, message):
     nCli = await getNCli()
 
-    await nCli.publish(channel, json.dumps(json.loads(message)).encode("utf-8"))
+    await nCli.publish(subject=channel, data=message)
 
+
+async def request(getNCli, channel, message):
+    nCli = await getNCli()
+
+    response = await nCli.request(subject=channel, data=message)
+
+    print(response)
+
+
+async def testHandler(subject: str, dataRaw: str, reply: str, connectors: dict, nCli: NATS, logger):
+    splits = subject.split(".")
+    topic = splits.pop(0)
+    eventType = splits.pop(0)
+    data = json.loads(dataRaw)
+
+    logger.info(f"Received message on {topic} > {eventType} : {data}")
+
+    if reply:
+        await nCli.publish(reply, data)
+    
 
 # Commands
 commands = {
@@ -69,7 +102,21 @@ commands = {
         publish(
             runner.getNatsConnection, runner.getArg("channel"), runner.getArg("message")
         )
-    )
+    ),
+    "request": lambda runner: asyncio.run(
+        request(
+            runner.getNatsConnection, runner.getArg("channel"), runner.getArg("message")
+        )
+    ),
+    "run-test": lambda runner: launchWorker(
+        runner.config["Nats"]["url"],
+        "test.>",
+        "workers",
+        testHandler,
+        runner.logger,
+        connectors={},
+        cred=runner.config["Nats"]["cred"] if "cred" in runner.config["Nats"] else None,
+    ),
 }
 
 

@@ -12,6 +12,12 @@ services:
         environment:
             - ENV=DOCKER
 
+    nats:
+        image: nats:2.10
+        ports:
+            - 8222:8222
+            - 4222:4222
+
     postgres-logs:
         image: postgres:13
         ports:
