@@ -15,8 +15,8 @@ from telecoopcommon.sellsy import (
     sellsyValues,
     SellsyInvoice,
 )
-import telecoopcommon
-from telecoopcommon import *
+#import telecoopcommon
+#from telecoopcommon import *
 from telecoopcommon.sellsy import SellsyMemberOpportunity
 from telecoopcommon.telecoop import Connector as TcConnector
 from telecoopcommon.operator import Connector as TelecomConnector
@@ -24,9 +24,14 @@ from telecoopcommon.bazile import Connector as BazileConnector
 from telecoopcommon.runner import TcRunner, main
 from telecoopcommon.natsWorker import TcNatsConnector
 
+serviceName = "telecoop-common"
+defaultPackageName = "telecoopcommon"
+
+"""
 modules = {
+    "default": defaultPackageName,
     "main": {
-        "name": "telecoopcommon",
+        "name": defaultPackageName,
         "excluded": [
             "bazile",
             "runner",
@@ -37,6 +42,7 @@ modules = {
         "module": telecoopcommon,
     }
 }
+"""
 
 additionalCommands = [
     "get-opportunity",
@@ -454,4 +460,4 @@ class Runner(TcRunner):
 
 
 if __name__ == "__main__":
-    main("telecoop-common", Runner, modules, additionalCommands)
+    main(serviceName, Runner, defaultPackageName, additionalCommands)

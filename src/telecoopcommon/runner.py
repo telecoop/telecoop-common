@@ -1,6 +1,31 @@
+""" Runner to be used as main entrypoint in TeleCoop backend projects
+
+Put this in manage.py or equivalent :
+```
+serviceName = "my-service" # e.g. telecoop-common
+defaultPackageName = "myservice" # e.g. telecoopcommon
+
+[ some code ]
+
+if __name__ == "__main__":
+    main(serviceName, Runner, defaultPackageName, additionalCommands)
+```
+
+And you need this in each of your packages' __init__.py
+```
+from os.path import dirname, basename, isfile, join
+import glob
+
+names = glob.glob(join(dirname(__file__), "*.py"))
+modules = [
+    basename(f)[:-3] for f in names if isfile(f) and not f.endswith("__init__.py")
+]
+```
+"""
 import sys
 import os
 import importlib
+import glob
 
 from . import logs
 
@@ -8,6 +33,7 @@ from . import logs
 import traceback
 from datetime import datetime, date
 
+from . import modules
 from .cursor import TcCursor
 
 # Script utils
@@ -33,13 +59,16 @@ modules = {
 additionalCommands = ['test', 'my-special-command']
 """
 
+names = glob.glob(os.path.join(os.path.dirname(__file__)))
+packages = [os.path.basename(f) for f in names if os.path.isdir(f)]
+
 
 def toCamelCase(text):
     s = text.split("-")
     return s[0] + "".join(t.capitalize() for t in s[1:])
 
 
-def cmdline(modules, additionalCommands=[]):
+def cmdline(defaultPackageName, additionalCommands=[]):
     parser = argparse.ArgumentParser(description="TeleCoop Invoicing Manager")
     parser.add_argument(
         "--log-level",
@@ -56,13 +85,17 @@ def cmdline(modules, additionalCommands=[]):
         "command",
         metavar="COMMAND",
         choices=[
-            f"{p}:{c}" if moduleRef == "main" else f"{moduleRef}:{c}"
-            for moduleRef, module in modules.items()
-            for p in module["module"].__all__
-            if p not in module["excluded"]
-            for c in getattr(
-                importlib.import_module(f".{p}", package=module["name"]), "commands"
-            )
+            f"{module}:{c}" if p == defaultPackageName else f"{p}:{module}:{c}"
+            for p in packages
+            for module in modules # imported from package __init__.py
+            if hasattr(importlib.import_module(f".{module}", p), "commands") # only if module exposes some commands
+            for c in getattr(importlib.import_module(f".{module}", p), "commands")
+            #for moduleRef, module in modules.items()
+            #for p in module["module"].__all__
+            #if p not in module["excluded"]
+            #for c in getattr(
+            #    importlib.import_module(f".{p}", package=module["name"]), "commands"
+            #)
         ]
         + additionalCommands,
         help="command",
@@ -74,13 +107,14 @@ def cmdline(modules, additionalCommands=[]):
 
 
 class TcRunner:
-    def __init__(self, env, config, logger, args, modules):
+    def __init__(self, env, config, logger, args, defaultPackageName):
         self.config = config
         self.logger = logger
         self.args = args
         self.noConfirm = None
         self.postgres = None
-        self.modules = modules
+        self.defaultPackageName = defaultPackageName
+        #self.modules = modules
 
         self.env = "PROD" if env == "PROD" else "DEV"
 
@@ -208,23 +242,24 @@ class TcRunner:
                 func = getattr(self, command)
                 args = []
                 # func(self)
-        elif len(operands) == 2:
-            module, command = operands
-            key = module
-            if module not in self.modules:
-                key = "main"
+        else:
+            if len(operands) == 2:
+                package = self.defaultPackageName
+            elif len(operands) == 3:
+                package = operands.pop(0)
+            moduleName, command = operands
 
-            moduleName = f"{self.modules[key]['name']}.{module}"
-            mName = importlib.import_module(moduleName)
-            self.logger.info(f"Executing command {moduleName}.{command}")
-            func = getattr(mName, "execute")
+            importName = f"{package}.{moduleName}"
+            module = importlib.import_module(importName)
+            self.logger.info(f"Executing command {package}.{moduleName}.{command}")
+            func = getattr(module, "execute")
             args = [self, command]
 
         self.execWithLogs(arg, func, noLog, *args)
 
 
-def main(appName, runnerClass, modules, additionalCommands):
-    args = cmdline(modules, additionalCommands)
+def main(appName, runnerClass, defaultPackageName, additionalCommands):
+    args = cmdline(defaultPackageName, additionalCommands)
 
     fileDir = os.path.dirname(os.path.realpath(__file__))
     root = fileDir
@@ -234,7 +269,7 @@ def main(appName, runnerClass, modules, additionalCommands):
     if env in ["DOCKER", "PROD", "TEST", "LOCAL_PROD"]:
         confFile = f"/etc/{appName}/conf.cfg"
     elif env is None or env == "LOCAL":
-        confFile = os.path.join(fileDir, "../conf/conf.cfg")
+        confFile = os.path.join(fileDir, "../../conf/conf.cfg")
     if not os.path.isfile(confFile):
         raise IOError(f"{confFile} : file not found")
     config = configparser.ConfigParser()
@@ -242,7 +277,7 @@ def main(appName, runnerClass, modules, additionalCommands):
 
     logger = logs.initLogs(appName, config["Log"], args.log_level)
 
-    runner = runnerClass(env, config, logger, args, modules)
+    runner = runnerClass(env, config, logger, args, defaultPackageName)
 
     command = args.command
 
