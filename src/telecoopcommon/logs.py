@@ -2,7 +2,6 @@
 import logging
 import logging.handlers
 import os
-import configparser
 
 import datetime as dt
 

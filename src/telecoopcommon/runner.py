@@ -2,8 +2,16 @@
 
 Put this in manage.py or equivalent :
 ```
+[ … ]
+from telecoopcommon.runner import TcRunner, main
+
+[ … ]
+
 serviceName = "my-service" # e.g. telecoop-common
 defaultPackageName = "myservice" # e.g. telecoopcommon
+# list of names dash style (e.g. test-cmd),
+# implemented in Runner class with a camelcasified name (e.g. def testCmd(self))
+additionalCommands = []
 
 [ some code ]
 
@@ -59,8 +67,8 @@ modules = {
 additionalCommands = ['test', 'my-special-command']
 """
 
-names = glob.glob(os.path.join(os.path.dirname(__file__)))
-packages = [os.path.basename(f) for f in names if os.path.isdir(f)]
+names = glob.glob(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), '*'))
+packages = [os.path.basename(f) for f in names if os.path.isdir(f) and not f.endswith('__pycache__')]
 
 
 def toCamelCase(text):
@@ -78,6 +86,9 @@ def cmdline(defaultPackageName, additionalCommands=[]):
         help="Log level of the script",
     )
     parser.add_argument(
+        "--console-only", action="store_true", help="Log only to console"
+    )
+    parser.add_argument(
         "--no-log", action="store_true", help="Log command to monitoring db"
     )
 
@@ -87,7 +98,7 @@ def cmdline(defaultPackageName, additionalCommands=[]):
         choices=[
             f"{module}:{c}" if p == defaultPackageName else f"{p}:{module}:{c}"
             for p in packages
-            for module in modules # imported from package __init__.py
+            for module in getattr(importlib.import_module(p), "modules") # {package}.modules defined in __init__.py
             if hasattr(importlib.import_module(f".{module}", p), "commands") # only if module exposes some commands
             for c in getattr(importlib.import_module(f".{module}", p), "commands")
             #for moduleRef, module in modules.items()
@@ -195,7 +206,7 @@ class TcRunner:
         cursorLogs.execute(query, [command])
         (nbRunningServices,) = cursorLogs.fetchone()
         if nbRunningServices > 0:
-            self.logger.warning("Invoicing process already running")
+            self.logger.warning(f"Command {command} is already running")
             return
 
         if not noLog:
@@ -275,7 +286,7 @@ def main(appName, runnerClass, defaultPackageName, additionalCommands):
     config = configparser.ConfigParser()
     config.read(confFile)
 
-    logger = logs.initLogs(appName, config["Log"], args.log_level)
+    logger = logs.initLogs(appName, config["Log"], args.log_level, consoleOnly=args.console_only)
 
     runner = runnerClass(env, config, logger, args, defaultPackageName)
 
