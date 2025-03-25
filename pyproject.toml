@@ -1,5 +1,5 @@
 [project]
-name = "telecoop-common"
+name = "telecoopcommon"
 version = "1.25.1"
 description = "TeleCoop common libs"
 authors = [
