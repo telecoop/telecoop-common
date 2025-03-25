@@ -85,7 +85,7 @@ sellsyValues = {
             "pack-depannage": 145684,
             "pack-depannage-used": 209177,
             "pack-data-roaming-available": 288912,
-            "pack-data-romaing-used": 288913,
+            "pack-data-roaming-used": 288913,
             "slimpay-mandate-status": 154395,
             "member": 103773,
             "phone-model": 103462,
