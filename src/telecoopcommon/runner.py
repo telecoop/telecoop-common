@@ -174,11 +174,18 @@ class TcRunner:
     def getCursor(self, db="main"):
         connStr = self.dbConnStrs[db]
         self.logger.debug(f"Connection to {' '.join(connStr)}")
-        conn = self.postgres.connect(" ".join(connStr))
-        conn.set_session(autocommit=True)
+        if "psycopg2" in globals():
+            conn = self.postgres.connect(" ".join(connStr))
+            conn.set_session(autocommit=True)
+        elif "psycopg" in globals():
+            conn = self.postgres.connect(
+                " ".join(connStr),
+                cursor_factory=self.postgres.ClientCursor,
+                autocommit=True,
+            )
         cursor = conn.cursor()
         tcCursor = TcCursor(cursor, self.logger)
-        tcCursor.execute("SET SESSION timezone = 'CET'")
+        tcCursor.execute("SET SESSION timezone = 'Europe/Paris'")
         return tcCursor
 
     def confirm(self, question="Confirm ?"):
