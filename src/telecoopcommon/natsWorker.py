@@ -1,6 +1,7 @@
 import asyncio
 import signal
 import json
+import inflection
 from nats.aio.client import Client as NATS
 
 class TcNatsConnector():
@@ -16,6 +17,45 @@ class TcNatsConnector():
         response = await self._nCli.request(subject, payload, timeout=timeout)
         result = json.loads(response.data.decode())
         return result
+
+class TcNatsHandler:
+    def __init__(self, data, reply, nCli, connectors, logger):
+        self.data = data
+        self.reply = reply
+        self.response = {"status": "OK"}
+        self.nCli = nCli
+        self.connectors = connectors
+        self.logger = logger
+
+    async def handle(self, method):
+        self.logger.debug(f"Handler is calling {self.__class__}#{method}")
+        getattr(self, method)()
+        if self.reply:
+            await self.nCli.publish(self.reply, self.response)
+
+    @classmethod
+    async def process(cls, subject, rawData, reply, connectors, nCli, logger):
+        splits = subject.split(".")
+        topic = splits.pop(0)
+        objectType = splits.pop(0)
+        eventType = splits.pop(0)
+        data = json.loads(rawData)
+        
+        logger.debug(f"Received message on {topic} > {eventType} : {data}")
+        handlerName = cls.getHandlerName(objectType)
+        method = cls.getMethodName(eventType)
+        handler = globals()[handlerName](data, reply, nCli, connectors, logger)
+        await handler.handle(method)
+
+    @classmethod
+    def getHandlerName(cls, objectType):
+        # need to first switch to _ before camelCase … go figure
+        return inflection.camelize(inflection.underscore(objectType))
+
+    @classmethod
+    def getMethodName(cls, eventType):
+        # need to first switch to _ before camelCase … go figure
+        return inflection.camelize(inflection.underscore(eventType), uppercase_first_letter=False)
 
 async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
     nCli = NATS()

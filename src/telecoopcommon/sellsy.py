@@ -57,6 +57,7 @@ sellsyValues = {
         "new_client_mail_template_id": 62573,
         "custom_fields": {
             "operateur": 232923,
+            "sim-type": 288914,
             "refbazile": 103778,
             "numerotelecoop": 103448,
             "nsce": 103775,
@@ -85,7 +86,7 @@ sellsyValues = {
             "pack-depannage": 145684,
             "pack-depannage-used": 209177,
             "pack-data-roaming-available": 288912,
-            "pack-data-romaing-used": 288913,
+            "pack-data-roaming-used": 288913,
             "slimpay-mandate-status": 154395,
             "member": 103773,
             "phone-model": 103462,
@@ -240,6 +241,7 @@ sellsyValues = {
         "new_client_mail_template_id": 62591,
         "custom_fields": {
             "operateur": 232874,
+            "sim-type": 289396,
             "refbazile": 103227,
             "numerotelecoop": 103670,
             "nsce": 102689,
@@ -2799,6 +2801,7 @@ def getOpportunity(runner):
     o = SellsyOpportunity(id)
     o.load(sellsyConnector)
     print(o)
+    print(o.isPorta())
     print(o.planItem)
     print(o.status)
     print(o.getSimStateFromStep(sellsyConnector))
