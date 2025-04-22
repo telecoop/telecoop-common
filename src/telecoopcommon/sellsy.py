@@ -438,6 +438,7 @@ class TcSellsyConnector:
         self.cfidPlan = customFields["forfait"]
         self.cfidOnSite = customFields["achatsimphysique"]
         self.cfidOperator = customFields["operateur"]
+        self.cfidSIMType = customFields["sim-type"]
         self.cfidRio = customFields["rio"]
         self.cfidNsce = customFields["nsce"]
         self.customFieldBazileNb = customFields["refbazile"]
@@ -1229,6 +1230,7 @@ class TcSellsyConnector:
                         "pro-appels-internationaux",
                         "pro-donnees-mobiles",
                         "operateur",
+                        "sim-type",
                     ]
                     dateFields = [
                         "date-activation-sim-souhaitee",
@@ -1933,6 +1935,7 @@ class SellsyOpportunity:
         self.nsce = None
         self.msisdn = None
         self.operator = None
+        self.simType = None
         self.operatorRef = None
         self.rio = None
         self.plan = None
@@ -2079,6 +2082,8 @@ class SellsyOpportunity:
                 if code == "operateur":
                     val = field["formatted_value"]
                     self.operator = "Bazile" if val == "" else val
+                if code == "sim-type":
+                    self.simType = field["formatted_value"]
                 if code == "refbazile":
                     self.operatorRef = field["textval"]
                 if code == "depassement-forfait-data":
