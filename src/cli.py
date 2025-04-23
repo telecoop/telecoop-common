@@ -92,6 +92,7 @@ class Runner(TcRunner):
             self.confSellsy = config["SellsyDev"]
         elif env == "PROD":
             self.confSellsy = config["SellsyProd"]
+        self.confSellsy = config["Sellsy"]
 
     def getBazileConnector(self):
         return BazileConnector(self.config["BazileAPI"], self.logger)
@@ -460,4 +461,6 @@ class Runner(TcRunner):
 
 
 if __name__ == "__main__":
+    import os
+    print(os.getenv("ENV"))
     main(serviceName, Runner, defaultPackageName, additionalCommands)

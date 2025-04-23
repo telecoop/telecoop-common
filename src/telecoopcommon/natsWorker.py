@@ -19,6 +19,8 @@ class TcNatsConnector():
         return result
 
 class TcNatsHandler:
+    """Generic handler for nats worker
+    """
     def __init__(self, data, reply, nCli, connectors, logger):
         self.data = data
         self.reply = reply
@@ -27,11 +29,25 @@ class TcNatsHandler:
         self.connectors = connectors
         self.logger = logger
 
+        self.handler = None
+
     async def handle(self, method):
         self.logger.debug(f"Handler is calling {self.__class__}#{method}")
         getattr(self, method)()
         if self.reply:
             await self.nCli.publish(self.reply, self.response)
+
+    @classmethod
+    def getHandlers(cls):
+        subclasses = {}
+        for subclass in cls.__subclasses__():
+            subclasses[subclass.__name__] = subclass
+            subclasses |= subclass.getHandlers()
+        return subclasses
+
+    @classmethod
+    def getHandler(cls, handlerName):
+        return cls.getHandlers()[handlerName]
 
     @classmethod
     async def process(cls, subject, rawData, reply, connectors, nCli, logger):
@@ -44,7 +60,7 @@ class TcNatsHandler:
         logger.debug(f"Received message on {topic} > {eventType} : {data}")
         handlerName = cls.getHandlerName(objectType)
         method = cls.getMethodName(eventType)
-        handler = globals()[handlerName](data, reply, nCli, connectors, logger)
+        handler = cls.getHandler(handlerName)(data, reply, nCli, connectors, logger)
         await handler.handle(method)
 
     @classmethod

@@ -1127,6 +1127,7 @@ class TcSellsyConnector:
                 "numerotelecoop": {"code": "numerotelecoop", "textval": ""},
                 "rio": {"code": "rio", "textval": ""},
                 "operateur": {"code": "operateur", "formatted_value": ""},
+                "sim-type": {"code": "sim-type", "formatted_value": ""},
                 "refbazile": {"code": "refbazile", "textval": ""},
                 "forfait": {"code": "forfait", "textval": ""},
                 "depassement-forfait-data": {
