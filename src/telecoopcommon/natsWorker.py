@@ -65,12 +65,16 @@ class TcNatsHandler:
             ),
         )
         sig = inspect.signature(func)
+        params = [
+            f'"{argName}": {arg.annotation.__name__}'
+            for argName, arg in sig.parameters.items()
+        ]
         topic = inflection.dasherize(inflection.underscore(self.__class__.__name__))
-        return f"sellsy.{topic}.{method}: {sig}\n{func.__doc__}"
+        return f"sellsy.{topic}.{method}: {{{','.join(params)}}} -> {sig.return_annotation.__name__}\n{func.__doc__}"
 
     @classmethod
     def getHandlers(cls):
-        subclasses = {}
+        subclasses = {cls.__name__: cls}
         for subclass in cls.__subclasses__():
             subclasses[subclass.__name__] = subclass
             subclasses |= subclass.getHandlers()
