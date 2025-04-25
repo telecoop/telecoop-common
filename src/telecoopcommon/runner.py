@@ -281,13 +281,13 @@ def main(appName, runnerClass, defaultPackageName, additionalCommands):
 
     fileDir = os.path.dirname(os.path.realpath(__file__))
     root = fileDir
-    os.chdir(root)
+    #os.chdir(root)
 
     env = os.getenv("ENV", "LOCAL")
     if env in ["DOCKER", "PROD", "TEST", "LOCAL_PROD"]:
         confFile = f"/etc/{appName}/conf.cfg"
     elif env is None or env == "LOCAL":
-        confFile = os.path.join(fileDir, "../../conf/conf.cfg")
+        confFile = os.path.join("conf/conf.cfg")
     if not os.path.isfile(confFile):
         raise IOError(f"{confFile} : file not found")
     config = configparser.ConfigParser()

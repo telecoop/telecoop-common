@@ -461,6 +461,4 @@ class Runner(TcRunner):
 
 
 if __name__ == "__main__":
-    import os
-    print(os.getenv("ENV"))
     main(serviceName, Runner, defaultPackageName, additionalCommands)

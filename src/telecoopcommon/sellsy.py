@@ -2819,6 +2819,24 @@ def getOpportunity(runner):
     print(o.stepName)
 
 
+def getCustomField(runner):
+    syC = runner.getSellsyConnector()
+
+    cfName = runner.getArg("Custom field ref")
+    response = syC.api(method="CustomFields.getOne", params={"id": sellsyValues["PROD"]["custom_fields"][cfName]})
+    print(json.dumps(response, indent=2))
+
+
+def getService(runner):
+    syC = runner.getSellsyConnector()
+    ref = runner.getArg("Service ref")
+    response = syC.api(method="Catalogue.getOneByRef", params={
+        "type": "service",
+        "ref": ref,
+    })
+    print(json.dumps(response, indent=2))
+
+
 def testV2(runner):
     syC = runner.getSellsyConnector()
 
@@ -2832,6 +2850,10 @@ commands = {
         json.dumps(runner.getSellsyConnector().getServices(), indent=2)
     ),
     "test-v2": testV2,
+    "get-custom-field": getCustomField,
+    "get-service": getService,
+    "get-taxes": lambda runner: print(runner.getSellsyConnector().api(method="AccountDatas.getTaxes", params={})),
+    "get-categories": lambda runner: print(runner.getSellsyConnector().api(method="Catalogue.getCategories", params={})),
 }
 
 

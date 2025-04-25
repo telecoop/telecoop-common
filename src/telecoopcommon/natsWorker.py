@@ -33,7 +33,11 @@ class TcNatsHandler:
 
     async def handle(self, method):
         self.logger.debug(f"Handler is calling {self.__class__}#{method}")
-        getattr(self, method)()
+        try:
+            getattr(self, method)()
+        except Exception as e:
+            self.response["status"] = "KO"
+            self.response["error"] = str(e)
         if self.reply:
             await self.nCli.publish(self.reply, self.response)
 
