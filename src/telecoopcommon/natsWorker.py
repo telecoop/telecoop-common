@@ -2,6 +2,8 @@ import asyncio
 import signal
 import json
 import inflection
+import traceback
+import inspect
 from nats.aio.client import Client as NATS
 
 class TcNatsConnector():
@@ -34,12 +36,37 @@ class TcNatsHandler:
     async def handle(self, method):
         self.logger.debug(f"Handler is calling {self.__class__}#{method}")
         try:
-            getattr(self, method)()
-        except Exception as e:
+            self.response["value"] = getattr(self, method)(**self.data)
+        except Exception as excp:
+            tbk = traceback.format_exc()
+            errorMessage = f"{excp}\n{tbk}"
+            self.logger.warning(errorMessage)
             self.response["status"] = "KO"
-            self.response["error"] = str(e)
+            self.response["error"] = str(excp)
         if self.reply:
             await self.nCli.publish(self.reply, self.response)
+
+    def listServices(self):
+        services = []
+        for handler in self.__class__.getHandlers().values():
+            topic = inflection.dasherize(inflection.underscore(handler.__name__))
+            for method in [attr for attr in handler.__dict__ if callable(getattr(handler, attr))]:
+                if method.startswith("__"):
+                    continue
+                service = inflection.dasherize(inflection.underscore(method))
+                services.append(f"sellsy.{topic}.{service}")
+        return services
+
+    def getDoc(self, method):
+        func = getattr(
+            self,
+            inflection.camelize(
+                inflection.underscore(method), uppercase_first_letter=False
+            ),
+        )
+        sig = inspect.signature(func)
+        topic = inflection.dasherize(inflection.underscore(self.__class__.__name__))
+        return f"sellsy.{topic}.{method}: {sig}\n{func.__doc__}"
 
     @classmethod
     def getHandlers(cls):
@@ -58,7 +85,11 @@ class TcNatsHandler:
         splits = subject.split(".")
         topic = splits.pop(0)
         objectType = splits.pop(0)
-        eventType = splits.pop(0)
+        if len(splits) > 0:
+            eventType = splits.pop(0)
+        else:
+            eventType = objectType
+            objectType = topic
         data = json.loads(rawData)
         
         logger.debug(f"Received message on {topic} > {eventType} : {data}")
