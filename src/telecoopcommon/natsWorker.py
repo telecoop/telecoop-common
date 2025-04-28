@@ -57,7 +57,7 @@ class TcNatsHandler:
                 if method.startswith("__"):
                     continue
                 service = inflection.dasherize(inflection.underscore(method))
-                services.append(f"rootHandler.{topic}.{service}")
+                services.append(f"{rootHandler}.{topic}.{service}")
         return services
 
     def getDoc(self, method):
