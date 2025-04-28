@@ -49,12 +49,15 @@ class TcNatsHandler:
     def listServices(self):
         services = []
         for handler in self.__class__.getHandlers().values():
+            rootHandler = handler.__base__.__name__
+            if rootHandler == "TcNatsWorker":
+                rootHandler = handler.__name__
             topic = inflection.dasherize(inflection.underscore(handler.__name__))
             for method in [attr for attr in handler.__dict__ if callable(getattr(handler, attr))]:
                 if method.startswith("__"):
                     continue
                 service = inflection.dasherize(inflection.underscore(method))
-                services.append(f"sellsy.{topic}.{service}")
+                services.append(f"rootHandler.{topic}.{service}")
         return services
 
     def getDoc(self, method):
@@ -69,8 +72,10 @@ class TcNatsHandler:
             f'"{argName}": {arg.annotation.__name__}'
             for argName, arg in sig.parameters.items()
         ]
+        rootHandler = self.__class__.__base__.__name__
         topic = inflection.dasherize(inflection.underscore(self.__class__.__name__))
-        return f"sellsy.{topic}.{method}: {{{','.join(params)}}} -> {sig.return_annotation.__name__}\n{func.__doc__}"
+        returnSig = sig.return_annotation.__name__ if sig.return_annotation else 'None'
+        return f"{rootHandler}.{topic}.{method}: {{{','.join(params)}}} -> {returnSig}\n{func.__doc__}"
 
     @classmethod
     def getHandlers(cls):
