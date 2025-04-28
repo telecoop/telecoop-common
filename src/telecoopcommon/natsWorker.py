@@ -6,7 +6,8 @@ import traceback
 import inspect
 from nats.aio.client import Client as NATS
 
-class TcNatsConnector():
+
+class TcNatsConnector:
     def __init__(self, nCli):
         self._nCli = nCli
 
@@ -14,15 +15,26 @@ class TcNatsConnector():
         payload = json.dumps(data).encode("utf-8")
         await self._nCli.publish(subject, payload)
 
-    async def request(self, subject: str, data: dict, timeout: int =10):
+    async def request(self, subject: str, data: dict, timeout: int = 10):
         payload = json.dumps(data).encode("utf-8")
         response = await self._nCli.request(subject, payload, timeout=timeout)
         result = json.loads(response.data.decode())
         return result
 
+
+def toDash(text: str) -> str:
+    return inflection.dasherize(inflection.underscore(text))
+
+
+def toCaml(text: str, firstLetter: bool = True) -> str:
+    return inflection.camelize(
+        inflection.underscore(text), uppercase_first_letter=firstLetter
+    )
+
+
 class TcNatsHandler:
-    """Generic handler for nats worker
-    """
+    """Generic handler for nats worker"""
+
     def __init__(self, data, reply, nCli, connectors, logger):
         self.data = data
         self.reply = reply
@@ -50,33 +62,30 @@ class TcNatsHandler:
         services = []
         for handler in self.__class__.getHandlers().values():
             rootHandler = handler.__base__.__name__
-            topic = inflection.dasherize(inflection.underscore(handler.__name__))
+            topic = toDash(handler.__name__)
             prefix = f"{rootHandler}.{topic}"
             if rootHandler == "TcNatsHandler":
                 rootHandler = handler.__name__
-                prefix = f"{rootHandler}"
-            for method in [attr for attr in handler.__dict__ if callable(getattr(handler, attr))]:
+                prefix = f"{toDash(rootHandler)}"
+            for method in [
+                attr for attr in handler.__dict__ if callable(getattr(handler, attr))
+            ]:
                 if method.startswith("__"):
                     continue
-                service = inflection.dasherize(inflection.underscore(method))
+                service = toDash(method)
                 services.append(f"{prefix}.{service}")
         return services
 
     def getDoc(self, method):
-        func = getattr(
-            self,
-            inflection.camelize(
-                inflection.underscore(method), uppercase_first_letter=False
-            ),
-        )
+        func = getattr(self, toCaml(method, firstLetter=False))
         sig = inspect.signature(func)
         params = [
             f'"{argName}": {arg.annotation.__name__}'
             for argName, arg in sig.parameters.items()
         ]
         rootHandler = self.__class__.__base__.__name__
-        topic = inflection.dasherize(inflection.underscore(self.__class__.__name__))
-        returnSig = sig.return_annotation.__name__ if sig.return_annotation else 'None'
+        topic = toDash(self.__class__.__name__)
+        returnSig = sig.return_annotation.__name__ if sig.return_annotation else "None"
         return f"{rootHandler}.{topic}.{method}: {{{','.join(params)}}} -> {returnSig}\n{func.__doc__}"
 
     @classmethod
@@ -102,10 +111,10 @@ class TcNatsHandler:
             eventType = objectType
             objectType = topic
         data = json.loads(rawData)
-        
+
         logger.debug(f"Received message on {topic} > {eventType} : {data}")
-        handlerName = cls.getHandlerName(objectType)
-        method = cls.getMethodName(eventType)
+        handlerName = toCaml(objectType)
+        method = toCaml(eventType, firstLetter=False)
         handler = cls.getHandler(handlerName)(data, reply, nCli, connectors, logger)
         await handler.handle(method)
 
@@ -117,7 +126,10 @@ class TcNatsHandler:
     @classmethod
     def getMethodName(cls, eventType):
         # need to first switch to _ before camelCase … go figure
-        return inflection.camelize(inflection.underscore(eventType), uppercase_first_letter=False)
+        return inflection.camelize(
+            inflection.underscore(eventType), uppercase_first_letter=False
+        )
+
 
 async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
     nCli = NATS()
@@ -186,7 +198,9 @@ async def request(getNCli, channel, message):
     print(response)
 
 
-async def testHandler(subject: str, dataRaw: str, reply: str, connectors: dict, nCli: NATS, logger):
+async def testHandler(
+    subject: str, dataRaw: str, reply: str, connectors: dict, nCli: NATS, logger
+):
     splits = subject.split(".")
     topic = splits.pop(0)
     eventType = splits.pop(0)
@@ -196,7 +210,7 @@ async def testHandler(subject: str, dataRaw: str, reply: str, connectors: dict, 
 
     if reply:
         await nCli.publish(reply, data)
-    
+
 
 # Commands
 commands = {
