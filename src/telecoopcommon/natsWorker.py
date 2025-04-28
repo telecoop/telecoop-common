@@ -50,14 +50,16 @@ class TcNatsHandler:
         services = []
         for handler in self.__class__.getHandlers().values():
             rootHandler = handler.__base__.__name__
+            topic = inflection.dasherize(inflection.underscore(handler.__name__))
+            prefix = f"{rootHandler}.{topic}"
             if rootHandler == "TcNatsWorker":
                 rootHandler = handler.__name__
-            topic = inflection.dasherize(inflection.underscore(handler.__name__))
+                prefix = f"{rootHandler}"
             for method in [attr for attr in handler.__dict__ if callable(getattr(handler, attr))]:
                 if method.startswith("__"):
                     continue
                 service = inflection.dasherize(inflection.underscore(method))
-                services.append(f"{rootHandler}.{topic}.{service}")
+                services.append(f"{prefix}.{service}")
         return services
 
     def getDoc(self, method):
