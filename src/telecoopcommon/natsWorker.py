@@ -58,15 +58,21 @@ class TcNatsHandler:
         if self.reply:
             await self.nCli.publish(self.reply, self.response)
 
+    @classmethod
+    def __getServicePrefix(cls) -> str:
+        rootHandler = cls.__base__.__name__
+        topic = toDash(cls.__name__)
+        prefix = f"{rootHandler}.{topic}"
+        if rootHandler == "TcNatsHandler":
+            rootHandler = cls.__name__
+            prefix = f"{toDash(rootHandler)}"
+
+        return prefix
+
     def listServices(self):
         services = []
         for handler in self.__class__.getHandlers().values():
-            rootHandler = handler.__base__.__name__
-            topic = toDash(handler.__name__)
-            prefix = f"{rootHandler}.{topic}"
-            if rootHandler == "TcNatsHandler":
-                rootHandler = handler.__name__
-                prefix = f"{toDash(rootHandler)}"
+            prefix = handler.__getServicePrefix()
             for method in [
                 attr for attr in handler.__dict__ if callable(getattr(handler, attr))
             ]:
@@ -83,10 +89,11 @@ class TcNatsHandler:
             f'"{argName}": {arg.annotation.__name__}'
             for argName, arg in sig.parameters.items()
         ]
-        rootHandler = self.__class__.__base__.__name__
-        topic = toDash(self.__class__.__name__)
+        prefix = self.__class__.__getServicePrefix()
         returnSig = sig.return_annotation.__name__ if sig.return_annotation else "None"
-        return f"{rootHandler}.{topic}.{method}: {{{','.join(params)}}} -> {returnSig}\n{func.__doc__}"
+        return (
+            f"{prefix}.{method}: {{{','.join(params)}}} -> {returnSig}\n{func.__doc__}"
+        )
 
     @classmethod
     def getHandlers(cls):
@@ -117,18 +124,6 @@ class TcNatsHandler:
         method = toCaml(eventType, firstLetter=False)
         handler = cls.getHandler(handlerName)(data, reply, nCli, connectors, logger)
         await handler.handle(method)
-
-    @classmethod
-    def getHandlerName(cls, objectType):
-        # need to first switch to _ before camelCase … go figure
-        return inflection.camelize(inflection.underscore(objectType))
-
-    @classmethod
-    def getMethodName(cls, eventType):
-        # need to first switch to _ before camelCase … go figure
-        return inflection.camelize(
-            inflection.underscore(eventType), uppercase_first_letter=False
-        )
 
 
 async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
