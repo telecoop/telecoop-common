@@ -52,7 +52,7 @@ class TcNatsHandler:
             rootHandler = handler.__base__.__name__
             topic = inflection.dasherize(inflection.underscore(handler.__name__))
             prefix = f"{rootHandler}.{topic}"
-            if rootHandler == "TcNatsWorker":
+            if rootHandler == "TcNatsHandler":
                 rootHandler = handler.__name__
                 prefix = f"{rootHandler}"
             for method in [attr for attr in handler.__dict__ if callable(getattr(handler, attr))]:
