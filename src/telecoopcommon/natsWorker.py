@@ -108,7 +108,9 @@ class TcNatsHandler:
         return cls.getHandlers()[handlerName]
 
     @classmethod
-    async def process(cls, subject, rawData, reply, connectors, nCli, logger):
+    async def process(
+        cls, subject, rawData, reply, connectors, nCli, logger, mock=False
+    ):
         splits = subject.split(".")
         topic = splits.pop(0)
         objectType = splits.pop(0)
@@ -121,9 +123,15 @@ class TcNatsHandler:
 
         logger.debug(f"Received message on {topic} > {eventType} : {data}")
         handlerName = toCaml(objectType)
+        if mock:
+            handlerName += "Mock"
         method = toCaml(eventType, firstLetter=False)
         handler = cls.getHandler(handlerName)(data, reply, nCli, connectors, logger)
         await handler.handle(method)
+
+    @classmethod
+    async def mock(cls, subject, rawData, reply, connectors, nCli, logger):
+        await cls.process(subject, rawData, reply, connectors, nCli, logger, mock=True)
 
 
 async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
