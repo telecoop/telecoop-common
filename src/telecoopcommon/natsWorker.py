@@ -48,13 +48,18 @@ class TcNatsHandler:
     async def handle(self, method):
         self.logger.debug(f"Handler is calling {self.__class__}#{method}")
         try:
-            self.response["value"] = getattr(self, method)(**self.data)
+            func = getattr(self, method)
+            if inspect.iscoroutinefunction(func):
+                self.response["value"] = await func(**self.data)
+            else:
+                self.response["value"] = func(**self.data)
         except Exception as excp:
             tbk = traceback.format_exc()
             errorMessage = f"{excp}\n{tbk}"
             self.logger.warning(errorMessage)
             self.response["status"] = "KO"
             self.response["error"] = str(excp)
+        self.logger.debug(self.response)
         if self.reply:
             await self.nCli.publish(self.reply, self.response)
 
