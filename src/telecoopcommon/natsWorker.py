@@ -195,13 +195,15 @@ def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}, cred=Non
 async def publish(getNCli, channel, message):
     nCli = await getNCli()
 
-    await nCli.publish(subject=channel, data=message)
+    data = json.loads(message)
+    await nCli.publish(subject=channel, data=data)
 
 
 async def request(getNCli, channel, message):
     nCli = await getNCli()
 
-    response = await nCli.request(subject=channel, data=message)
+    data = json.loads(message)
+    response = await nCli.request(subject=channel, data=data)
 
     print(response)
 

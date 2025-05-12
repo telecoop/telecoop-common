@@ -1,6 +1,6 @@
 [project]
 name = "telecoopcommon"
-version = "1.26.13"
+version = "1.26.14"
 description = "TeleCoop common libs"
 authors = [
     {name = "Pierre Geoffroy",email = "pierreg@telecoop.fr"}

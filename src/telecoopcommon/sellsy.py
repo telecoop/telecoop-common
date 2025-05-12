@@ -36,6 +36,7 @@ sellsyValues = {
             "Enfant 1": "kid1",
             "Enfant 2": "kid2",
             "Enfant 3": "kid3",
+            "Flex": "FLEX",
         },
         "emailTemplates": {
             "default": 158668,
@@ -220,6 +221,7 @@ sellsyValues = {
             "Enfant 1": "kid1",
             "Enfant 2": "kid2",
             "Enfant 3": "kid3",
+            "Flex": "FLEX",
         },
         "emailTemplates": {
             "default": 50567,
