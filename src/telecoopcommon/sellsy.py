@@ -409,6 +409,11 @@ def sourceNameFromId(sourceId: int):
 class TcSellsyError(Exception):
     pass
 
+class SellsyApiError(Exception):
+    statusCode = None
+    textError = None
+    pass
+
 
 class TcSellsyConnector:
     def __init__(self, conf, logger, emailTemplates=None):
@@ -658,10 +663,26 @@ class TcSellsyConnector:
         self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
         return connector.get(endpoint)
 
-    def api2Post(self, endpoint, data):
+    def api2Post(self, endpoint, json = None, files: dict = None):
         connector = self.getConnector()
-        self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with {data}")
-        return connector.post(endpoint, json=data)
+        if files:
+            self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with files={files}")
+        else:
+            self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with json={json}")
+
+        response = connector.post(endpoint, json=json, files=files)
+        # the json parameter is ignored if either data or files is passed.
+        # see https://requests.reafdthedocs.io/en/latest/user/quickstart/#post-a-multipart-encoded-file
+
+        if response.status_code not in [200, 201]:
+            exc = SellsyApiError(
+                f"Got code {response.status_code} \n{response.text}"
+            )
+            exc.statusCode = response.status_code
+            exc.textError = response.text
+            raise exc
+        
+        return response
 
     def api(self, method, params={}):
         try:
@@ -2284,7 +2305,6 @@ class SellsyOpportunity:
     def isActiveOrSuspended(self, connector):
         return self.isActive(connector) or self.isSuspended(connector)
 
-
 class SellsyMemberOpportunity:
     def __init__(self, id):
         env = os.getenv("ENV", "LOCAL")
@@ -2447,6 +2467,28 @@ class SellsyMemberOpportunity:
 
         return result
 
+class SellsyFile:
+    def upload(
+        self,
+        sellsyConnector,
+        logger,
+        filePath,
+        fileName,
+        fileMimetype,
+        directoryId,
+    ):
+
+        files = {
+            "file": (fileName, open(filePath, 'rb'), fileMimetype, {'Expires': '0'}),
+        }
+
+        response = None
+        try:
+            response = sellsyConnector.api2Post(f"/v2/directories/{directoryId}/files", files=files)
+        except SellsyApiError as SAE:
+            logger.warning(SAE)
+
+        return response.text
 
 class SellsyInvoice:
     def __init__(self, invoiceId, docType):

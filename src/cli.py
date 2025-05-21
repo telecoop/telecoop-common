@@ -14,6 +14,7 @@ from telecoopcommon.sellsy import (
     SellsyOpportunity,
     sellsyValues,
     SellsyInvoice,
+    SellsyFile
 )
 #import telecoopcommon
 #from telecoopcommon import *
@@ -79,6 +80,7 @@ additionalCommands = [
     "get-sim-info",
     "get-conso",
     "get-phenix-options",
+    "upload-file",
     "script",
 ]
 
@@ -92,7 +94,7 @@ class Runner(TcRunner):
             self.confSellsy = config["SellsyDev"]
         elif env == "PROD":
             self.confSellsy = config["SellsyProd"]
-        self.confSellsy = config["Sellsy"]
+        # self.confSellsy = config["Sellsy"]
 
     def getBazileConnector(self):
         return BazileConnector(self.config["BazileAPI"], self.logger)
@@ -117,6 +119,19 @@ class Runner(TcRunner):
         else:
             await nConn.connect(self.config["Nats"]["url"])
         return TcNatsConnector(nConn)
+
+    def uploadFile(self):
+        logger = self.logger
+        sc = self.getSellsyConnector()
+        kargs = json.loads(self.getArg("json"))
+        # {"fileName":"toto", "filePath": "/tmp/toto.pdf", "fileMimetype":"application/pdf", "directoryId": "", "directoryType":"opportunity"}
+        upload = SellsyFile.upload( 
+            self,
+            sellsyConnector=sc,
+            logger=logger,
+            **kargs
+        )
+        logger.debug("Upload response: " + upload)
 
     def getClient(self):
         id = self.getArg("Client id")
