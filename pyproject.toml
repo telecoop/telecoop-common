@@ -2,11 +2,9 @@
 name = "telecoopcommon"
 version = "1.26.14"
 description = "TeleCoop common libs"
-authors = [
-    {name = "Pierre Geoffroy",email = "pierreg@telecoop.fr"}
-]
-readme = "README.md"
+authors = [{ name = "Pierre Geoffroy", email = "pierreg@telecoop.fr" }]
 requires-python = ">=3.12.9"
+readme = "README.md"
 dependencies = [
     "sellsy-api (>=0.0.2,<0.0.3)",
     "pytz (>=2025.1,<2026.0)",
@@ -15,15 +13,15 @@ dependencies = [
     "pynacl (>=1.5.0,<2.0.0)",
     "nats-py[nkeys] (>=2.9.0,<3.0.0)",
     "python-dateutil (>=2.9.0.post0,<3.0.0)",
-    "inflection (>=0.5.1,<0.6.0)"
+    "inflection (>=0.5.1,<0.6.0)",
 ]
 
-[tool.poetry]
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
-psycopg2-binary = "^2.9.10"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5,<9",
+    "psycopg2-binary>=2.9.10,<3",
+]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
