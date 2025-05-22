@@ -124,14 +124,15 @@ class Runner(TcRunner):
         logger = self.logger
         sc = self.getSellsyConnector()
         kargs = json.loads(self.getArg("json"))
-        # {"fileName":"toto", "filePath": "/tmp/toto.pdf", "fileMimetype":"application/pdf", "directoryId": "", "directoryType":"opportunity"}
+        # {"fileName":"toto.pdf", "filePath": "/tmp/toto.pdf", "fileMimetype":"application/pdf", "resourceId": "11121827", "resource":"opportunities"}
         upload = SellsyFile.upload( 
             self,
             sellsyConnector=sc,
             logger=logger,
             **kargs
         )
-        logger.debug("Upload response: " + upload)
+        if upload:
+            logger.debug("Upload response: " + upload.text)
 
     def getClient(self):
         id = self.getArg("Client id")

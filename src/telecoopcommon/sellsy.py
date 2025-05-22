@@ -681,7 +681,7 @@ class TcSellsyConnector:
             exc.statusCode = response.status_code
             exc.textError = response.text
             raise exc
-        
+
         return response
 
     def api(self, method, params={}):
@@ -1638,7 +1638,6 @@ class TcSellsyConnector:
         }
         self.api(method="Document.deletePayment", params=params)
 
-
 class SellsyClient:
     def __init__(self, id):
         self.id = id
@@ -1935,7 +1934,6 @@ class SellsyClient:
             connector.updateCustomField(
                 "client", self.id, connector.cfIdStatusClientMobile, status
             )
-
 
 class SellsyOpportunity:
     def __init__(self, id):
@@ -2475,7 +2473,8 @@ class SellsyFile:
         filePath,
         fileName,
         fileMimetype,
-        directoryId,
+        resource,
+        resourceId,
     ):
 
         files = {
@@ -2484,11 +2483,11 @@ class SellsyFile:
 
         response = None
         try:
-            response = sellsyConnector.api2Post(f"/v2/directories/{directoryId}/files", files=files)
+            response = sellsyConnector.api2Post(f"/v2/{resource}/{resourceId}/files", files=files)
         except SellsyApiError as SAE:
             logger.warning(SAE)
 
-        return response.text
+        return response
 
 class SellsyInvoice:
     def __init__(self, invoiceId, docType):
@@ -2842,7 +2841,6 @@ class SellsyInvoice:
             logger.warning(
                 "Cannot enable Stripe because we don't have invoice content in db"
             )
-
 
 def getOpportunity(runner):
     id = runner.getArg("Opportunity id")
