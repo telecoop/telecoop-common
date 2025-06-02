@@ -68,7 +68,7 @@ additionalCommands = ['test', 'my-special-command']
 """
 
 names = glob.glob(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), '*'))
-packages = [os.path.basename(f) for f in names if os.path.isdir(f) and not f.endswith('__pycache__')]
+packages = [os.path.basename(f) for f in names if os.path.isdir(f) and not f.endswith('__pycache__') and not f.endswith('assets')]
 
 
 def toCamelCase(text):
