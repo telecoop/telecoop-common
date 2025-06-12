@@ -53,6 +53,7 @@ sellsyValues = {
             "pro_multi": 158680,
             "last_invoice": 90447,
             "last_creditnote": 90447,
+            "rio_request": 90447,
         },
         "paydate_id": 3691808,
         "new_client_mail_template_id": 62573,
@@ -238,6 +239,7 @@ sellsyValues = {
             "pro_multi": 158963,
             "last_invoice": 57480,
             "last_creditnote": 57483,
+            "rio_request": 126605,
         },
         "paydate_id": 3527781,
         "new_client_mail_template_id": 62591,
@@ -408,6 +410,7 @@ def sourceNameFromId(sourceId: int):
 
 class TcSellsyError(Exception):
     pass
+
 
 class SellsyApiError(Exception):
     statusCode = None
@@ -663,10 +666,12 @@ class TcSellsyConnector:
         self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
         return connector.get(endpoint)
 
-    def api2Post(self, endpoint, json = None, files: dict = None):
+    def api2Post(self, endpoint, json=None, files: dict = None):
         connector = self.getConnector()
         if files:
-            self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with files={files}")
+            self.logger.debug(
+                f"Calling Sellsy API v2 POST {endpoint} with files={files}"
+            )
         else:
             self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with json={json}")
 
@@ -675,9 +680,7 @@ class TcSellsyConnector:
         # see https://requests.reafdthedocs.io/en/latest/user/quickstart/#post-a-multipart-encoded-file
 
         if response.status_code not in [200, 201]:
-            exc = SellsyApiError(
-                f"Got code {response.status_code} \n{response.text}"
-            )
+            exc = SellsyApiError(f"Got code {response.status_code} \n{response.text}")
             exc.statusCode = response.status_code
             exc.textError = response.text
             raise exc
@@ -1638,6 +1641,7 @@ class TcSellsyConnector:
         }
         self.api(method="Document.deletePayment", params=params)
 
+
 class SellsyClient:
     def __init__(self, id):
         self.id = id
@@ -1934,6 +1938,7 @@ class SellsyClient:
             connector.updateCustomField(
                 "client", self.id, connector.cfIdStatusClientMobile, status
             )
+
 
 class SellsyOpportunity:
     def __init__(self, id):
@@ -2303,6 +2308,7 @@ class SellsyOpportunity:
     def isActiveOrSuspended(self, connector):
         return self.isActive(connector) or self.isSuspended(connector)
 
+
 class SellsyMemberOpportunity:
     def __init__(self, id):
         env = os.getenv("ENV", "LOCAL")
@@ -2465,6 +2471,7 @@ class SellsyMemberOpportunity:
 
         return result
 
+
 class SellsyFile:
     def upload(
         self,
@@ -2476,18 +2483,20 @@ class SellsyFile:
         resource,
         resourceId,
     ):
-
         files = {
-            "file": (fileName, open(filePath, 'rb'), fileMimetype, {'Expires': '0'}),
+            "file": (fileName, open(filePath, "rb"), fileMimetype, {"Expires": "0"}),
         }
 
         response = None
         try:
-            response = sellsyConnector.api2Post(f"/v2/{resource}/{resourceId}/files", files=files)
+            response = sellsyConnector.api2Post(
+                f"/v2/{resource}/{resourceId}/files", files=files
+            )
         except SellsyApiError as SAE:
             logger.warning(SAE)
 
         return response
+
 
 class SellsyInvoice:
     def __init__(self, invoiceId, docType):
@@ -2842,6 +2851,7 @@ class SellsyInvoice:
                 "Cannot enable Stripe because we don't have invoice content in db"
             )
 
+
 def getOpportunity(runner):
     id = runner.getArg("Opportunity id")
     sellsyConnector = runner.getSellsyConnector()
@@ -2865,17 +2875,23 @@ def getCustomField(runner):
     syC = runner.getSellsyConnector()
 
     cfName = runner.getArg("Custom field ref")
-    response = syC.api(method="CustomFields.getOne", params={"id": sellsyValues["PROD"]["custom_fields"][cfName]})
+    response = syC.api(
+        method="CustomFields.getOne",
+        params={"id": sellsyValues["PROD"]["custom_fields"][cfName]},
+    )
     print(json.dumps(response, indent=2))
 
 
 def getService(runner):
     syC = runner.getSellsyConnector()
     ref = runner.getArg("Service ref")
-    response = syC.api(method="Catalogue.getOneByRef", params={
-        "type": "service",
-        "ref": ref,
-    })
+    response = syC.api(
+        method="Catalogue.getOneByRef",
+        params={
+            "type": "service",
+            "ref": ref,
+        },
+    )
     print(json.dumps(response, indent=2))
 
 
@@ -2894,8 +2910,12 @@ commands = {
     "test-v2": testV2,
     "get-custom-field": getCustomField,
     "get-service": getService,
-    "get-taxes": lambda runner: print(runner.getSellsyConnector().api(method="AccountDatas.getTaxes", params={})),
-    "get-categories": lambda runner: print(runner.getSellsyConnector().api(method="Catalogue.getCategories", params={})),
+    "get-taxes": lambda runner: print(
+        runner.getSellsyConnector().api(method="AccountDatas.getTaxes", params={})
+    ),
+    "get-categories": lambda runner: print(
+        runner.getSellsyConnector().api(method="Catalogue.getCategories", params={})
+    ),
 }
 
 
