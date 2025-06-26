@@ -24,7 +24,7 @@ class Connector:
     def getToken(self):
         return self.oauth2client.client_credentials()
 
-    def createCode(self, value=None, type="generic", amount="1", description="", dateStart=None, dateEnd=None):
+    def createCode(self, value=None, type="generic", amount="1", scope="monthly", description="", dateStart=None, dateEnd=None):
         if dateStart is None:
             dateStart = pytz.timezone("Europe/Paris").localize(datetime.now())
         if dateEnd is None:
@@ -33,11 +33,13 @@ class Connector:
             "code_type": type,
             "amount": amount,
             "description": description,
-            "dateStart": dateStart.isoformat(),
-            "dateEnd": dateEnd.isoformat,
+            "scope": "scope",
+            "date_start": dateStart.isoformat(),
+            "date_end": dateEnd.isoformat(),
         }
         if value is not None:
             data["value"] = value
+        self.logger.debug(data)
         return self.connector.post(
             "/promo_codes/codes/", json=data, allow_redirects=True
         )
