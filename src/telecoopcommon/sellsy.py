@@ -2645,7 +2645,6 @@ class SellsyInvoice:
         docType = (
             "creditnote" if data["amount"] < 0 and data["isLastInvoice"] else "invoice"
         )
-        docType = "invoice" if data["amount"] >= 0 else "creditnote"
         params = {
             "document": {
                 "doctype": docType,
