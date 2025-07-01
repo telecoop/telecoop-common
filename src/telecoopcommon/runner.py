@@ -284,9 +284,9 @@ def main(appName, runnerClass, defaultPackageName, additionalCommands):
     #os.chdir(root)
 
     env = os.getenv("ENV", "LOCAL")
-    if env in ["DOCKER", "PROD", "TEST", "LOCAL_PROD"]:
+    if env in ["DOCKER", "PROD", "TEST"]:
         confFile = f"/etc/{appName}/conf.cfg"
-    elif env is None or env in ["DEV", "LOCAL"]:
+    elif env is None or env in ["DEV", "LOCAL", "LOCAL_PROD"]:
         confFile = os.path.join("conf/conf.cfg")
     if not os.path.isfile(confFile):
         raise IOError(f"{confFile} : file not found")
