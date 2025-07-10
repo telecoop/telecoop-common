@@ -427,7 +427,7 @@ wheels = [
 
 [[package]]
 name = "telecoopcommon"
-version = "1.27.3"
+version = "1.27.6"
 source = { editable = "." }
 dependencies = [
     { name = "inflection" },

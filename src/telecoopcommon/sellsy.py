@@ -37,6 +37,11 @@ sellsyValues = {
             "Enfant 2": "kid2",
             "Enfant 3": "kid3",
             "Flex": "FLEX",
+            "Transition Pro - 5 Go": "TRAPRO5",
+            "Transition Pro - 20 Go": "TRAPRO20",
+            "Transition Pro - 50 Go": "TRAPRO50",
+            "Transition Pro - 100 Go": "TRAPRO100",
+            "Pro data mutualisée": "MUTPRO",
         },
         "emailTemplates": {
             "default": 158668,
@@ -223,6 +228,11 @@ sellsyValues = {
             "Enfant 2": "kid2",
             "Enfant 3": "kid3",
             "Flex": "FLEX",
+            "Transition Pro - 5 Go": "TRAPRO5",
+            "Transition Pro - 20 Go": "TRAPRO20",
+            "Transition Pro - 50 Go": "TRAPRO50",
+            "Transition Pro - 100 Go": "TRAPRO100",
+            "Pro data mutualisée": "MUTPRO",
         },
         "emailTemplates": {
             "default": 50567,
