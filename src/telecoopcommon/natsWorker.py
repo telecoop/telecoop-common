@@ -12,11 +12,11 @@ class TcNatsConnector:
         self._nCli = nCli
 
     async def publish(self, subject: str, data: dict):
-        payload = json.dumps(data).encode("utf-8")
+        payload = json.dumps(data, default=str).encode("utf-8")
         await self._nCli.publish(subject, payload)
 
     async def request(self, subject: str, data: dict, timeout: int = 10):
-        payload = json.dumps(data).encode("utf-8")
+        payload = json.dumps(data, default=str).encode("utf-8")
         response = await self._nCli.request(subject, payload, timeout=timeout)
         result = json.loads(response.data.decode())
         return result
