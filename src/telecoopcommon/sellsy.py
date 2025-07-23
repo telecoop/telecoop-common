@@ -133,6 +133,7 @@ sellsyValues = {
             "slimpay-reject-reason": 199792,
             "slimpay-payment-status": 199793,
             "depassement-forfait-data": 193085,
+            "choix-facturation": 288915,
         },
         "opportunity_source_interne": 119862,
         "opportunity_source_site_web": 119864,
@@ -324,6 +325,7 @@ sellsyValues = {
             "slimpay-reject-reason": 199780,
             "slimpay-payment-status": 199787,
             "depassement-forfait-data": 193102,
+            "choix-facturation": 289397,
         },
         "opportunity_source_interne": 115933,
         "opportunity_source_site_web": 115935,
@@ -484,6 +486,7 @@ class TcSellsyConnector:
         self.cfidPackInter = customFields["pack-data-roaming-available"]
         self.cfidPackInterUsed = customFields["pack-data-roaming-used"]
         self.cfidSlimpayMandateStatus = customFields["slimpay-mandate-status"]
+        self.cfidInvoicingSetting = customFields["choix-facturation"]
         self.cfidProNbSims = customFields["pro-nb-sims"]
         self.cfidProNbPorta = customFields["pro-nb-porta"]
         self.cfidProDateEngagement = customFields["pro-date-engagement"]
@@ -1990,6 +1993,7 @@ class SellsyOpportunity:
         self.refereeCode = None
         self.packDepannage = None
         self.packDepannageUsed = None
+        self.invoicingSetting = None
         self.proNbSims = None
         self.proNbPorta = None
         self.proDateEngagement = None
@@ -2178,6 +2182,8 @@ class SellsyOpportunity:
                     self.packDepannage = int(field["numericval"])
                 if code == "pack-depannage-utilises":
                     self.packDepannageUsed = int(field["numericval"])
+                if code == "choix-facturation":
+                    self.invoicingSetting = field["formatted_value"]
                 if code == "pro-nb-sims":
                     self.proNbSims = int(field["numericval"])
                 if code == "pro-nb-porta":

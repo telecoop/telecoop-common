@@ -1,6 +1,6 @@
 [project]
 name = "telecoopcommon"
-version = "1.27.6"
+version = "1.27.7"
 description = "TeleCoop common libs"
 authors = [{ name = "Pierre Geoffroy", email = "pierreg@telecoop.fr" }]
 requires-python = ">=3.12.9"
