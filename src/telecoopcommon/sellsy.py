@@ -2645,7 +2645,7 @@ class SellsyInvoice:
 
         modelIds = connector.getModelIds()
         isPro = data["isPro"]
-        modelId = modelIds["Forfait Sobriété"]
+        modelId = modelIds["Forfait mensuelle"]
         if isPro:
             modelId = modelIds["Facture Mensuelle Pro"]
         elif data["isFirstInvoice"]:
@@ -2656,6 +2656,10 @@ class SellsyInvoice:
             "thirdid": data["sellsyClientId"],
         }
         model = connector.api(method="Document.getModel", params=params)
+        params["docid"] = modelIds["Forfait Sobriété"]
+        modelPL750 = connector.api(method="Document.getModel", params=params)
+        params["docid"] = modelIds["Forfait Engagé"]
+        modelFlex = connector.api(method="Document.getModel", params=params)
 
         rateCategories = connector.getRateCategories()
         docType = (
@@ -2672,7 +2676,11 @@ class SellsyInvoice:
                 "enabledPaymentGateways": (
                     data["gateways"] if "gateways" in data else []
                 ),
-                "notes": data["notes"].format(notes=model["notes"]),
+                "notes": data["notes"].format(
+                    notes=model["notes"],
+                    notesPL750=modelPL750["notes"],
+                    notesFlex=modelFlex["notes"],
+                ),
                 "hidePayment": "Y",
                 "rateCategory": (
                     rateCategories["Tarif HT"] if isPro else rateCategories["Tarif TTC"]
