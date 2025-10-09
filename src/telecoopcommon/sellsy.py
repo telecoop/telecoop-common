@@ -817,7 +817,7 @@ class TcSellsyConnector:
                 ],
                 "staffs": [
                     {"id": self.staff["support-client"], "canEdit": "Y"},
-                    {"id": self.staff["support-client-2"], "canEdit": "Y"},
+                    # {"id": self.staff["support-client-2"], "canEdit": "Y"},
                     {"id": self.staff["support-client-3"], "canEdit": "Y"},
                     {"id": self.staff["support-client-4"], "canEdit": "Y"},
                 ],
@@ -2645,7 +2645,7 @@ class SellsyInvoice:
 
         modelIds = connector.getModelIds()
         isPro = data["isPro"]
-        modelId = modelIds["Forfait mensuelle"]
+        modelId = modelIds["Facture mensuelle"]
         if isPro:
             modelId = modelIds["Facture Mensuelle Pro"]
         elif data["isFirstInvoice"]:
