@@ -122,6 +122,7 @@ sellsyValues = {
             "pro-pref-rappel": 184029,
             "pro-nom-utilisateur": 180715,
             "pro-mail-utilisateur": 180716,
+            "pro-service": 288911,
             "pro-palier-suspension": 181292,
             "pro-appels-internationaux": 181282,
             "pro-donnees-mobiles": 181306,
@@ -314,6 +315,7 @@ sellsyValues = {
             "pro-pref-rappel": 184030,
             "pro-nom-utilisateur": 183864,
             "pro-mail-utilisateur": 183865,
+            "pro-service": 289395,
             "pro-palier-suspension": 183860,
             "pro-appels-internationaux": 183871,
             "pro-donnees-mobiles": 183866,
@@ -496,6 +498,7 @@ class TcSellsyConnector:
         self.cfidProPrefRappel = customFields["pro-pref-rappel"]
         self.cfidProNomUtilisateur = customFields["pro-nom-utilisateur"]
         self.cfidProMailUtilisateur = customFields["pro-mail-utilisateur"]
+        self.cfidProService = customFields["pro-service"]
         self.cfidProPalierSuspension = customFields["pro-palier-suspension"]
         self.cfidProAppelInternationaux = customFields["pro-appels-internationaux"]
         self.cfidProDonneesMobiles = customFields["pro-donnees-mobiles"]
