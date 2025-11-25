@@ -903,6 +903,7 @@ class TcSellsyConnector:
             "addr_town": "",
             "addr_countrycode": "",
             "contacts": {},
+            "smartTags": cli["tags"],
         }
         customFields = {
             "refbazile": {"code": "refbazile", "textval": ""},
@@ -1824,6 +1825,11 @@ class SellsyClient:
             self.conversionToClientDate = parisTZ.localize(
                 datetime.fromisoformat(cli["dateTransformProspect"])
             )
+        self.tags = (
+            [t["word"] for _, t in cli["smartTags"].items()]
+            if "smartTags" in cli
+            else []
+        )
         self.actif = actif == "Y" if actif else None
         self.reference = cli["ident"]
         self.type = cli["type"]
@@ -2901,6 +2907,15 @@ def getOpportunity(runner):
     print(o.stepName)
 
 
+def getClient(runner):
+    id = runner.getArg("Client id")
+    sellsyConnector = runner.getSellsyConnector()
+    c = SellsyClient(id)
+    c.load(sellsyConnector)
+    print(c)
+    print(c.tags)
+
+
 def getCustomField(runner):
     syC = runner.getSellsyConnector()
 
@@ -2933,6 +2948,7 @@ def testV2(runner):
 
 
 commands = {
+    "get-client": lambda runner: getClient(runner),
     "get-opportunity": lambda runner: getOpportunity(runner),
     "get-services": lambda runner: print(
         json.dumps(runner.getSellsyConnector().getServices(), indent=2)

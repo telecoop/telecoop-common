@@ -92,7 +92,7 @@ class Runner(TcRunner):
 
         if env in ["DEV", "LOCAL", "DOCKER"]:
             self.confSellsy = config["SellsyDev"]
-        elif env == "PROD":
+        elif env in ["PROD", "LOCAL_PROD"]:
             self.confSellsy = config["SellsyProd"]
         # self.confSellsy = config["Sellsy"]
 
