@@ -13,8 +13,8 @@ from telecoopcommon.natsWorker import TcNatsConnector
 from telecoopcommon.operator import Connector as TelecomConnector
 from telecoopcommon.runner import TcRunner, main
 
-#import telecoopcommon
-#from telecoopcommon import *
+# import telecoopcommon
+# from telecoopcommon import *
 from telecoopcommon.sellsy import (
     SellsyClient,
     SellsyFile,
@@ -126,12 +126,7 @@ class Runner(TcRunner):
         sc = self.getSellsyConnector()
         kargs = json.loads(self.getArg("json"))
         # {"fileName":"toto.pdf", "filePath": "/tmp/toto.pdf", "fileMimetype":"application/pdf", "resourceId": "11121827", "resource":"opportunities"}
-        upload = SellsyFile.upload( 
-            self,
-            sellsyConnector=sc,
-            logger=logger,
-            **kargs
-        )
+        upload = SellsyFile.upload(self, sellsyConnector=sc, logger=logger, **kargs)
         if upload:
             logger.debug("Upload response: " + upload.text)
 

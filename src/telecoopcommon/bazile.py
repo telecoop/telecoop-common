@@ -74,7 +74,7 @@ class Connector:
             except BazileError as excp:
                 if response.status_code in [503, 502] and retry >= 1:
                     # When too many calls on Bazile API, we get a 503 error, waiting some time solves the problem
-                    self.logger.info(f"Retrying {3-retry+1}/3")
+                    self.logger.info(f"Retrying {3 - retry + 1}/3")
                     retry -= 1
                     sleep(5)
                     continue
