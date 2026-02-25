@@ -23,7 +23,7 @@ dev = [
 ]
 
 [tool.ruff.lint]
-select = ["I"]
+extend-select = ["I"]
 
 [tool.basedpyright]
 extraPaths = ["src"]

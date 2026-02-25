@@ -1,9 +1,10 @@
 import asyncio
-import signal
-import json
-import inflection
-import traceback
 import inspect
+import json
+import signal
+import traceback
+
+import inflection
 from nats.aio.client import Client as NATS
 
 

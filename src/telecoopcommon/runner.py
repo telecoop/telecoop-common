@@ -30,23 +30,20 @@ modules = [
 ]
 ```
 """
-import sys
-import os
-import importlib
-import glob
-
-from . import logs
-
-# import phonenumbers
-import traceback
-from datetime import datetime, date
-
-from . import modules
-from .cursor import TcCursor
-
 # Script utils
 import argparse
 import configparser
+import glob
+import importlib
+import os
+import sys
+
+# import phonenumbers
+import traceback
+from datetime import date, datetime
+
+from . import logs, modules
+from .cursor import TcCursor
 
 """ Exemple
 modules = {

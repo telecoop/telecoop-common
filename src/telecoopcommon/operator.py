@@ -1,10 +1,13 @@
 import json
-import pytz
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from time import sleep
+
+import pytz
 import requests
-from .bazile import Connector as BazileConnector, BazileError
+from dateutil.relativedelta import relativedelta
+
+from .bazile import BazileError
+from .bazile import Connector as BazileConnector
 
 
 class GsmLine:

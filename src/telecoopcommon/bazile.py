@@ -1,7 +1,8 @@
 import json
 from datetime import datetime
-from time import sleep
 from enum import Enum
+from time import sleep
+
 import requests
 
 

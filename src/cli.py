@@ -2,28 +2,29 @@
 # -*- coding: utf-8 -*-
 
 import json
-
-import pytz
-import psycopg2
-from nats import NATS
 from datetime import datetime
 
-from telecoopcommon.sellsy import (
-    TcSellsyConnector,
-    SellsyClient,
-    SellsyOpportunity,
-    sellsyValues,
-    SellsyInvoice,
-    SellsyFile
-)
+import psycopg2
+import pytz
+from nats import NATS
+
+from telecoopcommon.bazile import Connector as BazileConnector
+from telecoopcommon.natsWorker import TcNatsConnector
+from telecoopcommon.operator import Connector as TelecomConnector
+from telecoopcommon.runner import TcRunner, main
+
 #import telecoopcommon
 #from telecoopcommon import *
-from telecoopcommon.sellsy import SellsyMemberOpportunity
+from telecoopcommon.sellsy import (
+    SellsyClient,
+    SellsyFile,
+    SellsyInvoice,
+    SellsyMemberOpportunity,
+    SellsyOpportunity,
+    TcSellsyConnector,
+    sellsyValues,
+)
 from telecoopcommon.telecoop import Connector as TcConnector
-from telecoopcommon.operator import Connector as TelecomConnector
-from telecoopcommon.bazile import Connector as BazileConnector
-from telecoopcommon.runner import TcRunner, main
-from telecoopcommon.natsWorker import TcNatsConnector
 
 serviceName = "telecoop-common"
 defaultPackageName = "telecoopcommon"

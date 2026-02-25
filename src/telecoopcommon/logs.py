@@ -1,9 +1,8 @@
 # script utils
+import datetime as dt
 import logging
 import logging.handlers
 import os
-
-import datetime as dt
 
 
 class MillisecondFormatter(logging.Formatter):
