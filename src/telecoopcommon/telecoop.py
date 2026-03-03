@@ -1,7 +1,8 @@
-import pytz
 from datetime import datetime
+
+import pytz
 from dateutil.relativedelta import relativedelta
-from requests_oauth2client import OAuth2Client, ApiClient
+from requests_oauth2client import ApiClient, OAuth2Client
 from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
 
 
@@ -24,11 +25,22 @@ class Connector:
     def getToken(self):
         return self.oauth2client.client_credentials()
 
-    def createCode(self, value=None, type="generic", amount="1", scope="monthly", description="", dateStart=None, dateEnd=None):
+    def createCode(
+        self,
+        value=None,
+        type="generic",
+        amount="1",
+        scope="monthly",
+        description="",
+        dateStart=None,
+        dateEnd=None,
+    ):
         if dateStart is None:
             dateStart = pytz.timezone("Europe/Paris").localize(datetime.now())
         if dateEnd is None:
-            dateEnd = pytz.timezone("Europe/Paris").localize(datetime.now()) + relativedelta(years=1)
+            dateEnd = pytz.timezone("Europe/Paris").localize(
+                datetime.now()
+            ) + relativedelta(years=1)
         data = {
             "code_type": type,
             "amount": amount,

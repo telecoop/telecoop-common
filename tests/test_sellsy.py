@@ -1,7 +1,9 @@
 import configparser
+from datetime import datetime
+
 import pytest
 import pytz
-from datetime import datetime
+
 from telecoopcommon import sellsy
 
 confFile = "/etc/telecoop-common/conf.cfg"

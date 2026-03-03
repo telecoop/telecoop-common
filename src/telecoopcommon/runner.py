@@ -1,4 +1,4 @@
-""" Runner to be used as main entrypoint in TeleCoop backend projects
+"""Runner to be used as main entrypoint in TeleCoop backend projects
 
 Put this in manage.py or equivalent :
 ```
@@ -30,23 +30,23 @@ modules = [
 ]
 ```
 """
-import sys
-import os
-import importlib
-import glob
-
-from . import logs
-
-# import phonenumbers
-import traceback
-from datetime import datetime, date
-
-from . import modules
-from .cursor import TcCursor
 
 # Script utils
 import argparse
 import configparser
+import glob
+import importlib
+import os
+import sys
+
+# import phonenumbers
+import traceback
+from abc import ABC
+from datetime import date, datetime
+from types import ModuleType
+
+from . import logs
+from .cursor import TcCursor
 
 """ Exemple
 modules = {
@@ -67,8 +67,12 @@ modules = {
 additionalCommands = ['test', 'my-special-command']
 """
 
-names = glob.glob(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), '*'))
-packages = [os.path.basename(f) for f in names if os.path.isdir(f) and not f.endswith('__pycache__') and not f.endswith('assets')]
+names = glob.glob(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "*"))
+packages = [
+    os.path.basename(f)
+    for f in names
+    if os.path.isdir(f) and not f.endswith("__pycache__") and not f.endswith("assets")
+]
 
 
 def toCamelCase(text):
@@ -98,15 +102,19 @@ def cmdline(defaultPackageName, additionalCommands=[]):
         choices=[
             f"{module}:{c}" if p == defaultPackageName else f"{p}:{module}:{c}"
             for p in packages
-            for module in getattr(importlib.import_module(p), "modules") # {package}.modules defined in __init__.py
-            if hasattr(importlib.import_module(f".{module}", p), "commands") # only if module exposes some commands
+            for module in getattr(
+                importlib.import_module(p), "modules"
+            )  # {package}.modules defined in __init__.py
+            if hasattr(
+                importlib.import_module(f".{module}", p), "commands"
+            )  # only if module exposes some commands
             for c in getattr(importlib.import_module(f".{module}", p), "commands")
-            #for moduleRef, module in modules.items()
-            #for p in module["module"].__all__
-            #if p not in module["excluded"]
-            #for c in getattr(
+            # for moduleRef, module in modules.items()
+            # for p in module["module"].__all__
+            # if p not in module["excluded"]
+            # for c in getattr(
             #    importlib.import_module(f".{p}", package=module["name"]), "commands"
-            #)
+            # )
         ]
         + additionalCommands,
         help="command",
@@ -117,15 +125,16 @@ def cmdline(defaultPackageName, additionalCommands=[]):
     return parser.parse_args()
 
 
-class TcRunner:
+class TcRunner(ABC):
+    postgres: ModuleType
+
     def __init__(self, env, config, logger, args, defaultPackageName):
         self.config = config
         self.logger = logger
         self.args = args
         self.noConfirm = None
-        self.postgres = None
         self.defaultPackageName = defaultPackageName
-        #self.modules = modules
+        # self.modules = modules
 
         self.env = "PROD" if env == "PROD" else "DEV"
 
@@ -281,7 +290,7 @@ def main(appName, runnerClass, defaultPackageName, additionalCommands):
 
     fileDir = os.path.dirname(os.path.realpath(__file__))
     root = fileDir
-    #os.chdir(root)
+    # os.chdir(root)
 
     env = os.getenv("ENV", "LOCAL")
     if env in ["DOCKER", "PROD", "TEST"]:
@@ -293,7 +302,9 @@ def main(appName, runnerClass, defaultPackageName, additionalCommands):
     config = configparser.ConfigParser()
     config.read(confFile)
 
-    logger = logs.initLogs(appName, config["Log"], args.log_level, consoleOnly=args.console_only)
+    logger = logs.initLogs(
+        appName, config["Log"], args.log_level, consoleOnly=args.console_only
+    )
 
     runner = runnerClass(env, config, logger, args, defaultPackageName)
 
