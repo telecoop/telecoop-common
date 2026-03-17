@@ -140,7 +140,9 @@ class TcNatsHandler:
         await cls.process(subject, rawData, reply, connectors, nCli, logger, mock=True)
 
 
-async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
+async def worker(
+    natsUrl, topic, queue, handler, logger, connectors={}, cred=None
+) -> NATS:
     nCli = NATS()
 
     async def stop():
@@ -182,6 +184,9 @@ async def worker(natsUrl, topic, queue, handler, logger, connectors={}, cred=Non
 
     logger.info("Awaiting messages")
     await nCli.subscribe(topic, queue, msgHandler)
+
+    # return nats cli. Usefull for manually closing it if needed
+    return nCli
 
 
 def launchWorker(natsUrl, topic, queue, handler, logger, connectors={}, cred=None):
