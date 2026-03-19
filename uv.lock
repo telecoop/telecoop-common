@@ -563,6 +563,7 @@ dependencies = [
 dev = [
     { name = "psycopg", extra = ["binary"] },
     { name = "pytest" },
+    { name = "pytz" },
 ]
 
 [package.metadata]
@@ -581,6 +582,7 @@ requires-dist = [
 dev = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.3" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
+    { name = "pytz", specifier = ">=2025.2" },
 ]
 
 [[package]]

@@ -20,6 +20,7 @@ dependencies = [
 dev = [
     "psycopg[binary]>=3.3.3",
     "pytest>=8.3.5,<9",
+    "pytz>=2025.2",
 ]
 
 [tool.ruff.lint]
