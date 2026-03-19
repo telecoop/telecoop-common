@@ -18,8 +18,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "psycopg[binary]>=3.3.3",
     "pytest>=8.3.5,<9",
-    "psycopg2-binary>=2.9.10,<3",
 ]
 
 [tool.ruff.lint]
