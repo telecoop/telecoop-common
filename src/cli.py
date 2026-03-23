@@ -4,7 +4,7 @@
 import json
 from datetime import datetime
 
-import psycopg2
+import psycopg
 import pytz
 from nats import NATS
 
@@ -89,7 +89,7 @@ additionalCommands = [
 class Runner(TcRunner):
     def __init__(self, env, config, logger, args, modules):
         super().__init__(env, config, logger, args, modules)
-        self.postgres = psycopg2
+        self.postgres = psycopg
 
         if env in ["DEV", "LOCAL", "DOCKER"]:
             self.confSellsy = config["SellsyDev"]
