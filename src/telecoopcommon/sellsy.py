@@ -1827,7 +1827,7 @@ class SellsyClient:
             )
         self.tags = (
             [t["word"] for _, t in cli["smartTags"].items()]
-            if "smartTags" in cli
+            if "smartTags" in cli and cli["smartTags"] != []
             else []
         )
         self.actif = actif == "Y" if actif else None
