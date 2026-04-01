@@ -19,7 +19,13 @@ class TcCursor:
         return self._cursor.fetchone()
 
     def copy_expert(self, query, file):
-        return self._cursor.copy_expert(query, file)
+        result = None
+        if hasattr(self._cursor, "copy_expert"):
+            result = self._cursor.copy_expert(query, file)
+        else:
+            with self._cursor.copy(query) as copy:
+                copy.write(file.read())
+        return result
 
     def __iter__(self):
         return iter(self._cursor)
