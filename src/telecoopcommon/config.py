@@ -52,7 +52,6 @@ class TcConfig(dict):
         prefix = "TC_"
 
         for key in sorted(os.environ):
-            print(key)
             if not key.startswith(prefix):
                 continue
 
