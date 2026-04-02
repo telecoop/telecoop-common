@@ -140,12 +140,12 @@ class TcRunner(ABC):
 
         self.dbConnStrs = {}
 
-        for section in config.sections():
+        for section in config.keys():
             if section[0:3] == "Bdd":
                 connName = section[3:].lower() if section[3:] else "main"
                 connStr = []
-                for cnf in config.items(section):
-                    connStr.append(f"{cnf[0]}={cnf[1]}")
+                for cnf, val in config[section].items():
+                    connStr.append(f"{cnf}={val}")
                 self.dbConnStrs[connName] = connStr
 
     def getArg(self, name, type="str", help=None):
