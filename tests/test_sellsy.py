@@ -5,16 +5,18 @@ import pytest
 import pytz
 
 from telecoopcommon import sellsy
-
-confFile = "/etc/telecoop-common/conf.cfg"
-config = configparser.ConfigParser()
-config.read(confFile)
+from telecoopcommon.config import TcConfig
 
 parisTZ = pytz.timezone("Europe/Paris")
 
 clientIdPG = 34246953
 opportunityIdPG = 5366993
 clientIdNoOpportunity = 33309487
+
+
+@pytest.fixture(scope="module")
+def test_config() -> dict:
+    return TcConfig()
 
 
 class Logger:
@@ -32,8 +34,8 @@ class Logger:
 
 
 @pytest.fixture(scope="module")
-def test_connector():
-    return sellsy.TcSellsyConnector(config["SellsyDev"], Logger())
+def test_connector(test_config):
+    return sellsy.TcSellsyConnector(test_config["SellsyDev"], Logger())
 
 
 def test_get_opportunity(test_connector):

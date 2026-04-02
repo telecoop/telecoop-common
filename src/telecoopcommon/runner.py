@@ -33,7 +33,6 @@ modules = [
 
 # Script utils
 import argparse
-import configparser
 import glob
 import importlib
 import os
@@ -46,6 +45,7 @@ from datetime import date, datetime
 from types import ModuleType
 
 from . import logs
+from .config import TcConfig
 from .cursor import TcCursor
 
 """ Exemple
@@ -287,20 +287,8 @@ class TcRunner(ABC):
 
 def main(appName, runnerClass, defaultPackageName, additionalCommands):
     args = cmdline(defaultPackageName, additionalCommands)
-
-    fileDir = os.path.dirname(os.path.realpath(__file__))
-    root = fileDir
-    # os.chdir(root)
-
+    config = TcConfig(appName)
     env = os.getenv("ENV", "LOCAL")
-    if env in ["DOCKER", "PROD", "TEST"]:
-        confFile = f"/etc/{appName}/conf.cfg"
-    elif env is None or env in ["DEV", "LOCAL", "LOCAL_PROD"]:
-        confFile = os.path.join("conf/conf.cfg")
-    if not os.path.isfile(confFile):
-        raise IOError(f"{confFile} : file not found")
-    config = configparser.ConfigParser()
-    config.read(confFile)
 
     logger = logs.initLogs(
         appName, config["Log"], args.log_level, consoleOnly=args.console_only
