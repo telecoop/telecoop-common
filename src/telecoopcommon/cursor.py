@@ -24,8 +24,14 @@ class TcCursor:
             result = self._cursor.copy_expert(query, file)
         else:
             with self._cursor.copy(query) as copy:
-                copy.write(file.read())
+                if "TO STDOUT" in query or "to stdout" in query:
+                    file.write(copy.read())
+                elif "FROM STDIN" in query or "from stdin" in query:
+                    copy.write(file.read())
         return result
+
+    def copy(self, query):
+        return self._cursor.copy(query)
 
     def __iter__(self):
         return iter(self._cursor)
