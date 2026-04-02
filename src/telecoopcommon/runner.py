@@ -285,14 +285,12 @@ class TcRunner(ABC):
         self.execWithLogs(arg, func, noLog, *args)
 
 
-def main(appName, runnerClass, defaultPackageName, additionalCommands):
+def main(runnerClass, defaultPackageName, additionalCommands):
     args = cmdline(defaultPackageName, additionalCommands)
-    config = TcConfig(appName)
+    config = TcConfig()
     env = os.getenv("ENV", "LOCAL")
 
-    logger = logs.initLogs(
-        appName, config["Log"], args.log_level, consoleOnly=args.console_only
-    )
+    logger = logs.initLogs(config["Log"], args.log_level, consoleOnly=args.console_only)
 
     runner = runnerClass(env, config, logger, args, defaultPackageName)
 
