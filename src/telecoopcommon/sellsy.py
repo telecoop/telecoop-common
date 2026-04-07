@@ -1473,9 +1473,13 @@ class TcSellsyConnector:
                     "nbperpage": 500,
                 },
             }
-            services = self.api(method="Catalogue.getList", params=params)
+            response = self.api(method="Catalogue.getList", params=params)
+            services = response["result"]
+            params["type"] = "item"
+            response = self.api(method="Catalogue.getList", params=params)
+            services |= response["result"]
             data = {}
-            for id, service in services["result"].items():
+            for _id, service in services.items():
                 if "name" in service:
                     data[service["name"]] = {
                         "id": service["id"],
