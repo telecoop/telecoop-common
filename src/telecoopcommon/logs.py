@@ -34,7 +34,7 @@ def getLogLevel(strLevel):
     return logLevel
 
 
-def initLogs(appName, config, strDesiredLogLevel, consoleOnly=False):
+def initLogs(config, strDesiredLogLevel, consoleOnly=False):
     logLevel = None
     if strDesiredLogLevel == "CONFIG":
         logLevel = getLogLevel(config["log-level"])
@@ -44,11 +44,11 @@ def initLogs(appName, config, strDesiredLogLevel, consoleOnly=False):
     logLevel = logLevel or logging.WARNING
 
     # create logger
-    logger = logging.getLogger(appName)
+    logger = logging.getLogger("app")
     logger.setLevel(logLevel)
 
     if not consoleOnly:
-        logfile = os.path.join(config["folder"], f"{appName}.log")
+        logfile = os.path.join(config["folder"], "app.log")
         ch = logging.handlers.TimedRotatingFileHandler(logfile, when="D", utc=True)
         ch.setLevel(logLevel)
         # create formatter
