@@ -236,6 +236,7 @@ class TcRunner(ABC):
         try:
             func(*args, **kargs)
         except Exception as excp:
+            cursorLogs = self.getCursor("logs")
             tbk = traceback.format_exc()
             errorMessage = f"{excp}\n{tbk}"
             query = """
@@ -249,6 +250,7 @@ class TcRunner(ABC):
                 cursorLogs.execute(query, [errorMessage, logId])
             raise excp
         if not noLog:
+            cursorLogs = self.getCursor("logs")
             cursorLogs.execute(
                 "UPDATE monitoring.service_log SET end_date = now(), status = 'OK' WHERE id = %s",
                 [
