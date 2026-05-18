@@ -22,12 +22,10 @@ class TcConfig(dict):
         elif env == "DEV":
             confFile = os.path.join(fileDir, "conf/conf-dev.cfg")
 
-        if not os.path.isfile(confFile):
-            raise IOError("{} : file not found".format(confFile))
-
-        config.read(confFile)
-        for key, value in config.items():
-            self[key] = value
+        if os.path.isfile(confFile):
+            config.read(confFile)
+            for key, value in config.items():
+                self[key] = value
 
         # override with prefixed env
         self.from_prefixed_env()
