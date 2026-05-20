@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from time import sleep
 
 import pytz
@@ -105,9 +105,13 @@ class PhenixConnector:
         self.logger = logger
 
         self.token = None
+        self.token_expiry_date = None
 
-    def getToken(self):
-        if self.token is None:
+    def getToken(self) -> str:
+        now = datetime.now(tz=timezone.utc)
+        if self.token is None or (
+            self.token_expiry_date is None or self.token_expiry_date < now
+        ):
             data = {"username": self.login, "password": self.password}
             url = self.host + "/Auth/authenticate"
             response = requests.post(url, json=data, timeout=30)
@@ -120,6 +124,7 @@ class PhenixConnector:
                 )
                 raise PhenixError("Non JSON response") from excp
             self.token = jsonResp["access_token"]
+            self.token_expiry_date = now + timedelta(seconds=jsonResp["expires_in"])
 
         self.logger.debug(f"Token is {self.token[:10]}…")
         return self.token
