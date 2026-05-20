@@ -4,3 +4,5 @@ conf/*creds
 var
 __pycache__
 venv/
+.coverage
+coverage.xml
