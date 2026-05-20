@@ -18,9 +18,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "freezegun>=1.5.5",
     "psycopg[binary]>=3.3.3",
     "pytest>=8.3.5,<9",
     "pytz>=2025.2",
+    "responses>=0.26.0",
 ]
 
 [tool.ruff.lint]
