@@ -182,7 +182,7 @@ async def worker(
         logger.info(f"Received message {subject} {reply} - {data}")
         await handler(subject, data, reply, connectors, TcNatsConnector(nCli), logger)
 
-    logger.info("Awaiting messages")
+    logger.info(f"Awaiting messages for {topic} (queue {queue})")
     await nCli.subscribe(topic, queue, msgHandler)
 
     # return nats cli. Usefull for manually closing it if needed

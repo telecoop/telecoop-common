@@ -37,7 +37,7 @@ def getLogLevel(strLevel):
 def initLogs(serviceName, config, strDesiredLogLevel, consoleOnly=False):
     logLevel = None
     if strDesiredLogLevel == "CONFIG":
-        logLevel = getLogLevel(config["log-level"])
+        logLevel = getLogLevel(config["log_level"])
     else:
         logLevel = getLogLevel(strDesiredLogLevel)
 
