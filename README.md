@@ -1,3 +1,5 @@
+![coverage](https://gitlab.it.telecoop.fr/telecoop/backend/telecoop-common/badges/master/coverage.svg)
+
 # TeleCoop Common Tools
 
 This project provides :
