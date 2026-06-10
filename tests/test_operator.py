@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import pytest
-import requests
 import responses
 from freezegun import freeze_time
 
