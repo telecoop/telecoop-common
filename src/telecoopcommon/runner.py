@@ -278,7 +278,7 @@ class TcRunner(ABC):
 
     async def execWithLogsAsync(
         self, command: str, func: Callable, noLog: bool, *args, **kargs
-    ):
+    ) -> None:
         cursorLogs = self.getCursor("logs")
         logId = self.checkLogs(command, cursorLogs, noLog)
         try:
