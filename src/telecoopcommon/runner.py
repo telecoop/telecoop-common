@@ -31,16 +31,14 @@ modules = [
 ```
 """
 
-# Script utils
 import argparse
 import glob
 import importlib
 import os
 import sys
-
-# import phonenumbers
 import traceback
 from abc import ABC
+from collections.abc import Callable
 from datetime import date, datetime
 from types import ModuleType
 
@@ -180,7 +178,7 @@ class TcRunner(ABC):
             value = valueStr
         return value
 
-    def getCursor(self, db="main"):
+    def getCursor(self, db: str = "main"):
         connStr = self.dbConnStrs[db]
         self.logger.debug(f"Connection to {' '.join(connStr)}")
         if self.postgres.__version__[0] == "3":
@@ -197,7 +195,7 @@ class TcRunner(ABC):
         tcCursor.execute("SET SESSION timezone = 'Europe/Paris'")
         return tcCursor
 
-    def confirm(self, question="Confirm ?"):
+    def confirm(self, question: str = "Confirm ?"):
         if self.noConfirm is None:
             self.noConfirm = False
         answered = False
@@ -215,8 +213,13 @@ class TcRunner(ABC):
 
         return confirmed
 
-    def execWithLogs(self, command, func, noLog, *args, **kargs):
+    def checkLogs(self, command: str, cursorLogs: TcCursor, noLog: bool) -> int | None:
+        """Check from service logs if service is already running.
+        If noLog is False, insert a new line into service logs
+        """
         cursorLogs = self.getCursor("logs")
+        logId = None
+
         # checking if command is already running
         query = "SELECT count(*) FROM monitoring.service_log WHERE service_name = %s AND status = 'pending'"
         cursorLogs.execute(query, [command])
@@ -225,6 +228,7 @@ class TcRunner(ABC):
             self.logger.warning(f"Command {command} is already running")
             return
 
+        # insert new line in service logs
         if not noLog:
             cursorLogs.execute(
                 "INSERT INTO monitoring.service_log (service_name, status) VALUES (%s, 'pending') RETURNING id",
@@ -233,22 +237,25 @@ class TcRunner(ABC):
                 ],
             )
             (logId,) = cursorLogs.fetchone()
-        try:
-            func(*args, **kargs)
-        except Exception as excp:
-            cursorLogs = self.getCursor("logs")
-            tbk = traceback.format_exc()
-            errorMessage = f"{excp}\n{tbk}"
-            query = """
-              UPDATE monitoring.service_log
-                 SET end_date = now(),
-                     status = 'error',
-                     error_message = %s
-               WHERE id = %s
-            """
-            if not noLog:
-                cursorLogs.execute(query, [errorMessage, logId])
-            raise excp
+        return logId
+
+    def handleExcp(
+        self, excp: Exception, cursorLogs: TcCursor, noLog: bool, logId: int | None
+    ):
+        tbk = traceback.format_exc()
+        errorMessage = f"{excp}\n{tbk}"
+        query = """
+            UPDATE monitoring.service_log
+                SET end_date = now(),
+                    status = 'error',
+                    error_message = %s
+            WHERE id = %s
+        """
+        if not noLog:
+            cursorLogs.execute(query, [errorMessage, logId])
+        raise excp
+
+    def updateLog(self, logId: int | None, noLog: bool, cursorLogs: TcCursor) -> None:
         if not noLog:
             cursorLogs = self.getCursor("logs")
             cursorLogs.execute(
@@ -258,7 +265,37 @@ class TcRunner(ABC):
                 ],
             )
 
-    def execute(self, arg, noLog=False):
+    def execWithLogs(
+        self, command: str, func: Callable, noLog: bool, *args, **kargs
+    ) -> None:
+        cursorLogs = self.getCursor("logs")
+        logId = self.checkLogs(command, cursorLogs, noLog)
+        try:
+            func(*args, **kargs)
+        except Exception as excp:
+            self.handleExcp(excp, cursorLogs, noLog, logId)
+        self.updateLog(logId, noLog, cursorLogs)
+
+    async def execWithLogsAsync(
+        self, command: str, func: Callable, noLog: bool, *args, **kargs
+    ):
+        cursorLogs = self.getCursor("logs")
+        logId = self.checkLogs(command, cursorLogs, noLog)
+        try:
+            await func(*args, **kargs)
+        except Exception as excp:
+            self.handleExcp(excp, cursorLogs, noLog, logId)
+        self.updateLog(logId, noLog, cursorLogs)
+
+    def execute(self, arg: str, noLog: bool = False) -> None:
+        """Executes a command
+
+        There are three forms of commands :
+        1. command-name : only one keyword, command must be defined in the child runner object
+        2. module:command-name : two keywords, the first being the module in wiche the command is defined
+        3. package:module:command-name : three keywords, same as above, but with a package-name
+        """
+
         operands = arg.split(":")
         module = None
         command = None
