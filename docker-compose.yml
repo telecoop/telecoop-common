@@ -19,7 +19,7 @@ services:
       - 4222:4222
 
   postgres-logs:
-    image: postgres:13
+    image: postgres:16
     ports:
       - 5439:5432
     environment:
@@ -30,7 +30,7 @@ services:
       - ./docker/postgres-logs/initdb:/docker-entrypoint-initdb.d
 
   testDb:
-    image: postgres:13
+    image: postgres:16
     ports:
       - 5438:5432
     environment:
