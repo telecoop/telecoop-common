@@ -12,9 +12,6 @@ from telecoopcommon.bazile import Connector as BazileConnector
 from telecoopcommon.natsWorker import TcNatsConnector
 from telecoopcommon.operator import Connector as TelecomConnector
 from telecoopcommon.runner import TcRunner, main
-
-# import telecoopcommon
-# from telecoopcommon import *
 from telecoopcommon.sellsy import (
     SellsyClient,
     SellsyFile,
@@ -253,7 +250,7 @@ class Runner(TcRunner):
         cli = SellsyClient.create(values, sc)
         print(cli)
 
-    def getInvoice(self):
+    def getInvoice(self) -> None:
         invoiceId = self.getArg("Invoice id")
         docType = self.getArg("Doc type")
         invoice = SellsyInvoice(invoiceId, docType)
@@ -262,7 +259,7 @@ class Runner(TcRunner):
         print(invoice.docType)
         print(invoice.payMediums)
 
-    def getInvoices(self):
+    def getInvoices(self) -> None:
         searchParams = None
         if len(self.args.arguments) > 0:
             invoiceStatus = self.getArg("Invoice status")
@@ -282,17 +279,17 @@ class Runner(TcRunner):
         )
         print(invoices)
 
-    def updateInvoiceStatus(self):
+    def updateInvoiceStatus(self) -> None:
         invoiceId = self.getArg("Invoice id")
         status = self.getArg("Status")
         self.getSellsyConnector().updateInvoiceStatus(invoiceId, status)
 
-    def updateInvoicePaydate(self):
+    def updateInvoicePaydate(self) -> None:
         invoiceId = self.getArg("Invoice id")
         nbDays = self.getArg("Nb days")
         self.getSellsyConnector().updateInvoicePaymentDate(invoiceId, nbDays)
 
-    def sendInvoice(self):
+    def sendInvoice(self) -> None:
         invoiceId = self.getArg("Invoice id")
         docType = self.getArg("Doc Type")
         email = self.getArg("email")
@@ -304,7 +301,7 @@ class Runner(TcRunner):
         invoice.load(syC)
         invoice.sendByMail(email, syC, templateId)
 
-    def createPayment(self):
+    def createPayment(self) -> None:
         invoiceId = self.getArg("Invoice id")
         docType = self.getArg("Doc type")
         amount = float(self.getArg("Amount"))
@@ -315,13 +312,13 @@ class Runner(TcRunner):
         )
         print(paymentId)
 
-    def deletePayment(self):
+    def deletePayment(self) -> None:
         paymentId = self.getArg("Payment id")
         invoiceId = self.getArg("Invoice id")
         docType = self.getArg("Doc type")
         self.getSellsyConnector().deletePayment(paymentId, invoiceId, docType)
 
-    def getMemberOpp(self):
+    def getMemberOpp(self) -> None:
         opportunityId = self.getArg("Opportunity id")
         opp = SellsyMemberOpportunity(opportunityId)
         opp.load(self.getSellsyConnector())
@@ -330,21 +327,21 @@ class Runner(TcRunner):
             f"{opp.sharesAmount} {opp.paymentDate} {opp.acceptedDate} {opp.formSentDate}"
         )
 
-    def getMemberOpps(self):
+    def getMemberOpps(self) -> None:
         opps = SellsyMemberOpportunity.getOpportunities(
             self.getSellsyConnector(), self.logger
         )
         print(len(opps))
         print(next(iter(opps)))
 
-    def updateClient(self):
+    def updateClient(self) -> None:
         id = self.getArg("Client id")
         prop = self.getArg("Property")
         value = self.getArg("Property value")
         response = self.getSellsyConnector().updateClientProperty(id, prop, value)
         print(response)
 
-    def updateCf(self):
+    def updateCf(self) -> None:
         env = "PROD" if self.env == "PROD" else "DEV"
         entity = self.getArg("entity")
         id = self.getArg("Entity id")
@@ -358,16 +355,16 @@ class Runner(TcRunner):
         response = self.getSellsyConnector().updateCustomField(entity, id, cfid, value)
         print(response)
 
-    def getTcToken(self):
+    def getTcToken(self) -> None:
         response = self.getTelecoopConnector().getToken()
         print(response.text)
 
-    def getCode(self):
+    def getCode(self) -> None:
         code = self.getArg("code")
         response = self.getTelecoopConnector().getCode(code)
         print(response.text)
 
-    def getCodes(self):
+    def getCodes(self) -> None:
         codeType = self.getArg("code type")
         codeType = int(codeType) if codeType != "-" else None
         response = self.getTelecoopConnector().getCodes(codeType=codeType)
@@ -375,7 +372,7 @@ class Runner(TcRunner):
         print(response.json())
         print([c["value"] for c in response.json()])
 
-    def createCode(self):
+    def createCode(self) -> None:
         type = self.getArg("code type")
         amount = self.getArg("code amount")
         value = None
@@ -386,24 +383,24 @@ class Runner(TcRunner):
         )
         print(response.text)
 
-    def getSponsorshipCode(self):
+    def getSponsorshipCode(self) -> None:
         clientRef = self.getArg("Client ref")
         response = self.getTelecoopConnector().getSponsorshipCode(clientRef)
         print(response.text)
 
-    def linkToReferee(self):
+    def linkToReferee(self) -> None:
         referee = self.getArg("Referee")
         clientRef = self.getArg("Client ref")
         response = self.getTelecoopConnector().linkToReferee(referee, clientRef)
         print(response.text)
 
-    def appliedToReferee(self):
+    def appliedToReferee(self) -> None:
         referee = self.getArg("Referee")
         clientRef = self.getArg("Client ref")
         response = self.getTelecoopConnector().appliedToReferee(referee, clientRef)
         print(response.text)
 
-    def getUpdatedOpportunities(self):
+    def getUpdatedOpportunities(self) -> None:
         startDate = self.getArg("Start date", "datetime")
         start = pytz.timezone("Europe/Paris").localize(startDate)
         sellsyConnector = self.getSellsyConnector()
@@ -411,7 +408,7 @@ class Runner(TcRunner):
         results = sellsyConnector.api2Post("/opportunities/search", params)
         print(json.dumps(results.json(), indent=2))
 
-    def bazileGetConso(self):
+    def bazileGetConso(self) -> None:
         accountId = self.getArg("Account id")
         month = self.getArg("Month", "date")
         bazileConnector = self.getBazileConnector()
@@ -422,7 +419,7 @@ class Runner(TcRunner):
             )
         )
 
-    def authorizeHf(self):
+    def authorizeHf(self) -> None:
         accountId = self.getArg("Account id")
         authorize = self.getArg("Authorize")
         if authorize in ("oui", "non"):
@@ -434,7 +431,7 @@ class Runner(TcRunner):
         bazileConnector = self.getBazileConnector()
         print(json.dumps(bazileConnector.authorizeHF(accountId, authorize=auth)))
 
-    def bazileGetSimplePortaHistory(self):
+    def bazileGetSimplePortaHistory(self) -> None:
         nsce = self.getArg("NSCE")
         bazileConnector = self.getBazileConnector()
         print(
@@ -443,15 +440,15 @@ class Runner(TcRunner):
             )
         )
 
-    def getSimInfo(self):
-        operator = self.getArg("Operator")
+    def getSimInfo(self) -> None:
+        operator = str(self.getArg("Operator"))
         nsce = self.getArg("Sim num")
         tlC = self.getTelecomConnector()
 
         tlC.setDefaultOperator(operator)
         print(json.dumps(tlC.getSimInfo(nsce=nsce), indent=2, default=str))
 
-    def getConso(self):
+    def getConso(self) -> None:
         msisdn = self.getArg("msisdn")
         month = self.getArg("month", "date")
         tlC = self.getTelecomConnector()
@@ -460,13 +457,13 @@ class Runner(TcRunner):
         response = tlC.getConso(msisdn=msisdn, month=month)
         print(json.dumps(response, indent=2, default=str))
 
-    def getPhenixOptions(self):
+    def getPhenixOptions(self) -> None:
         provider = self.getArg("Provider")
         tlC = self.getTelecomConnector()
         tlC.setDefaultOperator("phenix")
         print(json.dumps(tlC.getOptions(provider=provider), indent=2, default=str))
 
-    def script(self):
+    def script(self) -> None:
         nsce = self.getArg("NSCE")
         bzC = self.getBazileConnector()
         print(bzC.isSimAvailable(nsce))

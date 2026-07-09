@@ -1,4 +1,4 @@
-from dataclasses import InitVar, dataclass, field, fields
+from dataclasses import InitVar, dataclass, fields
 
 import inflection
 from psycopg import Cursor, sql
@@ -20,7 +20,7 @@ class TcDataClass:
     schema: InitVar[str | None] = None
     tableName: InitVar[str | None] = None
     cursor: InitVar[Cursor | None] = None
-    allData: InitVar[bool] = field()
+    allData: InitVar[bool] = False
     NATURAL_KEY = []
 
     @classmethod
@@ -33,9 +33,9 @@ class TcDataClass:
         return (schemaName, tableName)
 
     def __post_init__(self, schema, tableName, cursor, allData):
-        self.schema, self.tableName = self.__class__.__get_schema_and_table__()
-        self.cursor = cursor
-        self.allData = allData
+        self._schema, self._tableName = self.__class__.__get_schema_and_table__()
+        self._cursor = cursor
+        self._allData = allData
 
     def save(self):
         if not hasattr(self, "id"):
@@ -55,7 +55,7 @@ class TcDataClass:
             """
         # If all data are loaded we can upsert
         updateNkValues = ""
-        if self.allData:
+        if self._allData:
             query += onConflict
         else:
             # Updates that does nothing so that RETURNING * returns something
@@ -90,15 +90,15 @@ class TcDataClass:
             updateNkValues=updateNkValues,
         )
         query = sql.SQL(query).format(
-            schema=sql.Identifier(self.schema),
-            tableName=sql.Identifier(self.tableName),
+            schema=sql.Identifier(self._schema),
+            tableName=sql.Identifier(self._tableName),
             naturalKey=sql.SQL(",").join([sql.Identifier(f) for f in self.NATURAL_KEY]),
             fields=sql.SQL(",").join([sql.Identifier(f.name) for f in columns]),
             **({f.name: sql.Identifier(f.name) for f in columns}),
         )
-        rowStyle = self.cursor.row_factory
-        self.cursor.row_factory = dict_row
-        self.cursor.execute(
+        rowStyle = self._cursor.row_factory
+        self._cursor.row_factory = dict_row
+        self._cursor.execute(
             query,
             {
                 f.name: (
@@ -110,11 +110,11 @@ class TcDataClass:
             },
         )
         if self.id is None:
-            result = self.cursor.fetchone()
+            result = self._cursor.fetchone()
             for k, v in result.items():
                 setattr(self, k, v)
-            self.allData = True
-        self.cursor.row_factory = rowStyle
+            self._allData = True
+        self._cursor.row_factory = rowStyle
 
     def load(self, **kwargs):
         if len(kwargs) == 0:
@@ -126,7 +126,7 @@ class TcDataClass:
                     assert getattr(self, f) is not None, f"{f} is None"
                     kwargs[f] = getattr(self, f)
         values = self.__class__.__get_values__(
-            self.schema, self.tableName, self.cursor, **kwargs
+            self._schema, self._tableName, self._cursor, **kwargs
         )
         if values is None:
             if hasattr(self, "id") and self.id is not None:
@@ -136,7 +136,7 @@ class TcDataClass:
                 raise NotInDBError(f"{key} not found")
         for f in fields(self):
             setattr(self, f.name, values[f.name])
-        self.allData = True
+        self._allData = True
 
     @classmethod
     def _getFields(cls):
