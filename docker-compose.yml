@@ -1,41 +1,41 @@
 services:
-    app:
-        build:
-            context: .
-            dockerfile: docker/app/Dockerfile
-        ports:
-            - 8000:8000
-        volumes:
-            - ./var/log:/var/log/telecoop-common
-            - ./src:/usr/local/telecoop-common
-            - ./conf:/etc/telecoop-common
-        environment:
-            - ENV=DOCKER
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./var/log:/var/log/telecoop-common
+      - ./src:/usr/local/telecoop-common
+      - ./conf:/etc/telecoop-common
+    environment:
+      - ENV=DOCKER
 
-    nats:
-        image: nats:2.10
-        ports:
-            - 8222:8222
-            - 4222:4222
+  nats:
+    image: nats:2.10
+    ports:
+      - 8222:8222
+      - 4222:4222
 
-    postgres-logs:
-        image: postgres:13
-        ports:
-            - 5439:5432
-        environment:
-            - POSTGRES_HOST_AUTH_METHOD=trust
-            - POSTGRES_USER=logs
-            - POSTGRES_DB=logs
-        volumes:
-          - ./docker/postgres-logs/initdb:/docker-entrypoint-initdb.d
+  postgres-logs:
+    image: postgres:13
+    ports:
+      - 5439:5432
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=logs
+      - POSTGRES_DB=logs
+    volumes:
+      - ./docker/postgres-logs/initdb:/docker-entrypoint-initdb.d
 
-    testDb:
-        image: postgres:13
-        ports:
-            - 5439:5432
-        environment:
-            - POSTGRES_USER=common
-            - POSTGRES_DB=common
-            - POSTGRES_PASSWORD=common
-        volumes:
-          - ./docker/postgres/initdb:/docker-entrypoint-initdb.d
+  testDb:
+    image: postgres:13
+    ports:
+      - 5438:5432
+    environment:
+      - POSTGRES_USER=common
+      - POSTGRES_DB=common
+      - POSTGRES_PASSWORD=common
+    volumes:
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d
