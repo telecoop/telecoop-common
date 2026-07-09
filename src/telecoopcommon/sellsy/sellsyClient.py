@@ -136,7 +136,7 @@ class SellsyClient:
     def load(self, connector):
         self.loadWithValues(connector.getClientValues(self.id))
 
-    def loadWithValues(self, cli):
+    def loadWithValues(self, cli: dict):
         parisTZ = pytz.timezone("Europe/Paris")
         email = cli["email"]
         invoiceEmail = None

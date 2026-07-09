@@ -1,20 +1,77 @@
+import json
 import os
 import time
 from datetime import datetime
 from decimal import Decimal
 from json import JSONDecodeError
 
+import oauthlib.oauth1 as oauth1
 import pytz
 import requests
-import sellsy_api
+import requests_oauthlib
 from requests_oauth2client import ApiClient, OAuth2Client
 from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
 
 from .sellsyClient import SellsyClient
-from .sellsyError import SellsyApiError
+from .sellsyError import (
+    SellsyApiError,
+    SellsyAuthenticateError,
+    SellsyError,
+    TcSellsyError,
+)
 from .sellsyMemberOpportunity import SellsyMemberOpportunity
 from .sellsyOpportunity import SellsyOpportunity
 from .utils import sellsyValues
+
+DEFAULT_URL = "https://apifeed.sellsy.com/0/"
+
+
+class TcSellsyConnectorV2:
+    def __init__(self, conf, logger, emailTemplates=None):
+        self.conf = conf
+        self.logger = logger
+
+    def getConnector(self):
+        if self._connector is None:
+            self._oauth2client = OAuth2Client(
+                token_endpoint="https://login.sellsy.com/oauth2/access-tokens",
+                auth=(self.conf["v2_client_id"], self.conf["v2_client_secret"]),
+            )
+            self._connector = ApiClient(
+                self.conf["v2_host"],
+                auth=OAuth2ClientCredentialsAuth(self._oauth2client),
+                raise_for_status=False,
+            )
+        return self._connector
+
+    def getToken(self):
+        return self._oauth2client.client_credentials()
+
+    def api2Get(self, endpoint):
+        connector = self.getConnector()
+        self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
+        return connector.get(endpoint)
+
+    def api2Post(self, endpoint, json=None, files: dict | None = None):
+        connector = self.getConnector()
+        if files:
+            self.logger.debug(
+                f"Calling Sellsy API v2 POST {endpoint} with files={files}"
+            )
+        else:
+            self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with json={json}")
+
+        response = connector.post(endpoint, json=json, files=files)
+        # the json parameter is ignored if either data or files is passed.
+        # see https://requests.reafdthedocs.io/en/latest/user/quickstart/#post-a-multipart-encoded-file
+
+        if response.status_code not in [200, 201]:
+            exc = SellsyApiError(f"Got code {response.status_code} \n{response.text}")
+            exc.statusCode = response.status_code
+            exc.textError = response.text
+            raise exc
+
+        return response
 
 
 class TcSellsyConnector:
@@ -24,11 +81,14 @@ class TcSellsyConnector:
         self.conf = conf
         self.logger = logger
         self.values = sellsyValues[self.env]
-        self._client = sellsy_api.Client(
+        self.url = DEFAULT_URL
+        self._client = requests_oauthlib.OAuth1Session(
             conf["consumer_token"],
             conf["consumer_secret"],
             conf["user_token"],
             conf["user_secret"],
+            signature_method=oauth1.SIGNATURE_PLAINTEXT,
+            signature_type=oauth1.SIGNATURE_TYPE_BODY,
         )
         self._connector = None
         self.ownerId = sellsyValues[self.env]["owner_id"]
@@ -246,59 +306,42 @@ class TcSellsyConnector:
                         f"unknown email template was spcified in conf file ({key})"
                     )
 
-    def getConnector(self):
-        if self._connector is None:
-            self._oauth2client = OAuth2Client(
-                token_endpoint="https://login.sellsy.com/oauth2/access-tokens",
-                auth=(self.conf["v2_client_id"], self.conf["v2_client_secret"]),
+    def _api(self, method="Infos.getInfos", params={}) -> dict:
+        headers = {"content-type": "application/json", "cache-control": "no-cache"}
+        payload = {"method": method, "params": params}
+
+        response = self._client.post(
+            self.url,
+            data={"request": 1, "io_mode": "json", "do_in": json.dumps(payload)},
+            headers=headers,
+        )
+
+        # Handle OAuth error (401 status code returned)
+        if response.status_code == 401:
+            raise SellsyAuthenticateError(response.text)
+
+        # Error handler
+        response_json = response.json()
+        if response_json["status"] == "error":
+            error_code, error_message = (
+                response_json["error"]["code"],
+                response_json["error"]["message"],
             )
-            self._connector = ApiClient(
-                self.conf["v2_host"],
-                auth=OAuth2ClientCredentialsAuth(self._oauth2client),
-                raise_for_status=False,
-            )
-        return self._connector
+            raise SellsyError(error_code, error_message)
 
-    def getToken(self):
-        return self._oauth2client.client_credentials()
+        return response_json["response"]
 
-    def api2Get(self, endpoint):
-        connector = self.getConnector()
-        self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
-        return connector.get(endpoint)
-
-    def api2Post(self, endpoint, json=None, files: dict | None = None):
-        connector = self.getConnector()
-        if files:
-            self.logger.debug(
-                f"Calling Sellsy API v2 POST {endpoint} with files={files}"
-            )
-        else:
-            self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with json={json}")
-
-        response = connector.post(endpoint, json=json, files=files)
-        # the json parameter is ignored if either data or files is passed.
-        # see https://requests.reafdthedocs.io/en/latest/user/quickstart/#post-a-multipart-encoded-file
-
-        if response.status_code not in [200, 201]:
-            exc = SellsyApiError(f"Got code {response.status_code} \n{response.text}")
-            exc.statusCode = response.status_code
-            exc.textError = response.text
-            raise exc
-
-        return response
-
-    def api(self, method, params={}):
+    def api(self, method: str, params={}) -> dict:
+        self.logger.debug(f"Calling Sellsy {method} with params {params}")
+        result = {}
+        MAX_RETRIES = 10  # Max 8 minutes
+        retry = MAX_RETRIES
         try:
-            self.logger.debug(f"Calling Sellsy {method} with params {params}")
-            MAX_RETRIES = 10  # Max 8 minutes
-            retry = MAX_RETRIES
-            result = None
             while retry >= 0:
                 if retry < MAX_RETRIES:
                     self.logger.info(f"Retrying for the {MAX_RETRIES - retry}th time")
                 try:
-                    result = self._client.api(method, params)
+                    result = self._api(method, params)
                     retry = -1
                 except (requests.JSONDecodeError, JSONDecodeError, TypeError) as e:
                     if retry < 1:
@@ -306,7 +349,7 @@ class TcSellsyConnector:
                         raise e
                     retry -= 1
                     time.sleep(pow(2, MAX_RETRIES - retry))
-                except sellsy_api.errors.SellsyError as e:
+                except SellsyError as e:
                     if e.sellsy_code_error == "E_OBJ_NOT_LOADABLE":
                         if retry < 1:
                             self.logger.warning(e)
@@ -316,20 +359,18 @@ class TcSellsyConnector:
                     else:
                         raise e
         except (
-            sellsy_api.errors.SellsyAuthenticateError
+            SellsyAuthenticateError
         ) as excp:  # raised if credential keys are not valid
             self.logger.warning(f"Authentication failed ! Details : {excp}")
             raise excp
-        except (
-            sellsy_api.errors.SellsyError
-        ) as excp:  # raised if an error is returned by Sellsy API
+        except SellsyError as excp:  # raised if an error is returned by Sellsy API
             self.logger.warning(excp)
             raise excp
         # Sellsy API is throttled at 5 requests per second, we take a margin of 0.25s
         time.sleep(0.25)
         return result
 
-    def updateClientProperty(self, clientId, property, value):
+    def updateClientProperty(self, clientId: int, property: str, value):
         client = self.getClient(clientId)
         params = {
             "clientid": clientId,
@@ -360,7 +401,7 @@ class TcSellsyConnector:
 
         return response
 
-    def updateCustomField(self, entity, entityId, cfid, value):
+    def updateCustomField(self, entity: str, entityId: int, cfid: int, value):
         knownEntities = ["client", "opportunity", "document"]
         if entity not in knownEntities:
             raise ValueError(f"Unknown entity {entity}, should be in {knownEntities}")
@@ -373,7 +414,7 @@ class TcSellsyConnector:
         }
         return self.api(method="CustomFields.recordValues", params=params)
 
-    def createTask(self, data):
+    def createTask(self, data: dict) -> int:
         """Wrapper to create a task in Sellsy with pre-defined owners"""
 
         self.logger.info(
@@ -426,7 +467,7 @@ class TcSellsyConnector:
         self.logger.debug(result)
         return result["taskid"]
 
-    def getClientRef(self, clientId):
+    def getClientRef(self, clientId: int) -> str:
         response = self.api(method="Client.getOne", params={"clientid": clientId})
         return response["ident"]
 
@@ -440,6 +481,12 @@ class TcSellsyConnector:
             response = self.api(
                 method="opportunities.getOne", params={"id": opportunityId}
             )
+
+        if response is None:
+            raise TcSellsyError(
+                f"Could not get client or opportunity with given ids. Client={clientId}, Opp={opportunityId}"
+            )
+
         optinDate = None
         for ln in response["customFields"]:
             if ln["name"] == "Z-Offre TeleCommown":
@@ -459,12 +506,12 @@ class TcSellsyConnector:
                 break
         return optinDate
 
-    def getClient(self, id):
+    def getClient(self, id: int):
         c = SellsyClient(id)
         c.loadWithValues(self.getClientValues(id))
         return c
 
-    def getClientValues(self, id):
+    def getClientValues(self, id: int):
         cli = self.api(method="Client.getOne", params={"clientid": id})
 
         mainContactId = cli["client"]["maincontactid"]
@@ -902,7 +949,7 @@ class TcSellsyConnector:
 
         return result
 
-    def getMembershipOpportunityValues(self, id):
+    def getMembershipOpportunityValues(self, id: int):
         opp = self.api(method="Opportunities.getOne", params={"id": id})
         result = {
             "ident": opp["ident"],
@@ -1158,7 +1205,7 @@ class TcSellsyConnector:
             invoice = self.api(
                 method="Document.getOne", params={"doctype": docType, "docid": id}
             )
-        except sellsy_api.errors.SellsyError:
+        except SellsyError:
             docType = "creditnote"
             invoice = self.api(
                 method="Document.getOne", params={"doctype": docType, "docid": id}
