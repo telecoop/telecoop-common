@@ -4,7 +4,8 @@ from decimal import Decimal
 
 import phpserialize
 import pytz
-import sellsy_api
+
+from .sellsyError import SellsyError
 
 
 class SellsyInvoice:
@@ -262,7 +263,7 @@ class SellsyInvoice:
                 )
                 invoice.validate(connector)
                 invoice.sellsyStatus = "due"
-        except sellsy_api.SellsyError as exp:
+        except SellsyError as exp:
             if exp.sellsy_code_error == "E_OBJ_NOT_LOADABLE":
                 # Sellsy object was created (we have the docId) but not accessible yet through API
                 # -> we use the docId as a reference and another process will check later
@@ -310,7 +311,7 @@ class SellsyInvoice:
                 }
             try:
                 connector.api(method=method, params=params)
-            except sellsy_api.SellsyError as excp:
+            except SellsyError as excp:
                 connector.logger.warning(
                     f"Whoops, something went wrong sending the email : {excp}"
                 )
