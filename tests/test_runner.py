@@ -64,3 +64,18 @@ def test_execWithLogsAsync(test_config, test_logger):
 
     assert EXCEP in cursor.lastParams[0]  # pyright: ignore[reportOptionalSubscript]
     assert cursor.lastParams[1] == COUNT  # pyright: ignore[reportOptionalSubscript]
+
+
+def test_getArg(test_config, test_logger):
+    class ArgMock:
+        arguments = ["abc", "a,b,c", "3"]
+
+    # create runner
+    testRunner = runner.TcRunner("DEV", test_config, test_logger, ArgMock(), "test")
+
+    # # mock getCursor
+    # testRunner.getCursor = getMockCursor  # pyright: ignore[reportAttributeAccessIssue]
+
+    assert testRunner.getArg("test") == "abc"
+    assert testRunner.getArg("test2", "list") == ["a", "b", "c"]
+    assert testRunner.getArg("test3", "int") == 3

@@ -71,11 +71,6 @@ packages = [
     for f in names
     if os.path.isdir(f) and not f.endswith("__pycache__") and not f.endswith("assets")
 ]
-print("BAAAAAAAAAAAAAAAAAA")
-for p in packages:
-    for module in getattr(importlib.import_module(p), "modules"):
-        print(module)
-    print(packages)
 
 
 def toCamelCase(text):
@@ -179,6 +174,8 @@ class TcRunner(ABC):
                 sys.exit(1)
         elif type == "bool":
             value = valueStr == "true"
+        elif type == "list":
+            value = valueStr.split(",")
         else:
             value = valueStr
         return value
