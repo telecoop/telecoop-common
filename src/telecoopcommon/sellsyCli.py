@@ -1,8 +1,7 @@
 import json
 
-from .sellsyClient import SellsyClient
-from .sellsyOpportunity import SellsyOpportunity
-from .utils import sellsyValues
+from .sellsy import SellsyClient, SellsyOpportunity
+from .sellsy.utils import sellsyValues
 
 
 def getOpportunity(runner):
@@ -56,20 +55,12 @@ def getService(runner):
     print(json.dumps(response, indent=2))
 
 
-def testV2(runner):
-    syC = runner.getSellsyConnector()
-
-    events = syC.api2Get("/webhooks/events")
-    print(json.dumps(events.json(), indent=2))
-
-
 commands = {
     "get-client": lambda runner: getClient(runner),
     "get-opportunity": lambda runner: getOpportunity(runner),
     "get-services": lambda runner: print(
         json.dumps(runner.getSellsyConnector().getServices(), indent=2)
     ),
-    "test-v2": testV2,
     "get-custom-field": getCustomField,
     "get-service": getService,
     "get-taxes": lambda runner: print(
@@ -81,6 +72,6 @@ commands = {
 }
 
 
-def execute(runner, command):
+def execute(runner, command):  # pragma: no cover
     if command in commands:
         commands[command](runner)

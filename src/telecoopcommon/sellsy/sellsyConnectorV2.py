@@ -72,16 +72,8 @@ class TcSellsyConnectorV2:
 
     # === SmartTags
 
-    def linkSmartTagToOpportunity(self, opportunityId: int, smartTagLabel: str):
-        """Link a SmartTag to an Opportunity"""
-        self.linkSmartTagToObject("opportunities", opportunityId, smartTagLabel)
-
-    def linkSmartTagToInvoice(self, invoiceId: int, smartTagLabel: str):
-        """Link a SmartTag to an Invoice"""
-        self.linkSmartTagToObject("invoices", invoiceId, smartTagLabel)
-
     def linkSmartTagToObject(self, objectType: str, objectId: int, smartTagLabel: str):
-        """Link a SmartTag to an object
+        """Link a SmartTag to an object (ex: invoices, opportunities)
         We need to fetch the fetch the SmartTag already linked to an Opportunity, as a Post resets all existing opportunities
         """
 

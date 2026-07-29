@@ -19,6 +19,7 @@ from telecoopcommon.sellsy import (
     SellsyMemberOpportunity,
     SellsyOpportunity,
     TcSellsyConnector,
+    TcSellsyConnectorV2,
     sellsyValues,
 )
 from telecoopcommon.telecoop import Connector as TcConnector
@@ -87,18 +88,16 @@ class Runner(TcRunner):
     def __init__(self, env, config, logger, args, modules):
         super().__init__(env, config, logger, args, modules)
         self.postgres = psycopg
-
-        if env in ["DEV", "LOCAL", "DOCKER"]:
-            self.confSellsy = config["SellsyDev"]
-        elif env in ["PROD", "LOCAL_PROD"]:
-            self.confSellsy = config["SellsyProd"]
-        # self.confSellsy = config["Sellsy"]
+        self.confSellsy = config["Sellsy"]
 
     def getBazileConnector(self):
         return BazileConnector(self.config["BazileAPI"], self.logger)
 
     def getSellsyConnector(self):
         return TcSellsyConnector(self.confSellsy, self.logger)
+
+    def getSellsyConnectorV2(self):
+        return TcSellsyConnectorV2(self.confSellsy, self.logger)
 
     def getTelecoopConnector(self):
         return TcConnector(self.config["TeleCoopApi"], self.logger)

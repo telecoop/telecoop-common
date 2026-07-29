@@ -74,7 +74,6 @@ sellsyValues = {
             "Transition Pro - 100 Go": "TRAPRO100",
             "Pro data mutualisée": "MUTPRO",
         },
-        "smartTags": {""},
         "emailTemplates": {
             "default": 158668,
             "first_invoice": 159041,
