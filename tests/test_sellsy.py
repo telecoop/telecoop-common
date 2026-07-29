@@ -4,7 +4,6 @@ import pytest
 import pytz
 
 from telecoopcommon import sellsy
-from telecoopcommon.config import TcConfig
 
 parisTZ = pytz.timezone("Europe/Paris")
 
@@ -14,31 +13,17 @@ clientIdNoOpportunity = 33309487
 
 
 @pytest.fixture(scope="module")
-def test_config() -> dict:
-    return TcConfig()
-
-
-class Logger:
-    def critical(self, message):
-        return None
-
-    def warning(self, message):
-        return None
-
-    def info(self, message):
-        print(message)
-
-    def debug(self, message):
-        print(message)
+def test_connector(test_config, test_logger):
+    return sellsy.TcSellsyConnector(test_config["SellsyDev"], test_logger)
 
 
 @pytest.fixture(scope="module")
-def test_connector(test_config):
-    return sellsy.TcSellsyConnector(test_config["SellsyDev"], Logger())
+def test_connector_v2(test_config, test_logger):
+    return sellsy.TcSellsyConnectorV2(test_config["Sellsy"], test_logger)
 
 
 @pytest.mark.skip(reason="Can only be run manualy on live Sellsy Dev environment")
-class TestSelly:
+class TestSellyV1:
     def test_get_opportunity(self, test_connector):
         id = opportunityIdPG
         cf = sellsy.sellsyValues["DEV"]["custom_fields"]
@@ -256,3 +241,10 @@ class TestSelly:
         # Shouldn't use the connector, so passing an empty object shouldn't be a problem
         c = o.getClient(object())
         assert c.id == str(clientIdPG), "Second access, check client id"
+
+
+@pytest.mark.skip(reason="Can only be run manualy on live Sellsy Dev environment")
+class TestSellyV2:
+    def test_get_opportunity(self, test_connector_v2):
+        token = test_connector_v2._getToken()
+        assert token.access_token

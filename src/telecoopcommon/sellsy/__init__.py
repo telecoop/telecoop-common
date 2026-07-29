@@ -1,6 +1,7 @@
 # place here only public interfaces
 from .sellsyClient import SellsyClient as SellsyClient
 from .sellsyConnector import TcSellsyConnector as TcSellsyConnector
+from .sellsyConnectorV2 import TcSellsyConnectorV2 as TcSellsyConnectorV2
 from .sellsyError import SellsyApiError as SellsyApiError
 from .sellsyFile import SellsyFile as SellsyFile
 from .sellsyInvoice import SellsyInvoice as SellsyInvoice
