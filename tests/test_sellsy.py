@@ -17,11 +17,6 @@ def test_connector(test_config, test_logger):
     return sellsy.TcSellsyConnector(test_config["SellsyDev"], test_logger)
 
 
-@pytest.fixture(scope="module")
-def test_connector_v2(test_config, test_logger):
-    return sellsy.TcSellsyConnectorV2(test_config["Sellsy"], test_logger)
-
-
 @pytest.mark.skip(reason="Can only be run manualy on live Sellsy Dev environment")
 class TestSellyV1:
     def test_get_opportunity(self, test_connector):
@@ -241,10 +236,3 @@ class TestSellyV1:
         # Shouldn't use the connector, so passing an empty object shouldn't be a problem
         c = o.getClient(object())
         assert c.id == str(clientIdPG), "Second access, check client id"
-
-
-@pytest.mark.skip(reason="Can only be run manualy on live Sellsy Dev environment")
-class TestSellyV2:
-    def test_get_opportunity(self, test_connector_v2):
-        token = test_connector_v2._getToken()
-        assert token.access_token

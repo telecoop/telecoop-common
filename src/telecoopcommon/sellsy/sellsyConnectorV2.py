@@ -1,10 +1,12 @@
+import json
+
 from requests_oauth2client import ApiClient, OAuth2Client
 from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
 
 from .sellsyError import SellsyApiError
 
-DEFAULT_URL = "https://apifeed.sellsy.com/0/"
 TOKEN_URL = "https://login.sellsy.com/oauth2/access-tokens"
+SMART_TAGS_ID = {""}
 
 
 class TcSellsyConnectorV2:
@@ -30,12 +32,15 @@ class TcSellsyConnectorV2:
     def _getToken(self):
         return self._oauth2client.client_credentials()
 
-    def _get(self, endpoint):
+    def _get(self, endpoint) -> dict:
         connector = self._getConnector()
         self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
-        return connector.get(endpoint)
+        response = connector.get(endpoint, raise_for_status=True)
+        return json.loads(response.content)
 
-    def _post(self, endpoint, json=None, files: dict | None = None):
+    def _post(self, endpoint, json: str | None = None, files: dict | None = None):
+        headers = {"cache-control": "no-cache"}
+
         connector = self._getConnector()
         if files:
             self.logger.debug(
@@ -44,9 +49,18 @@ class TcSellsyConnectorV2:
         else:
             self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with json={json}")
 
-        response = connector.post(endpoint, json=json, files=files)
+        # we have to use data= and set the headers manually, as json= is transforming payload into binary (don't know why)
+        if json:
+            headers["content-type"] = "application/json"
+
         # the json parameter is ignored if either data or files is passed.
-        # see https://requests.reafdthedocs.io/en/latest/user/quickstart/#post-a-multipart-encoded-file
+        # see https://requests.readthedocs.io/en/latest/user/quickstart/#post-a-multipart-encoded-file
+        response = connector.post(
+            endpoint,
+            data=json,
+            files=files,
+            headers=headers,
+        )
 
         if response.status_code not in [200, 201]:
             exc = SellsyApiError(f"Got code {response.status_code} \n{response.text}")
@@ -55,3 +69,33 @@ class TcSellsyConnectorV2:
             raise exc
 
         return response
+
+    # === SmartTags
+
+    def linkSmartTagToOpportunity(self, opportunityId: int, smartTagLabel: str):
+        """Link a SmartTag to an Opportunity"""
+        self.linkSmartTagToObject("opportunities", opportunityId, smartTagLabel)
+
+    def linkSmartTagToInvoice(self, invoiceId: int, smartTagLabel: str):
+        """Link a SmartTag to an Invoice"""
+        self.linkSmartTagToObject("invoices", invoiceId, smartTagLabel)
+
+    def linkSmartTagToObject(self, objectType: str, objectId: int, smartTagLabel: str):
+        """Link a SmartTag to an object
+        We need to fetch the fetch the SmartTag already linked to an Opportunity, as a Post resets all existing opportunities
+        """
+
+        # fetch existing smartTags
+        response = self._get(
+            f"{objectType}/{objectId}/smart-tags",
+        )
+        smartTagList = response["data"]
+
+        # add new smart tag to list
+        if smartTagLabel not in [i["value"] for i in smartTagList]:
+            smartTagList.append({"value": smartTagLabel})
+
+            self._post(
+                f"{objectType}/{objectId}/smart-tags",
+                json=json.dumps(smartTagList),
+            )
