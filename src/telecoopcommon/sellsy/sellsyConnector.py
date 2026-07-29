@@ -9,69 +9,14 @@ import oauthlib.oauth1 as oauth1
 import pytz
 import requests
 import requests_oauthlib
-from requests_oauth2client import ApiClient, OAuth2Client
-from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
 
 from .sellsyClient import SellsyClient
-from .sellsyError import (
-    SellsyApiError,
-    SellsyAuthenticateError,
-    SellsyError,
-    TcSellsyError,
-)
+from .sellsyError import SellsyAuthenticateError, SellsyError, TcSellsyError
 from .sellsyMemberOpportunity import SellsyMemberOpportunity
 from .sellsyOpportunity import SellsyOpportunity
 from .utils import sellsyValues
 
 DEFAULT_URL = "https://apifeed.sellsy.com/0/"
-
-
-class TcSellsyConnectorV2:
-    def __init__(self, conf, logger, emailTemplates=None):
-        self.conf = conf
-        self.logger = logger
-
-    def getConnector(self):
-        if self._connector is None:
-            self._oauth2client = OAuth2Client(
-                token_endpoint="https://login.sellsy.com/oauth2/access-tokens",
-                auth=(self.conf["v2_client_id"], self.conf["v2_client_secret"]),
-            )
-            self._connector = ApiClient(
-                self.conf["v2_host"],
-                auth=OAuth2ClientCredentialsAuth(self._oauth2client),
-                raise_for_status=False,
-            )
-        return self._connector
-
-    def getToken(self):
-        return self._oauth2client.client_credentials()
-
-    def api2Get(self, endpoint):
-        connector = self.getConnector()
-        self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
-        return connector.get(endpoint)
-
-    def api2Post(self, endpoint, json=None, files: dict | None = None):
-        connector = self.getConnector()
-        if files:
-            self.logger.debug(
-                f"Calling Sellsy API v2 POST {endpoint} with files={files}"
-            )
-        else:
-            self.logger.debug(f"Calling Sellsy API v2 POST {endpoint} with json={json}")
-
-        response = connector.post(endpoint, json=json, files=files)
-        # the json parameter is ignored if either data or files is passed.
-        # see https://requests.reafdthedocs.io/en/latest/user/quickstart/#post-a-multipart-encoded-file
-
-        if response.status_code not in [200, 201]:
-            exc = SellsyApiError(f"Got code {response.status_code} \n{response.text}")
-            exc.statusCode = response.status_code
-            exc.textError = response.text
-            raise exc
-
-        return response
 
 
 class TcSellsyConnector:

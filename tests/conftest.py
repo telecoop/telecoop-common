@@ -1,15 +1,12 @@
-import configparser
-
 import pytest
 
+from telecoopcommon.config import TcConfig
 from telecoopcommon.logs import initLogs
 
 
 @pytest.fixture(scope="module")
-def test_config() -> configparser.ConfigParser:
-    config = configparser.ConfigParser()
-    config["Log"] = {"folder": "/var/log/common/", "log-level": "INFO", "console": True}  # pyright: ignore[reportArgumentType]
-    return config
+def test_config() -> dict:
+    return TcConfig()
 
 
 @pytest.fixture(scope="module")
