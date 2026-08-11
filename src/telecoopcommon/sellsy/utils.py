@@ -73,6 +73,7 @@ sellsyValues = {
             "Transition Pro - 50 Go": "TRAPRO50",
             "Transition Pro - 100 Go": "TRAPRO100",
             "Pro data mutualisée": "MUTPRO",
+            "Sérénité Pro": "SERENPRO",
         },
         "emailTemplates": {
             "default": 158668,
@@ -269,6 +270,7 @@ sellsyValues = {
             "Transition Pro - 50 Go": "TRAPRO50",
             "Transition Pro - 100 Go": "TRAPRO100",
             "Pro data mutualisée": "MUTPRO",
+            "Sérénité Pro": "SERENPRO",
         },
         "emailTemplates": {
             "default": 50567,
