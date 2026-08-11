@@ -1,3 +1,9 @@
+# 1.30.1
+
+Fix: 
+
+- sellsy: add missing plan SerenPro
+
 # 1.30.0
 
 Feature:
