@@ -45,6 +45,10 @@ from types import ModuleType
 from . import logs
 from .config import TcConfig
 from .cursor import TcCursor
+from .operator import Connector as TelecomOperatorConnector
+from .sellsy import TcSellsyConnector
+from .telecommown import TeleCommownConnector
+from .telecoop import Connector as TcConnector
 
 """ Exemple
 modules = {
@@ -324,6 +328,24 @@ class TcRunner(ABC):
             args = [self, command]
 
         self.execWithLogs(arg, func, noLog, *args)
+
+    # === External Services Connectors
+
+    def getTelecomOperatorConnector(self):
+        return TelecomOperatorConnector(self.config, self.logger)
+
+    def getSellsyConnector(self):
+        return TcSellsyConnector(self.config["Sellsy"], self.logger)
+
+    def getTelecoopConnector(self):
+        return TcConnector(self.config["TeleCoopApi"], self.logger)
+
+    def getTeleCommownConnector(self):
+        host = self.config["TeleCommown"]["telecommown_host"]
+        user = self.config["TeleCommown"]["telecommown_user"]
+        password = self.config["TeleCommown"]["telecommown_password"]
+        salt = self.config["TeleCommown"]["salt"]
+        return TeleCommownConnector(host, user, password, salt, self.logger)
 
 
 def main(serviceName, runnerClass, defaultPackageName, additionalCommands):
