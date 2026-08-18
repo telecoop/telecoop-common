@@ -42,8 +42,8 @@ from collections.abc import Callable
 from datetime import date, datetime
 from types import ModuleType
 
+import nats
 import psycopg
-from nats import NATS  # pyright: ignore[reportPrivateImportUsage]
 
 from . import logs
 from .bazile import Connector as BazileConnector
@@ -360,15 +360,16 @@ class TcRunner(ABC):
         return TeleCommownConnector(host, user, password, salt, self.logger)
 
     async def getNatsConnection(self):
-        nConn = NATS()
-        if "cred" in self.config["Nats"]:
-            await nConn.connect(
+        if "cred" in self.config["Nats"] and self.config["Nats"]["cred"]:
+            self.logger.debug("NATS: Connecting using creds file")
+            nConn = await nats.connect(
                 self.config["Nats"]["url"],
                 user_credentials=self.config["Nats"]["cred"],
                 connect_timeout=10,
             )
         else:
-            await nConn.connect(self.config["Nats"]["url"])
+            self.logger.debug("NATS: Connecting using url config")
+            nConn = await nats.connect(self.config["Nats"]["url"])
         return TcNatsConnector(nConn)
 
 
