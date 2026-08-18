@@ -1,3 +1,14 @@
+# 1.31.0
+
+Feature:
+
+- toolbox:selly: add tool to create opportunities
+
+Quality:
+
+- runner: move connectors from cli.py to common Runner
+- sellsy: use common base class for v1 and v2 connectors
+
 # 1.30.1
 
 Fix: 
