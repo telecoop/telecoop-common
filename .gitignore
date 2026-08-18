@@ -1,4 +1,5 @@
 conf/conf.cfg
+conf/conf.*.cfg
 conf/*creds
 .env
 var

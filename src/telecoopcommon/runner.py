@@ -42,11 +42,16 @@ from collections.abc import Callable
 from datetime import date, datetime
 from types import ModuleType
 
+import psycopg
+from nats import NATS  # pyright: ignore[reportPrivateImportUsage]
+
 from . import logs
+from .bazile import Connector as BazileConnector
 from .config import TcConfig
 from .cursor import TcCursor
+from .natsWorker import TcNatsConnector
 from .operator import Connector as TelecomOperatorConnector
-from .sellsy import TcSellsyConnector
+from .sellsy import TcSellsyConnector, TcSellsyConnectorV2
 from .telecommown import TeleCommownConnector
 from .telecoop import Connector as TcConnector
 
@@ -136,6 +141,7 @@ class TcRunner(ABC):
         self.args = args
         self.noConfirm = None
         self.defaultPackageName = defaultPackageName
+        self.postgres = psycopg
         # self.modules = modules
 
         self.env = "PROD" if env == "PROD" else "DEV"
@@ -334,8 +340,14 @@ class TcRunner(ABC):
     def getTelecomOperatorConnector(self):
         return TelecomOperatorConnector(self.config, self.logger)
 
-    def getSellsyConnector(self):
-        return TcSellsyConnector(self.config["Sellsy"], self.logger)
+    def getBazileConnector(self):
+        return BazileConnector(self.config["BazileAPI"], self.logger)
+
+    def getSellsyConnector(self, version="1"):
+        if version == 2:
+            return TcSellsyConnectorV2(self.config["Sellsy"], self.logger)
+        else:
+            return TcSellsyConnector(self.config["Sellsy"], self.logger)
 
     def getTelecoopConnector(self):
         return TcConnector(self.config["TeleCoopApi"], self.logger)
@@ -346,6 +358,18 @@ class TcRunner(ABC):
         password = self.config["TeleCommown"]["telecommown_password"]
         salt = self.config["TeleCommown"]["salt"]
         return TeleCommownConnector(host, user, password, salt, self.logger)
+
+    async def getNatsConnection(self):
+        nConn = NATS()
+        if "cred" in self.config["Nats"]:
+            await nConn.connect(
+                self.config["Nats"]["url"],
+                user_credentials=self.config["Nats"]["cred"],
+                connect_timeout=10,
+            )
+        else:
+            await nConn.connect(self.config["Nats"]["url"])
+        return TcNatsConnector(nConn)
 
 
 def main(serviceName, runnerClass, defaultPackageName, additionalCommands):
