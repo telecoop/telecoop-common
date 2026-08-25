@@ -1,3 +1,15 @@
+# 1.31.1
+
+Features: 
+
+- sellsy: adding params in E_OBJ_NOT_LOADABLE logs
+- sellsy: adding funnel New Line
+- sellsy: raise error when cannot find opp status
+
+Quality:
+
+- operator: improve debug log
+
 # 1.31.0
 
 Feature:
