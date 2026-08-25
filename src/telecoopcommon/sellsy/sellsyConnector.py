@@ -80,7 +80,7 @@ class TcSellsyConnector(TcSellsyConnectorBase):
                 except SellsyError as e:
                     if e.sellsy_code_error == "E_OBJ_NOT_LOADABLE":
                         if retry < 1:
-                            self.logger.warning(e)
+                            self.logger.warning(f"{e} params={params}")
                             raise e
                         retry -= 1
                         time.sleep(pow(2, MAX_RETRIES - retry))
