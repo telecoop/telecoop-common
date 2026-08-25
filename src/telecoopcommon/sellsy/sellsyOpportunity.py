@@ -318,6 +318,10 @@ class SellsyOpportunity:
             sc.stepEsimNewClient,
             sc.stepEsimVowifiRequest,
             sc.stepEsimEsimRequest,
+            sc.stepAddNewLineSubscription,
+            sc.stepAddNewLineSimNewClientSob,
+            sc.stepAddNewLineSimNewClientTrans,
+            sc.stepAddNewLineSimNewClientKid,
         ]:
             state = "new"
         elif self.stepId in [
@@ -326,6 +330,7 @@ class SellsyOpportunity:
             sc.stepProSimsAwaiting,
             sc.stepSimHandDelivered,
             sc.stepEsimSimSent,
+            sc.stepAddNewLineSimSent,
         ]:
             state = "sent"
         elif self.stepId in [
