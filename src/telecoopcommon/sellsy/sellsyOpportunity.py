@@ -3,6 +3,8 @@ from datetime import datetime
 
 import pytz
 
+from telecoopcommon.sellsy.sellsyError import SellsyError
+
 from .sellsyClient import SellsyClient
 from .utils import getSourceIdFromValue, sellsyValues, sourceNameFromId, stepNameFromId
 
@@ -303,7 +305,7 @@ class SellsyOpportunity:
     def getPlanItem(self):
         return self.planItem
 
-    def getSimStateFromStep(self, sellsyConnector):
+    def getSimStateFromStep(self, sellsyConnector) -> str:
         sc = sellsyConnector
         state = None
         if self.stepId in [
@@ -316,6 +318,10 @@ class SellsyOpportunity:
             sc.stepEsimNewClient,
             sc.stepEsimVowifiRequest,
             sc.stepEsimEsimRequest,
+            sc.stepAddNewLineSubscription,
+            sc.stepAddNewLineSimNewClientSob,
+            sc.stepAddNewLineSimNewClientTrans,
+            sc.stepAddNewLineSimNewClientKid,
         ]:
             state = "new"
         elif self.stepId in [
@@ -324,6 +330,7 @@ class SellsyOpportunity:
             sc.stepProSimsAwaiting,
             sc.stepSimHandDelivered,
             sc.stepEsimSimSent,
+            sc.stepAddNewLineSimSent,
         ]:
             state = "sent"
         elif self.stepId in [
@@ -343,6 +350,10 @@ class SellsyOpportunity:
             sc.stepEsimActivated,
         ]:
             state = "terminated"
+
+        if state is None:
+            raise SellsyError("step", f"Could not get step for id={self.stepId}")
+
         return state
 
     def terminate(self, connector, internal=False):

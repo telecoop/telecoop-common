@@ -54,7 +54,7 @@ class Connector:
         if not self.calledMethod:
             raise RuntimeError("callMethod called with no method to call :-/")
         ope = operator or self.defaultOperator
-        self.logger.debug(ope)
+        self.logger.debug(f"[Operator] callMethod - operator:{ope}")
         if ope:
             # If no connector exists, or if connector was last called for more than self.cachetimeout hours
             if (

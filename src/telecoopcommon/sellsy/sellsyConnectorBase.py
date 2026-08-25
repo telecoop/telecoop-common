@@ -105,6 +105,9 @@ class TcSellsyConnectorBase(ABC):
             "opportunity_source_tel_mail"
         ]
 
+        # === Funnels
+
+        # Funnel VdC
         self.funnelIdVdc = sellsyValues[self.env]["funnel_id_vie_du_contrat"]
         self.stepNew = sellsyValues[self.env]["step_new"]
         self.stepReminder = sellsyValues[self.env]["step_reminder"]
@@ -121,6 +124,7 @@ class TcSellsyConnectorBase(ABC):
         self.stepSimSuspended = sellsyValues[self.env]["step_sim_suspended"]
         self.stepSimTerminated = sellsyValues[self.env]["step_sim_terminated"]
 
+        # Funnel Membership
         self.funnelIdMembership = sellsyValues[self.env]["funnel_id_membership"]
         self.stepMembershipAsked = sellsyValues[self.env]["step_membership_asked"]
         self.stepMembershipSign = sellsyValues[self.env]["step_membership_sign"]
@@ -146,6 +150,7 @@ class TcSellsyConnectorBase(ABC):
         ]
         self.stepMembership2Refused = sellsyValues[self.env]["step_membership2_refused"]
 
+        # Funnel Dev Pro
         self.funnelIdDevPro = sellsyValues[self.env]["funnel_id_dev_pro"]
         self.stepProNew = sellsyValues[self.env]["step_pro_new"]
         self.stepProContacted = sellsyValues[self.env]["step_pro_contacted"]
@@ -164,6 +169,7 @@ class TcSellsyConnectorBase(ABC):
         self.stepProEnd = sellsyValues[self.env]["step_pro_end"]
         self.stepProNewSims = sellsyValues[self.env]["step_pro_new_sims"]
 
+        # Funnel Sim Pro
         self.funnelIdSimsPro = sellsyValues[self.env]["funnel_id_sims_pro"]
         self.stepProSimsInactive = sellsyValues[self.env]["step_pro_sims_inactive"]
         self.stepProSimsAwaiting = sellsyValues[self.env]["step_pro_sims_awaiting"]
@@ -172,6 +178,7 @@ class TcSellsyConnectorBase(ABC):
         self.stepProSimsSuspended = sellsyValues[self.env]["step_pro_sims_suspended"]
         self.stepProSimsTerminated = sellsyValues[self.env]["step_pro_sims_terminated"]
 
+        # Funnel Operator Change
         self.funnelIdOperatorChange = sellsyValues[self.env][
             "funnel_id_operator_change"
         ]
@@ -189,6 +196,23 @@ class TcSellsyConnectorBase(ABC):
         self.stepEsimPending = sellsyValues[self.env]["step_esim_pending"]
         self.stepEsimActivated = sellsyValues[self.env]["step_esim_activated"]
 
+        # Funnel Add New Line
+        self.funnelIdAddNewLine = sellsyValues[self.env]["funnel_id_add_new_line"]
+        self.stepAddNewLineSubscription = sellsyValues[self.env][
+            "step_new_line_subscription"
+        ]
+        self.stepAddNewLineSimNewClientSob = sellsyValues[self.env][
+            "step_new_line_new_client_sobriete"
+        ]
+        self.stepAddNewLineSimNewClientTrans = sellsyValues[self.env][
+            "step_new_line_new_client_transition"
+        ]
+        self.stepAddNewLineSimNewClientKid = sellsyValues[self.env][
+            "step_new_line_new_client_kid"
+        ]
+        self.stepAddNewLineSimSent = sellsyValues[self.env]["step_new_line_sim_sent"]
+
+        # ===
         self.services = None
         self.itemIds = None
         self.modelIds = None
