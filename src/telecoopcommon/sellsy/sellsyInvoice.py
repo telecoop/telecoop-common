@@ -5,6 +5,8 @@ from decimal import Decimal
 import phpserialize
 import pytz
 
+from telecoopcommon.sellsy import TcSellsyConnector
+
 from .sellsyError import SellsyError
 
 
@@ -77,7 +79,7 @@ class SellsyInvoice:
             self.id, paymentDate, amount, label, self.docType
         )
 
-    def deletePayment(self, paymentId, sellsyConnector):
+    def deletePayment(self, paymentId, sellsyConnector: TcSellsyConnector):
         sellsyConnector.deletePayment(paymentId, self.id, self.docType)
 
     @classmethod
@@ -349,9 +351,11 @@ class SellsyInvoice:
     def processSEPARejection(
         self, rejectCode, rejectReason, paymentId, sellsyConnector, invoiceData, logger
     ):
+        logger.debug(f"Processing SEPA Rejection for paymentId={paymentId}")
         syC = sellsyConnector
         # For payment rejected before paymentDate, we won't have created the payment in Sellsy yet
         if paymentId is not None:
+            logger.debug(f"Deleting Payment with paymentId={paymentId}")
             self.deletePayment(paymentId, syC)
 
         self.updateCustomField(
