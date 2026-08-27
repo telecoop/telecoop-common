@@ -59,7 +59,7 @@ class TcSellsyConnectorBase(ABC):
         self.cfidPackDepannageUsed = customFields["pack-depannage-used"]
         self.cfidPackInter = customFields["pack-data-roaming-available"]
         self.cfidPackInterUsed = customFields["pack-data-roaming-used"]
-        self.cfidSlimpayMandateStatus = customFields["slimpay-mandate-status"]
+
         self.cfidInvoicingSetting = customFields["choix-facturation"]
         self.cfidProNbSims = customFields["pro-nb-sims"]
         self.cfidProNbPorta = customFields["pro-nb-porta"]
@@ -86,6 +86,7 @@ class TcSellsyConnectorBase(ABC):
         self.cfidMembershipCategory = customFields["membership-category"]
         self.cfidMembershipFormSentDate = customFields["membership-form-sent-date"]
 
+        self.cfidSlimpayMandateStatus = customFields["slimpay-mandate-status"]
         self.cfidSlimpayPaymentDate = customFields["slimpay-date-prelevement"]
         self.cfidSlimpayRefundDate = customFields["slimpay-refund-date"]
         self.cfidSlimpayPaymentLink = customFields["slimpay-lien-prelevement"]
