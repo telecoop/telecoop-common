@@ -192,7 +192,8 @@ class TcRunner(ABC):
 
     def getCursor(self, db: str = "main"):
         connStr = self.dbConnStrs[db]
-        self.logger.debug(f"Connection to {' '.join(connStr)}")
+        connStrDebug = [i for i in connStr if "password" not in i]
+        self.logger.debug(f"Connection to {' '.join(connStrDebug)}")
         if self.postgres.__version__[0] == "3":
             conn = self.postgres.connect(
                 " ".join(connStr),
