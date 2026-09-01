@@ -22,6 +22,11 @@ def getSimplePortaHistory(self) -> None:
     )
 
 
+def getAuthToken(self) -> dict:
+    bazileConnector = self.getBazileConnector()
+    return bazileConnector.getToken()
+
+
 def getConso(self) -> None:
     accountId = self.getArg("Account id")
     month = self.getArg("Month", "date")
@@ -37,6 +42,7 @@ def getConso(self) -> None:
 commands = {
     "authorize-hf": authorizeHf,
     "get-conso": getConso,
+    "get-token": getAuthToken,
     "get-simple-porta-history": getSimplePortaHistory,
 }
 
