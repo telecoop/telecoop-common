@@ -23,6 +23,11 @@ class BazileError(Exception):
     pass
 
 
+class BazileAuthError(Exception):
+    statusCode = None
+    pass
+
+
 class Connector:
     def __init__(self, conf, logger):
         self.host = conf["host"]
@@ -37,16 +42,20 @@ class Connector:
             data = {"login": self.login, "password": self.password}
             url = self.host + "/ext/authentication"
             response = requests.post(url, json=data)
+            if not response.ok:
+                raise BazileAuthError("Could not connect to Bazile API.")
             try:
                 jsonResp = response.json()
-            except json.decoder.JSONDecodeError as excp:
+            except (
+                requests.exceptions.JSONDecodeError or json.decoder.JSONDecodeError
+            ) as excp:
                 self.logger.warning(
                     f"POSTed {url} with {data} and got a non json respons {response.text}"
                 )
-                raise BazileError("Non JSON response") from excp
+                raise BazileAuthError(f"Non JSON response: {response.text}") from excp
             self.token = jsonResp["data"]["token"]
 
-        self.logger.debug(f"Token is {self.token}")
+        self.logger.debug(f"Token starts with {self.token[:6]}")
         return self.token
 
     def get(self, service):
