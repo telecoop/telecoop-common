@@ -127,7 +127,7 @@ class TcNatsHandler:
             objectType = topic
         data = json.loads(rawData)
 
-        logger.debug(f"Received message on {topic} > {eventType} : {data}")
+        logger.info(f"Received message on {topic} > {eventType} : {data}")
         handlerName = toCaml(objectType)
         if mock:
             handlerName += "Mock"
