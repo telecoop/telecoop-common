@@ -1,6 +1,21 @@
+# 1.32.0
+
+Features:
+
+- upgrading dependencies
+- nats: increase nats verbosity for received message
+- bazile: improve Bazile API auth error
+- runner: remove password from db connect string log
+- toolbox: bazile add get-token command
+
+Quality:
+
+- sellsy: reorganize class field order
+- sellsy: adding typing and logs
+
 # 1.31.1
 
-Features: 
+Features:
 
 - sellsy: adding params in E_OBJ_NOT_LOADABLE logs
 - sellsy: adding funnel New Line
@@ -23,7 +38,7 @@ Quality:
 
 # 1.30.1
 
-Fix: 
+Fix:
 
 - sellsy: add missing plan SerenPro
 
