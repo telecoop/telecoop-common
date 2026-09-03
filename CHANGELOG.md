@@ -1,3 +1,9 @@
+# 1.32.1
+
+Quality:
+
+- operators: move bazile and phenix to opertos subfolder, and add typings
+
 # 1.32.0
 
 Features:
