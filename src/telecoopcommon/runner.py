@@ -46,11 +46,11 @@ import nats
 import psycopg
 
 from . import logs
-from .bazile import Connector as BazileConnector
 from .config import TcConfig
 from .cursor import TcCursor
 from .natsWorker import TcNatsConnector
-from .operator import Connector as TelecomOperatorConnector
+from .operator import TelecomOperatorConnector
+from .operators.bazile import BazileConnector
 from .sellsy import TcSellsyConnector, TcSellsyConnectorV2
 from .telecommown import TeleCommownConnector
 from .telecoop import Connector as TcConnector

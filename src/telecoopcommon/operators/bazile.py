@@ -28,13 +28,12 @@ class BazileAuthError(Exception):
     pass
 
 
-class Connector:
-    def __init__(self, conf, logger):
+class BazileConnector:
+    def __init__(self, conf: dict, logger):
         self.host = conf["host"]
         self.login = conf["login"]
         self.password = conf["password"]
         self.logger = logger
-
         self.token = None
 
     def getToken(self):
@@ -58,7 +57,7 @@ class Connector:
         self.logger.debug(f"Token starts with {self.token[:6]}")
         return self.token
 
-    def get(self, service):
+    def get(self, service: str) -> dict:
         headers = {"Authorization": "Bearer " + self.getToken()}
         url = self.host + service
         self.logger.debug(f"Calling GET {url} with headers {headers}")
@@ -97,9 +96,13 @@ class Connector:
                 error = BazileError("Non JSON response")
                 error.statusCode = 500
                 raise error from excp
+
+        if result is None:
+            raise BazileError("Unhandled error")
+
         return result
 
-    def post(self, service, data):
+    def post(self, service: str, data: dict) -> dict:
         headers = {"Authorization": f"Bearer {self.getToken()}"}
         url = self.host + service
         self.logger.debug(f"Calling POST {url} with params {data}")
@@ -113,7 +116,7 @@ class Connector:
             raise BazileError("Non JSON response") from excp
         return result
 
-    def patch(self, service, data):
+    def patch(self, service: str, data: dict) -> dict:
         headers = {"Authorization": f"Bearer {self.getToken()}"}
         url = self.host + service
         self.logger.debug(f"Calling PATCH {url} with params {data}")
@@ -128,33 +131,32 @@ class Connector:
         return result
 
     @classmethod
-    def formatMsisdn(cls, msisdn):
+    def formatMsisdn(cls, msisdn: str) -> str:
         if msisdn[0:1] == "0":
             msisdn = "33" + msisdn[1:]
         return msisdn
 
     @classmethod
-    def getBazilePlanItem(cls, planItem):
+    def getBazilePlanItem(cls, planItem: str) -> str:
         result = planItem
         if planItem[:-1] == "kid":
             result = "PL_750"
         return result
 
-    def getMarques(self):
+    def getMarques(self) -> dict:
         return self.get("/ext/marques")
 
-    def getPlans(self):
+    def getPlans(self) -> dict:
         return self.get("/ext/plans")
 
-    def postOrder(self, params):
-        # print(params)
+    def postOrder(self, params: dict):
         return self.post("/ext/order", params)
 
-    def getSimInfo(self, nsce):
+    def getSimInfo(self, nsce: str) -> dict:
         url = f"/ext/sim/{nsce.replace(' ', '')}"
         return self.get(url)
 
-    def isSimActive(self, nsce):
+    def isSimActive(self, nsce: str) -> bool:
         isActive = None
         try:
             response = self.getSimInfo(nsce)
@@ -164,7 +166,7 @@ class Connector:
 
         return isActive
 
-    def isSimAvailable(self, nsce):
+    def isSimAvailable(self, nsce: str) -> bool:
         isAvailable = None
         try:
             response = self.getSimInfo(nsce)
@@ -177,7 +179,7 @@ class Connector:
 
         return isAvailable
 
-    def getNumFromSim(self, nsce):
+    def getNumFromSim(self, nsce: str) -> str | None:
         num = None
         try:
             response = self.getSimInfo(nsce)
@@ -187,20 +189,20 @@ class Connector:
 
         return num
 
-    def palierHF(self, accountId, amount):
+    def palierHF(self, accountId: str, amount: float) -> dict:
         url = f"/ext/account/{accountId}"
         params = {"hfmax": amount}
         return self.patch(url, params)
 
-    def authorizeHF(self, accountId, authorize=True):
+    def authorizeHF(self, accountId: str, authorize=True) -> dict:
         url = f"/ext/account/{accountId}"
         params = {"hfautorise": "oui" if authorize else "non"}
         return self.patch(url, params)
 
-    def getConso(self, accountId, month):
+    def getConso(self, accountId: str, month: str):
         return self.get(f"/ext/consommation/{accountId}/{month}")
 
-    def simSwap(self, accountId, msisdn, newNsce):
+    def simSwap(self, accountId: str, msisdn: str, newNsce: str) -> dict:
         url = "/ext/account/swap-sim"
         data = {
             "Accountid": accountId,
@@ -213,10 +215,10 @@ class Connector:
         self,
         msisdn: str,
         nsce: str,
-        data: DataStatus = None,
-        voicemail: bool = None,
-        foreignStatus: ForeignStatus = None,
-    ):
+        data: DataStatus | None = None,
+        voicemail: bool | None = None,
+        foreignStatus: ForeignStatus | None = None,
+    ) -> dict:
         if data is None and voicemail is None and foreignStatus is None:
             self.logger.info("Nothing to do, exiting")
         url = "/ext/sim/options"
@@ -233,7 +235,7 @@ class Connector:
 
         return self.post(url, params)
 
-    def simSuspend(self, msisdn, nsce):
+    def simSuspend(self, msisdn: str, nsce: str) -> dict:
         url = "/ext/sim/suspend"
         params = {
             "Msisdn": self.formatMsisdn(msisdn),
@@ -241,7 +243,7 @@ class Connector:
         }
         return self.post(url, params)
 
-    def simActivate(self, msisdn, nsce):
+    def simActivate(self, msisdn: str, nsce: str) -> dict:
         url = "/ext/sim/reactivation"
         params = {
             "Msisdn": self.formatMsisdn(msisdn),
@@ -249,7 +251,7 @@ class Connector:
         }
         return self.post(url, params)
 
-    def changePlan(self, accountId, plan, startDate):
+    def changePlan(self, accountId: str, plan: str, startDate: str) -> dict:
         data = {
             "Fidelisation": {
                 "Account_id": accountId,
@@ -262,11 +264,11 @@ class Connector:
         url = "/ext/fidelisation"
         return self.post(url, data)
 
-    def getSimPortaHistory(self, nsce):
+    def getSimPortaHistory(self, nsce: str) -> dict:
         url = f"/ext/sim/portability/history/{nsce}"
         return self.get(url)
 
-    def getSimplePortaHistory(self, nsce):
+    def getSimplePortaHistory(self, nsce: str) -> dict | None:
         url = f"/ext/sim/portability/history/{nsce}"
         try:
             response = self.get(url)
@@ -299,7 +301,7 @@ class Connector:
 
         return history
 
-    def getActivationDate(self, nsce):
+    def getActivationDate(self, nsce: str) -> str | None:
         history = self.getSimplePortaHistory(nsce)
         activationDate = None
         if history and "activated" in history:
@@ -307,10 +309,74 @@ class Connector:
 
         return activationDate
 
-    def getTerminationDate(self, nsce):
+    def getTerminationDate(self, nsce: str) -> str | None:
         history = self.getSimplePortaHistory(nsce)
         activationDate = None
         if history and "terminated" in history:
             activationDate = history["terminated"]
 
         return activationDate
+
+
+class NormalizedBazileConnector(BazileConnector):
+    def getSimInfo(self, nsce: str):
+        url = f"/ext/sim/{nsce.replace(' ', '')}"
+        response = self.get(url)
+        if "data" not in response:
+            raise BazileError(f"Unknown respons from Bazile {response}")
+        simInfo = response["data"]["Sim_information"]
+
+        def sanitize(value: str, lower=False):
+            result = None
+            if value:
+                result = value.strip()
+                if lower:
+                    result = result.lower()
+            return result
+
+        status = sanitize(simInfo["Statut"], lower=True)
+        msisdn = sanitize(simInfo["Numero"])
+        if status is None and msisdn is None:
+            status = "terminated"
+
+        result = {
+            "nsce": simInfo["Sim_serial"].strip(),
+            "imsi": None,
+            "typeSim": "SIM",
+            "operator": "ORANGE",
+            "puk1": sanitize(simInfo["Puck1"]),
+            "pin1": sanitize(simInfo["Pin1"]),
+            "puk2": sanitize(simInfo["Puck2"]),
+            "pin2": sanitize(simInfo["Pin2"]),
+            "status": status,
+            "msisdn": msisdn,
+            "operatorRef": sanitize(simInfo["Account_id"]),
+            "international": sanitize(simInfo["Appels_internationaux"]),
+            # Those too are ints so no need to sanitize
+            "sva": bool(simInfo["Sva"] and int(simInfo["Sva"]) == 1),
+            "wha": bool(simInfo["Wha"] and int(simInfo["Wha"]) == 1),
+            "data": sanitize(simInfo["Data_statut"]),
+            "voicemail": sanitize(simInfo["Messagerie_vocale"]),
+            "rio": sanitize(simInfo["RIO"]),
+            "oopAmount": sanitize(simInfo["Palier_HF"]),
+            "oopDataAuth": sanitize(simInfo["HF Data autorisé"]) == "Oui",
+            "activationDate": None,
+            "terminationDate": None,
+            "imei": simInfo["IMEI"],
+        }
+
+        history = self.getSimplePortaHistory(nsce)
+        if history:
+            if "activated" in history:
+                result["activationDate"] = history["activated"]
+            if "terminated" in history:
+                result["terminationDate"] = history["terminated"]
+        return result
+
+    def getLineStatus(self, msisdn: str, nsce: str) -> str:
+        response = self.getSimInfo(nsce)
+        if response["msisdn"] and msisdn != response["msisdn"]:
+            self.logger.warning(
+                f"msisdn and nsce ({nsce}) mismatch ({msisdn} ≠ {response['msisdn']})"
+            )
+        return response["status"]
