@@ -1,5 +1,6 @@
 import os
 from abc import ABC, abstractmethod
+from typing import Tuple
 
 from .utils import sellsyValues
 
@@ -17,7 +18,6 @@ class TcSellsyConnectorBase(ABC):
         self._connector = None
         self._getConnector()
 
-        self._connector = None
         self.ownerId = sellsyValues[self.env]["owner_id"]
         self.staff = sellsyValues[self.env]["staff"]
         self.plans = sellsyValues[self.env]["plans"]
@@ -261,4 +261,45 @@ class TcSellsyConnectorBase(ABC):
 
     @abstractmethod
     def _getConnector(self) -> None:
+        pass
+
+    # === Opportunities
+
+    @abstractmethod
+    def getOpportunity(self, opportunityId: str):
+        pass
+
+    # === Files
+
+    @abstractmethod
+    def fileUpload(
+        self,
+        filePath: str,
+        fileName: str,
+        fileMimetype: str,
+        resource: str,
+        resourceId: str,
+    ) -> Tuple[bool, dict]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def fileDelete(self, fileId: str) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def getClientIndividualFiles(self, clientId: str):
+        raise NotImplementedError
+
+    @abstractmethod
+    def getClientProFiles(self, clientId: str):
+        raise NotImplementedError
+
+    # === Payments
+
+    @abstractmethod
+    def createPayment(self, invoiceId, paymentDate, amount, label, doctype):
+        pass
+
+    @abstractmethod
+    def deletePayment(self, paymentId, invoiceId, docType):
         pass

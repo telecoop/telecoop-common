@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from decimal import Decimal
 from json import JSONDecodeError
+from typing import Tuple
 
 import oauthlib.oauth1 as oauth1
 import pytz
@@ -486,10 +487,10 @@ class TcSellsyConnector(TcSellsyConnectorBase):
 
         return result
 
-    def getOpportunity(self, id):
-        o = SellsyOpportunity(id)
-        o.loadWithValues(self.getOpportunityValues)
-        return o
+    def getOpportunity(self, opportunityId) -> SellsyOpportunity:
+        opp = SellsyOpportunity(opportunityId)
+        opp.loadWithValues(self.getOpportunityValues)
+        return opp
 
     @classmethod
     def getSourceIdFromValue(cls, source):
@@ -1011,6 +1012,29 @@ class TcSellsyConnector(TcSellsyConnectorBase):
             "paydate": {"id": self.paydateId, "xdays": nbDays},
         }
         self.api(method="Document.update", params=params)
+
+    # === Files
+
+    def fileUpload(
+        self,
+        filePath: str,
+        fileName: str,
+        fileMimetype: str,
+        resource: str,
+        resourceId: str,
+    ) -> Tuple[bool, dict]:
+        raise NotImplementedError
+
+    def fileDelete(self, fileId: str) -> bool:
+        raise NotImplementedError
+
+    def getClientIndividualFiles(self, clientId: str):
+        raise NotImplementedError
+
+    def getClientProFiles(self, clientId: str):
+        raise NotImplementedError
+
+    # === Payments
 
     def createPayment(self, invoiceId, paymentDate, amount, label, doctype):
         params = {

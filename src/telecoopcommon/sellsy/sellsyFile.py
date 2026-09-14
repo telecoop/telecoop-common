@@ -1,27 +1,23 @@
-from .sellsyError import SellsyApiError
+from typing import Tuple
+
+from .sellsyConnectorBase import TcSellsyConnectorBase
 
 
 class SellsyFile:
+    def __init__(self, sellsyConnector: TcSellsyConnectorBase) -> None:
+        self.connector = sellsyConnector
+
     def upload(
         self,
-        sellsyConnector,
-        logger,
-        filePath,
-        fileName,
-        fileMimetype,
-        resource,
-        resourceId,
-    ):
-        files = {
-            "file": (fileName, open(filePath, "rb"), fileMimetype, {"Expires": "0"}),
-        }
+        filePath: str,
+        fileName: str,
+        fileMimetype: str,
+        resource: str,
+        resourceId: str,
+    ) -> Tuple[bool, dict]:
+        return self.connector.fileUpload(
+            fileName, filePath, fileMimetype, resource, resourceId
+        )
 
-        response = None
-        try:
-            response = sellsyConnector.api2Post(
-                f"/v2/{resource}/{resourceId}/files", files=files
-            )
-        except SellsyApiError as SAE:
-            logger.warning(SAE)
-
-        return response
+    def delete(self, fileId: str) -> bool:
+        return self.connector.fileDelete(fileId)

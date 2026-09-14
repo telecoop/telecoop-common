@@ -3,9 +3,8 @@ from datetime import datetime
 
 import pytz
 
-from telecoopcommon.sellsy.sellsyError import SellsyError
-
 from .sellsyClient import SellsyClient
+from .sellsyError import SellsyError
 from .utils import getSourceIdFromValue, sellsyValues, sourceNameFromId, stepNameFromId
 
 
