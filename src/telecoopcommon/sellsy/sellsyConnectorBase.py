@@ -215,6 +215,7 @@ class TcSellsyConnectorBase(ABC):
 
         # ===
         self.services = None
+        self.serviceCategories = None
         self.itemIds = None
         self.modelIds = None
         self.taxId = None

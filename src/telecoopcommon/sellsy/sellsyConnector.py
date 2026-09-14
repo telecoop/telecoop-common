@@ -12,7 +12,11 @@ import requests_oauthlib
 
 from .sellsyClient import SellsyClient
 from .sellsyConnectorBase import TcSellsyConnectorBase
-from .sellsyError import SellsyAuthenticateError, SellsyError, TcSellsyError
+from .sellsyError import (
+    SellsyAuthenticateError,
+    SellsyError,
+    TcSellsyError,
+)
 from .sellsyMemberOpportunity import SellsyMemberOpportunity
 from .sellsyOpportunity import SellsyOpportunity
 from .utils import sellsyValues
@@ -821,6 +825,15 @@ class TcSellsyConnector(TcSellsyConnectorBase):
             f"Could not opportunity with msisdn {msisdn} for client #{clientId}"
         )
 
+    def getServiceCategories(self):
+        params = {"includeImages": "N"}  # do not include images
+        if self.serviceCategories is None:
+            self.serviceCategories = self.api(
+                method="Catalogue.getCategories", params=params
+            )
+
+        return self.serviceCategories
+
     def getServices(self):
         if self.services is None:
             params = {
@@ -828,6 +841,8 @@ class TcSellsyConnector(TcSellsyConnectorBase):
                 "pagination": {
                     "nbperpage": 500,
                 },
+                "search": {"actif": "Y", "isEnabled": "Y"},
+                "includeImages": "N",
             }
             response = self.api(method="Catalogue.getList", params=params)
             services = response["result"]
@@ -845,6 +860,7 @@ class TcSellsyConnector(TcSellsyConnectorBase):
                         "tradename": service["tradename"],
                         "type": service["type"],
                         "quantity": service["qt"],
+                        "categoryId": service["categoryid"],
                     }
             self.services = data
 
