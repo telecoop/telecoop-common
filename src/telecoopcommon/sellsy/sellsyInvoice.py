@@ -369,5 +369,5 @@ class SellsyInvoice:
             self.enableStripe(self.id, invoiceData, syC, logger)
         else:
             logger.warning(
-                "Cannot enable Stripe because we don't have invoice content in db"
+                f"Cannot enable Stripe because we don't have invoice content in db {paymentId}"
             )
