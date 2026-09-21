@@ -348,7 +348,11 @@ class TcRunner(ABC):
         if version == 2:
             return TcSellsyConnectorV2(self.config["Sellsy"], self.logger)
         else:
-            return TcSellsyConnector(self.config["Sellsy"], self.logger)
+            return TcSellsyConnector(
+                self.config["Sellsy"],
+                self.logger,
+                emailTemplates=self.config["SellsyEmailTemplates"],
+            )
 
     def getTelecoopConnector(self):
         return TcConnector(self.config["TeleCoopApi"], self.logger)

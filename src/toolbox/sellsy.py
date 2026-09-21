@@ -14,14 +14,18 @@ from telecoopcommon.sellsy import (
 )
 
 
-def uploadFile(self):
+def uploadFile(self, kwargs: str):
+    """Upload file to Sellsy
+    {"fileName":"toto.pdf", "filePath": "/tmp/toto.pdf", "fileMimetype":"application/pdf", "resourceId": "11121827", "resource":"opportunities"}
+    """
     logger = self.logger
     sc = self.getSellsyConnector()
-    kargs = json.loads(self.getArg("json"))
-    # {"fileName":"toto.pdf", "filePath": "/tmp/toto.pdf", "fileMimetype":"application/pdf", "resourceId": "11121827", "resource":"opportunities"}
-    upload = SellsyFile().upload(sellsyConnector=sc, logger=logger, **kargs)
+    kargs = json.loads(kwargs)
+    upload = SellsyFile(sc).upload(**kargs)
     if upload:
-        logger.debug("Upload response: " + upload.text)
+        logger.debug("File uploaded")
+    else:
+        logger.error("Could not upload file")
 
 
 def getClient(self):
@@ -372,6 +376,7 @@ commands = {
     "create-opportunities": lambda runner: createOpportunities(
         runner, runner.getArg("clientId"), runner.getArg("count", "int")
     ),
+    "upload-file": lambda runner: uploadFile(runner, runner.getArg("json")),
 }
 
 

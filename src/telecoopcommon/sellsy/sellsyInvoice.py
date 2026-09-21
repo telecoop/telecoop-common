@@ -5,8 +5,7 @@ from decimal import Decimal
 import phpserialize
 import pytz
 
-from telecoopcommon.sellsy import TcSellsyConnector
-
+from .sellsyConnectorBase import TcSellsyConnectorBase
 from .sellsyError import SellsyError
 
 
@@ -79,7 +78,7 @@ class SellsyInvoice:
             self.id, paymentDate, amount, label, self.docType
         )
 
-    def deletePayment(self, paymentId, sellsyConnector: TcSellsyConnector):
+    def deletePayment(self, paymentId, sellsyConnector: TcSellsyConnectorBase):
         sellsyConnector.deletePayment(paymentId, self.id, self.docType)
 
     @classmethod

@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 import pytz
 
+from telecoopcommon.sellsy.sellsyConnectorBase import TcSellsyConnectorBase
+
 from .utils import sellsyValues
 
 
@@ -307,3 +309,14 @@ class SellsyClient:
             connector.updateCustomField(
                 "client", self.id, connector.cfIdStatusClientMobile, status
             )
+
+    def deleteFiles(self, connector: TcSellsyConnectorBase, clientId: str) -> None:
+        """Delete all files of a client (pro or individual)"""
+
+        if self.type == "pro":
+            fileIds = connector.getClientIndividualFiles(clientId)
+        else:
+            fileIds = connector.getClientIndividualFiles(clientId)
+
+        for fileId in fileIds:
+            fileIds = connector.fileDelete(fileId)
