@@ -4,6 +4,8 @@ import pytest
 import pytz
 
 from telecoopcommon import sellsy
+from telecoopcommon.config import TcConfig
+from telecoopcommon.sellsy.sellsyConnector import TcSellsyConnector
 
 parisTZ = pytz.timezone("Europe/Paris")
 
@@ -14,10 +16,10 @@ clientIdNoOpportunity = 33309487
 
 @pytest.fixture(scope="module")
 def test_connector(test_config, test_logger):
-    return sellsy.TcSellsyConnector(test_config["SellsyDev"], test_logger)
+    return sellsy.TcSellsyConnector(test_config["Sellsy"], test_logger)
 
 
-@pytest.mark.skip(reason="Can only be run manualy on live Sellsy Dev environment")
+@pytest.mark.skipif("Sellsy" not in TcConfig(), reason="Sellsy not in config")
 class TestSellyV1:
     def test_get_opportunity(self, test_connector):
         id = opportunityIdPG
@@ -236,3 +238,13 @@ class TestSellyV1:
         # Shouldn't use the connector, so passing an empty object shouldn't be a problem
         c = o.getClient(object())
         assert c.id == str(clientIdPG), "Second access, check client id"
+
+    def test_createTask(self, test_connector: TcSellsyConnector):
+        testInvoiceId = 52697471  # should match existing invoice in Sellsy Dev env
+        data = {
+            "eventId": testInvoiceId,
+            "description": "Test task",
+            "eventType": "facture",
+            "dateDelta": {"days": 0},
+        }
+        test_connector.createTask(data)

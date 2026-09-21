@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from decimal import Decimal
 from json import JSONDecodeError
-from typing import Tuple
+from typing import List, Tuple
 
 import oauthlib.oauth1 as oauth1
 import pytz
@@ -147,8 +147,12 @@ class TcSellsyConnector(TcSellsyConnectorBase):
         }
         return self.api(method="CustomFields.recordValues", params=params)
 
-    def createTask(self, data: dict) -> int:
-        """Wrapper to create a task in Sellsy with pre-defined owners"""
+    def createTask(self, data: dict, staffIds: List[int] | None = None) -> int:
+        """Wrapper to create a task in Sellsy with pre-defined owners
+        This is set by default to the common support account named "Support Client"
+        """
+        if staffIds is None:
+            staffIds = [self.staff["support-client-common"]]
 
         self.logger.info(
             f"Creating task in Sellsy ({data['eventType']} #{data['eventId']})"
@@ -174,15 +178,10 @@ class TcSellsyConnector(TcSellsyConnectorBase):
                 "isPrivate": "N",
                 "canEdit": "Y",
                 "staffids": [
-                    self.staff["support-client"],
+                    self.staff["support-client-common"],
                     self.staff["support-societaire"],
                 ],
-                "staffs": [
-                    {"id": self.staff["support-client"], "canEdit": "Y"},
-                    # {"id": self.staff["support-client-2"], "canEdit": "Y"},
-                    {"id": self.staff["support-client-3"], "canEdit": "Y"},
-                    {"id": self.staff["support-client-4"], "canEdit": "Y"},
-                ],
+                "staffs": [{"id": i, "canEdit": "Y"} for i in staffIds],
             },
         }
         if data["eventType"] == "facture":

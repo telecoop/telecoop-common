@@ -45,7 +45,7 @@ sellsyValues = {
     "DEV": {
         "owner_id": 170714,
         "staff": {
-            "support-client": 170761,
+            "support-client-common": 170761,
             "support-client-2": 170761,
             "support-client-3": 170761,
             "support-client-4": 170761,
@@ -249,10 +249,12 @@ sellsyValues = {
     "PROD": {
         "owner_id": 170799,
         "staff": {
-            "support-client": 170799,  # Christine (support-client)
-            "support-client-3": 500679,  # Sophie
+            "support-client-common": 170799,  # Support Client
             "support-client-4": 304191,  # Inès
-            "commercial-pro-1": 170799,  # Christine (support-client)
+            "support-client-5": 681350,  # Christine P.
+            "support-client-6": 681351,  # Mael
+            "support-client-7": 605034,  # Christine
+            "commercial-pro-1": 170799,  # Support Client
             "commercial-pro-2": 608017,  # Hayan
             "societariat": 212354,
             "support-societaire": 183494,
