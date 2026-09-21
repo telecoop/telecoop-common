@@ -1,3 +1,17 @@
+# 1.33.0
+
+Features:
+
+- sellsy:
+  - V2 connector is now operational
+  - adding entrypoint to get service categories
+  - adding support for File operations
+  - task: affect task to common support staff by default
+
+Quality:
+
+- sellsy: add paymentId on stripe failure
+
 # 1.32.1
 
 Quality:
