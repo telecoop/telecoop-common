@@ -5,7 +5,7 @@ from requests_oauth2client import ApiClient, OAuth2Client
 from requests_oauth2client.auth import OAuth2ClientCredentialsAuth
 
 from .sellsyConnectorBase import TcSellsyConnectorBase
-from .sellsyError import SellsyApiError
+from .sellsyError import SellsyApiError, SellsyError
 
 TOKEN_URL = "https://login.sellsy.com/oauth2/access-tokens"
 SMART_TAGS_ID = {""}
@@ -36,7 +36,12 @@ class TcSellsyConnectorV2(TcSellsyConnectorBase):
     def _get(self, endpoint: str) -> dict:
         self.logger.debug(f"Calling Sellsy API v2 GET {endpoint}")
         response = self._connector.get(endpoint)
-        return response.json()
+        responseJson = response.json()
+        if "error" in responseJson:
+            raise SellsyError(
+                responseJson["error"]["code"], message=responseJson["error"]
+            )
+        return responseJson
 
     def _post(self, endpoint: str, json: str | None = None, files: dict | None = None):
         headers = {"cache-control": "no-cache"}
@@ -140,6 +145,7 @@ class TcSellsyConnectorV2(TcSellsyConnectorBase):
 
     def getClientIndividualFiles(self, clientId: str) -> list:
         results = self._get(f"individuals/{clientId}/files")
+        print(results)
         return [i["id"] for i in results["data"]]
 
     def getClientProFiles(self, clientId: str) -> list:
