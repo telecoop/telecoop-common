@@ -1,3 +1,9 @@
+# 1.33.1
+
+Fix:
+
+- sellsy: catch sellsy api error
+
 # 1.33.0
 
 Features:
@@ -35,7 +41,7 @@ Quality:
 
 # 1.31.1
 
-Features:
+Featuresgg:
 
 - sellsy: adding params in E_OBJ_NOT_LOADABLE logs
 - sellsy: adding funnel New Line
