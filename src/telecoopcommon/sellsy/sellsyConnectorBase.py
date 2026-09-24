@@ -13,7 +13,6 @@ class TcSellsyConnectorBase(ABC):
         self.logger = logger
         self.values = sellsyValues[self.env]
         self.url = ""
-        self.conf = conf
         self.logger = logger
         self._connector = None
         self._getConnector()
@@ -61,6 +60,8 @@ class TcSellsyConnectorBase(ABC):
         self.cfidPackInterUsed = customFields["pack-data-roaming-used"]
 
         self.cfidInvoicingSetting = customFields["choix-facturation"]
+
+        # === Pros
         self.cfidProNbSims = customFields["pro-nb-sims"]
         self.cfidProNbPorta = customFields["pro-nb-porta"]
         self.cfidProDateEngagement = customFields["pro-date-engagement"]
@@ -76,6 +77,8 @@ class TcSellsyConnectorBase(ABC):
         self.cfidProDonneesMobiles = customFields["pro-donnees-mobiles"]
         self.cfidProAchatsContenu = customFields["pro-achats-contenu"]
         self.cfidProAchatsSurtaxes = customFields["pro-achats-surtaxes"]
+
+        # === Membership
         self.cfidMembershipRef = customFields["membership-ref"]
         self.cfidMembershipNbShares = customFields["membership-nb-shares"]
         self.cfidMembershipAmount = customFields["membership-amount"]
@@ -86,6 +89,7 @@ class TcSellsyConnectorBase(ABC):
         self.cfidMembershipCategory = customFields["membership-category"]
         self.cfidMembershipFormSentDate = customFields["membership-form-sent-date"]
 
+        # === Slimpay
         self.cfidSlimpayMandateStatus = customFields["slimpay-mandate-status"]
         self.cfidSlimpayPaymentDate = customFields["slimpay-date-prelevement"]
         self.cfidSlimpayRefundDate = customFields["slimpay-refund-date"]
@@ -93,6 +97,7 @@ class TcSellsyConnectorBase(ABC):
         self.cfidSlimpayRejectReason = customFields["slimpay-reject-reason"]
         self.cfidSlimpayPaymentStatus = customFields["slimpay-payment-status"]
 
+        # === Opportunities
         self.opportunitySourceInterne = sellsyValues[self.env][
             "opportunity_source_interne"
         ]
