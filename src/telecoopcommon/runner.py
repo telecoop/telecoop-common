@@ -36,6 +36,7 @@ import code
 import glob
 import importlib
 import os
+import readline  # noqa usefull for history in interactive
 import sys
 import traceback
 from abc import ABC
