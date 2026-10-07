@@ -5,13 +5,14 @@
 ### Bug Fixes
 
 - **sellsy:** wrong call to Individual on deleteFiles (31447f2)
-# 1.33.1
+
+## 1.33.1
 
 Fix:
 
 - sellsy: catch sellsy api error
 
-# 1.33.0
+## 1.33.0
 
 Features:
 
@@ -25,13 +26,13 @@ Quality:
 
 - sellsy: add paymentId on stripe failure
 
-# 1.32.1
+## 1.32.1
 
 Quality:
 
 - operators: move bazile and phenix to opertos subfolder, and add typings
 
-# 1.32.0
+## 1.32.0
 
 Features:
 
@@ -46,7 +47,7 @@ Quality:
 - sellsy: reorganize class field order
 - sellsy: adding typing and logs
 
-# 1.31.1
+## 1.31.1
 
 Featuresgg:
 
@@ -58,7 +59,7 @@ Quality:
 
 - operator: improve debug log
 
-# 1.31.0
+## 1.31.0
 
 Feature:
 
@@ -69,25 +70,25 @@ Quality:
 - runner: move connectors from cli.py to common Runner
 - sellsy: use common base class for v1 and v2 connectors
 
-# 1.30.1
+## 1.30.1
 
 Fix:
 
 - sellsy: add missing plan SerenPro
 
-# 1.30.0
+## 1.30.0
 
 Feature:
 
 - telecommown: adding new telecommown module
 
-# 1.29.1
+## 1.29.1
 
 Feature
 
 - runner: can now handle 'list' type in getArg
 
-# 1.29.0
+## 1.29.0
 
 Feature
 
