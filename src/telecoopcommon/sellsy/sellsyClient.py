@@ -314,7 +314,7 @@ class SellsyClient:
         """Delete all files of a client (pro or individual)"""
 
         if self.type == "pro":
-            fileIds = connector.getClientIndividualFiles(clientId)
+            fileIds = connector.getClientProFiles(clientId)
         else:
             fileIds = connector.getClientIndividualFiles(clientId)
 
