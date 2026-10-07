@@ -201,7 +201,9 @@ class TcSellsyConnector(TcSellsyConnectorBase):
 
     def getClientRef(self, clientId: int) -> str:
         response = self.api(method="Client.getOne", params={"clientid": clientId})
-        return response["ident"]
+        if "client" not in response and "ident" not in response["client"]:
+            raise TcSellsyError(f"'ident' not found in response {response}")
+        return response["client"]["ident"]
 
     def getTeleCommownOptinDate(self, clientId=None, opportunityId=None):
         if clientId is None and opportunityId is None:
