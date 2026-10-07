@@ -32,6 +32,7 @@ modules = [
 """
 
 import argparse
+import code
 import glob
 import importlib
 import os
@@ -123,7 +124,8 @@ def cmdline(defaultPackageName, additionalCommands=[]):
             #    importlib.import_module(f".{p}", package=module["name"]), "commands"
             # )
         ]
-        + additionalCommands,
+        + additionalCommands
+        + ["shell"],
         help="command",
     )
     parser.add_argument(
@@ -376,6 +378,15 @@ class TcRunner(ABC):
             self.logger.debug("NATS: Connecting using url config")
             nConn = await nats.connect(self.config["Nats"]["url"])
         return TcNatsConnector(nConn)
+
+    def shell(self):
+        """Interactive shell"""
+        self.logger.info("Running interactive shell")
+
+        variables = globals().copy()
+        variables.update(locals())
+        shell = code.InteractiveConsole(variables)
+        shell.interact()
 
 
 def main(serviceName, runnerClass, defaultPackageName, additionalCommands):
