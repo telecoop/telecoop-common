@@ -1,3 +1,10 @@
+# Changelog
+
+## 1.33.2 (2026-10-07)
+
+### Bug Fixes
+
+- **sellsy:** wrong call to Individual on deleteFiles (31447f2)
 # 1.33.1
 
 Fix:
