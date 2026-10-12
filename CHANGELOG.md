@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.34.0 (2026-10-12)
+
+### Documentation
+
+- realign CHANGELOG with new format (e9d3bc3)
+
+### Features
+
+- **sellsy:** add readline package to allow interactive shell history navigation
+  (2cec7ff)
+- **runner:** adding interactive shell (a9d4359)
+
+### Bug Fixes
+
+- **api:** typo in promo-code 'scope' (58603e8)
+- **sellsy:** incorrect result parsing getClientRef of v1 client (d1f5825)
+
 ## 1.33.2 (2026-10-07)
 
 ### Bug Fixes
