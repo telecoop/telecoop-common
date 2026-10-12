@@ -45,7 +45,7 @@ class Connector:
             "code_type": type,
             "amount": amount,
             "description": description,
-            "scope": "scope",
+            "scope": scope,
             "date_start": dateStart.isoformat(),
             "date_end": dateEnd.isoformat(),
         }
