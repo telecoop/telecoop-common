@@ -60,7 +60,7 @@ class Connector:
         return self.connector.get(f"/promo_codes/codes/{code}", allow_redirects=True)
 
     def getCodes(self, codeType=None):
-        url = "/promo_codes/codes"
+        url = "/promo_codes/codes/"
         if codeType is not None:
             url += f"?code_type={codeType}"
         return self.connector.get(url, allow_redirects=True)

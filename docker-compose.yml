@@ -8,7 +8,7 @@ services:
     volumes:
       - ./var/log:/var/log/telecoop-common
       - ./src:/usr/local/telecoop-common
-      - ./conf:/etc/telecoop-common
+      - ./conf:/etc/telecoop
     environment:
       - ENV=DOCKER
 
