@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.1 (2026-10-13)
+
+### Bug Fixes
+
+- **nats:** fixed python 3.14 error on asyncio.get_event_loop (e0d3430)
+
 ## 1.34.0 (2026-10-12)
 
 ### Documentation
