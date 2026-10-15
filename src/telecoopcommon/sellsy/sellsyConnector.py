@@ -414,19 +414,29 @@ class TcSellsyConnector(TcSellsyConnectorBase):
 
         return result
 
-    def getClientFromRef(self, ref):
+    def getClientFromRef(self, ref: str) -> SellsyClient:
         params = {"search": {"ident": ref}}
         clients = self.api(method="Client.getList", params=params)
+
+        # parse result
+        if "result" not in clients and not clients["result"]:
+            raise TcSellsyError(
+                f"Could not parse Client.getList results. Result={clients}"
+            )
+
+        # load first client from results
         client = None
-        if clients["result"]:
-            for clientId, cli in clients["result"].items():
-                if cli["ident"] == "CLI00001001":
-                    # Référence ayant servie de test lors de la mise en prod du parcours souscription
-                    continue
-                if cli["ident"] == ref:
-                    client = SellsyClient(clientId)
-                    client.loadWithValues(cli)
-                    break
+        for clientId, cli in clients["result"].items():
+            if cli["ident"] == "CLI00001001":
+                # Référence ayant servie de test lors de la mise en prod du parcours souscription
+                continue
+            if cli["ident"] == ref:
+                client = SellsyClient(clientId)
+                client.loadWithValues(cli)
+                break
+
+        if not client:
+            raise TcSellsyError(f"Could not get Client with ref={ref}")
 
         return client
 
