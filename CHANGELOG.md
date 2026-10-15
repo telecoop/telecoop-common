@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.35.0 (2026-10-15)
+
+### Features
+
+- **models:** update TcDataClassBase and add Crm_Client (a794e3c)
+- **sellsyConnector:** raise error on empty getClientFromRef result (5b6f360)
+
+### Bug Fixes
+
+- **sellsy:** set default values to refereeCode and promoCode (c94fab6)
+- **sellsyClient:** add isPro argument (8a39b90)
+- Added missing staff in dev (9ca2312)
+- **nats:** fixed python 3.14 error on asyncio.get_event_loop (e0d3430)
+
 ## 1.34.2 (2026-10-15)
 
 ### Bug Fixes
