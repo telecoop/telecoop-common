@@ -145,7 +145,6 @@ class TcSellsyConnectorV2(TcSellsyConnectorBase):
 
     def getClientIndividualFiles(self, clientId: str) -> list:
         results = self._get(f"individuals/{clientId}/files")
-        print(results)
         return [i["id"] for i in results["data"]]
 
     def getClientProFiles(self, clientId: str) -> list:

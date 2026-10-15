@@ -56,10 +56,11 @@ class SellsyClient:
         self.sponsorNbUse = None
         self.sponsorNbDiscount = None
         self.sponsorNbCodeDonated = None
-        self.refereeCode: str
-        self.promoCode: str
+        self.refereeCode: str = ""
+        self.promoCode: str = ""
         self.slimpayMandateStatus = None
         self.discounts: int
+        self.isPro: bool = False
 
         self.lines = []
 

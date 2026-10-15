@@ -1,9 +1,12 @@
 from dataclasses import InitVar, dataclass, fields
+from datetime import date, datetime
 
 import inflection
 from psycopg import Cursor, sql
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
+
+from telecoopcommon.cursor import TcCursor
 
 
 class NotInDBError(RuntimeError):
@@ -15,8 +18,7 @@ class NamingError(TypeError):
 
 
 @dataclass
-class TcDataClass:
-    id: int | None
+class TcDataClassBase:
     schema: InitVar[str | None] = None
     tableName: InitVar[str | None] = None
     cursor: InitVar[Cursor | None] = None
@@ -37,10 +39,114 @@ class TcDataClass:
         self._cursor = cursor
         self._allData = allData
 
-    def save(self):
-        if not hasattr(self, "id"):
-            raise RuntimeError("Can't handle save without id column")
+    @classmethod
+    def _getFields(cls):
+        return sql.SQL(",").join([sql.Identifier(f.name) for f in fields(cls)])
 
+    @classmethod
+    def _hasIdentifier(cls, **kwargs):
+        return len(kwargs) == len(cls.NATURAL_KEY) and set(kwargs) == set(
+            cls.NATURAL_KEY
+        )
+
+    @classmethod
+    def _getIdentifierFilter(cls, **kwargs):
+        if not cls._hasIdentifier(**kwargs):
+            raise RuntimeError(
+                f"Expected either id or those params : {cls.NATURAL_KEY}, got {kwargs}"
+            )
+        # Don't use f"{}" form to keep query type as LiteralString
+        return " AND ".join(["{" + k + "} = %(" + k + ")s" for k in cls.NATURAL_KEY])
+
+    @classmethod
+    def __get_values__(cls, schema, tableName, cursor, **kwargs):
+        query = """
+          SELECT {fields}
+            FROM {schema}.{tableName}
+           WHERE
+        """
+        query += cls._getIdentifierFilter(**kwargs)
+        rowStyle = cursor.row_factory
+        cursor.row_factory = dict_row
+        identifierFields = {k: sql.Identifier(k) for k in cls.NATURAL_KEY}
+        cursor.execute(
+            sql.SQL(query).format(
+                schema=sql.Identifier(schema),
+                tableName=sql.Identifier(tableName),
+                fields=cls._getFields(),
+                **identifierFields,
+            ),
+            kwargs,
+        )
+        result = cursor.fetchone()
+        cursor.row_factory = rowStyle
+        return result
+
+    @classmethod
+    def fromDb(cls, cursor, **kwargs):
+        schema, tableName = cls.__get_schema_and_table__()
+        values = cls.__get_values__(cursor, schema, tableName, **kwargs)
+        return cls(cursor=cursor, allData=True, **values)
+
+    @classmethod
+    def __getMany__(cls, cursor, query, params=None):
+        schema, tableName = cls.__get_schema_and_table__()
+
+        rowStyle = cursor.row_factory
+        cursor.row_factory = dict_row
+        cursor.execute(
+            sql.SQL(query).format(
+                fields=cls._getFields(),
+                schema=sql.Identifier(schema),
+                tableName=sql.Identifier(tableName),
+            ),
+            params,
+        )
+        results = cursor.fetchall()
+        cursor.row_factory = rowStyle
+        return [cls(cursor=cursor, allData=True, **row) for row in results]
+
+    def load(self, **kwargs):
+        if len(kwargs) == 0:
+            kwargs = {}
+            for f in self.NATURAL_KEY:
+                assert getattr(self, f) is not None, f"{f} is None"
+                kwargs[f] = getattr(self, f)
+        values = self.__class__.__get_values__(
+            self._schema, self._tableName, self._cursor, **kwargs
+        )
+        if values is None:
+            key = ",".join(map(str, [getattr(self, f) for f in self.NATURAL_KEY]))
+            raise NotInDBError(f"{key} not found")
+        for f in fields(self):
+            setattr(self, f.name, values[f.name])
+        self._allData = True
+
+
+@dataclass
+class TcDataClassView(TcDataClassBase):
+    def save(self):
+        raise RuntimeError("It's a view, no saving ;-)")
+
+
+@dataclass
+class TcDataClass(TcDataClassBase):
+    id: int | None = None
+
+    @classmethod
+    def _hasIdentifier(cls, **kwargs):
+        return "id" in kwargs or super()._hasIdentifier(**kwargs)
+
+    @classmethod
+    def _getIdentifierFilter(cls, **kwargs):
+        result = ""
+        if "id" in kwargs:
+            result = "id = %(id)s"
+        else:
+            result = super()._getIdentifierFilter(**kwargs)
+        return result
+
+    def save(self):
         query = """
           INSERT INTO {{schema}}.{{tableName}} ({{fields}}) VALUES ({insertValues})
         """
@@ -63,6 +169,14 @@ class TcDataClass:
             updateNkValues = ",".join(
                 [f"{{{f}}} = EXCLUDED.{{{f}}}" for f in self.NATURAL_KEY]
             )
+
+        for upperBound in ["date_end", "date_terminated"]:
+            if (
+                hasattr(self, upperBound)
+                and not self._allData
+                and getattr(self, upperBound) is None
+            ):
+                setattr(self, upperBound, "infinity")
 
         if self.id is None:
             query += " RETURNING *"
@@ -118,7 +232,7 @@ class TcDataClass:
 
     def load(self, **kwargs):
         if len(kwargs) == 0:
-            if hasattr(self, "id") and self.id is not None:
+            if self.id is not None:
                 kwargs = {"id": self.id}
             else:
                 kwargs = {}
@@ -129,7 +243,7 @@ class TcDataClass:
             self._schema, self._tableName, self._cursor, **kwargs
         )
         if values is None:
-            if hasattr(self, "id") and self.id is not None:
+            if self.id is not None:
                 raise NotInDBError(f"{self.id} not found")
             else:
                 key = ",".join(map(str, [getattr(self, f) for f in self.NATURAL_KEY]))
@@ -138,63 +252,51 @@ class TcDataClass:
             setattr(self, f.name, values[f.name])
         self._allData = True
 
-    @classmethod
-    def _getFields(cls):
-        return sql.SQL(",").join([sql.Identifier(f.name) for f in fields(cls)])
+
+@dataclass
+class Crm_Client(TcDataClass):
+    id: int | None = None
+    reference: str | None = None
+    name: str | None = None
+    firstname: str | None = None
+    email: str | None = None
+    create_date: datetime | None = None
+    sellsy_id: int | None = None
+    phone_number: str | None = None
+    sellsy_status: str | None = None
+    client_type: str | None = None
+    company_name: str | None = None
+    is_pro: bool | None = None
+    automatic_validation: bool | None = None
+    birthdate: date | None = None
+    refereeCode: str = ""
+    sponsorCode: str = ""
+    promoCode: str = ""
+    discounts: int | None = None
+    preferred_payment_method: str | None = None
+    slimpayMandateStatus: str | None = None
+    NATURAL_KEY = ["reference"]
 
     @classmethod
-    def __get_values__(cls, schema, tableName, cursor, **kwargs):
-        if (
-            "id" not in kwargs
-            and len(kwargs) != len(cls.NATURAL_KEY)
-            and set(kwargs) != set(cls.NATURAL_KEY)
-        ):
-            raise RuntimeError(
-                f"Expected either id or those params : {cls.NATURAL_KEY}, got {kwargs}"
-            )
+    def fromSellsyId(cls, sellsyId: int, cursor: TcCursor):
         query = """
           SELECT {fields}
             FROM {schema}.{tableName}
-           WHERE
+           WHERE sellsy_id = %s
         """
-        if "id" in kwargs:
-            query += "id = %(id)s"
-        else:
-            query += " AND ".join([f"{{{k}}} = %({k})s" for k in cls.NATURAL_KEY])
-        rowStyle = cursor.row_factory
-        cursor.row_factory = dict_row
-        cursor.execute(
-            sql.SQL(query).format(
-                schema=sql.Identifier(schema),
-                tableName=sql.Identifier(tableName),
-                fields=cls._getFields(),
-                **({k: sql.Identifier(k) for k in cls.NATURAL_KEY}),
-            ),
-            kwargs,
-        )
-        result = cursor.fetchone()
-        cursor.row_factory = rowStyle
-        return result
+        result = cls.__getMany__(cursor, query, params=[sellsyId])
+        if len(result) == 0:
+            raise NotInDBError()
+        return result.pop(0)
 
     @classmethod
-    def fromDb(cls, cursor, **kwargs):
-        schema, tableName = cls.__get_schema_and_table__()
-        values = cls.__get_values__(cursor, schema, tableName, **kwargs)
-        return cls(cursor=cursor, allData=True, **values)
-
-    @classmethod
-    def __getMany__(cls, cursor, query):
-        schema, tableName = cls.__get_schema_and_table__()
-
-        rowStyle = cursor.row_factory
-        cursor.row_factory = dict_row
-        cursor.execute(
-            sql.SQL(query).format(
-                fields=cls._getFields(),
-                schema=sql.Identifier(schema),
-                tableName=sql.Identifier(tableName),
-            )
-        )
-        results = cursor.fetchall()
-        cursor.row_factory = rowStyle
-        return [cls(cursor=cursor, allData=True, **row) for row in results]
+    def fromReference(cls, referense: str, cursor: TcCursor):
+        query = """
+          SELECT {fields}
+            FROM {schema}.{tableName}
+           WHERE referense = %s
+        """
+        result = cls.__getMany__(cursor, query, params=[referense])
+        if len(result) == 0:
+            raise NotInDBError()
+        return result.pop(0)
