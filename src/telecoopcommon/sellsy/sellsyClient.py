@@ -60,6 +60,7 @@ class SellsyClient:
         self.promoCode: str
         self.slimpayMandateStatus = None
         self.discounts: int
+        self.isPro: bool = False
 
         self.lines = []
 
