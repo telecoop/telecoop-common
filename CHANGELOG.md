@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.35.1 (2026-10-15)
+
+### Bug Fixes
+
+- **models:** rename args and fixed reference typo (a449bcd)
+
 ## 1.35.0 (2026-10-15)
 
 ### Features
