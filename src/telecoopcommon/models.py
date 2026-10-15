@@ -269,12 +269,12 @@ class Crm_Client(TcDataClass):
     is_pro: bool | None = None
     automatic_validation: bool | None = None
     birthdate: date | None = None
-    refereeCode: str = ""
-    sponsorCode: str = ""
-    promoCode: str = ""
+    referee_code: str = ""
+    sponsor_code: str = ""
+    promo_code: str = ""
     discounts: int | None = None
     preferred_payment_method: str | None = None
-    slimpayMandateStatus: str | None = None
+    slimpay_mandate_status: str | None = None
     NATURAL_KEY = ["reference"]
 
     @classmethod
@@ -290,13 +290,13 @@ class Crm_Client(TcDataClass):
         return result.pop(0)
 
     @classmethod
-    def fromReference(cls, referense: str, cursor: TcCursor):
+    def fromReference(cls, reference: str, cursor: TcCursor):
         query = """
           SELECT {fields}
             FROM {schema}.{tableName}
-           WHERE referense = %s
+           WHERE reference = %s
         """
-        result = cls.__getMany__(cursor, query, params=[referense])
+        result = cls.__getMany__(cursor, query, params=[reference])
         if len(result) == 0:
             raise NotInDBError()
         return result.pop(0)
