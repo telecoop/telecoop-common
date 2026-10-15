@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.2 (2026-10-15)
+
+### Bug Fixes
+
+- Added missing staff in dev (9ca2312)
+
 ## 1.34.1 (2026-10-13)
 
 ### Bug Fixes
