@@ -354,7 +354,9 @@ class TcRunner(ABC):
             return TcSellsyConnector(
                 self.config["Sellsy"],
                 self.logger,
-                emailTemplates=self.config["SellsyEmailTemplates"],
+                emailTemplates=self.config["SellsyEmailTemplates"]
+                if "SellsyEmailTemplates" in self.config
+                else None,
             )
 
     def getTelecoopConnector(self):
