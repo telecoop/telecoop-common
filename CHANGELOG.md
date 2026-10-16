@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.3 (2026-10-16)
+
+### Bug Fixes
+
+- **runner:** set email templates only if config exists (7a4b7d3)
+
 ## 1.34.2 (2026-10-15)
 
 ### Bug Fixes
