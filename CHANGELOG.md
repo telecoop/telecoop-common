@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.35.3 (2026-10-20)
+
+### Bug Fixes
+
+- **sellsy:** fixed file upload -> two parameters were swapped (23ed2d1)
+
 ## 1.35.2 (2026-10-16)
 
 ### Bug Fixes
