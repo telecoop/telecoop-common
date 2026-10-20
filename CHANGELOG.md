@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.36.0 (2026-10-20)
+
+### Bug Fixes
+
+- **sellsy:** fixed file upload -> two parameters were swapped (23ed2d1)
+- **runner:** set email templates only if config exists (cf3b7ff)
+
+### Features
+
+- **models:** add fields to CRM model (d05a7bd)
+
 ## 1.35.3 (2026-10-20)
 
 ### Bug Fixes
