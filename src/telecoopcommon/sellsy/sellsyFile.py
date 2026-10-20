@@ -16,7 +16,11 @@ class SellsyFile:
         resourceId: str,
     ) -> Tuple[bool, dict]:
         return self.connector.fileUpload(
-            fileName, filePath, fileMimetype, resource, resourceId
+            fileName=fileName,
+            filePath=filePath,
+            fileMimetype=fileMimetype,
+            resource=resource,
+            resourceId=resourceId,
         )
 
     def delete(self, fileId: str) -> bool:
