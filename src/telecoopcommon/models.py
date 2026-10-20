@@ -260,7 +260,7 @@ class Crm_Client(TcDataClass):
     name: str | None = None
     firstname: str | None = None
     email: str | None = None
-    create_date: datetime | None = None
+    date_created: datetime | None = None
     sellsy_id: int | None = None
     phone_number: str | None = None
     sellsy_status: str | None = None
@@ -275,6 +275,10 @@ class Crm_Client(TcDataClass):
     discounts: int | None = None
     preferred_payment_method: str | None = None
     slimpay_mandate_status: str | None = None
+    sponsor_nb_use: int = 0
+    sponsor_nb_discount: int = 0
+    sponsor_nb_code_donated: int = 0
+    one_invoice_per_line: bool = False
     NATURAL_KEY = ["reference"]
 
     @classmethod
