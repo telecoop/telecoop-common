@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.36.1 (2026-10-21)
+
+### Bug Fixes
+
+- **sellsy:** missing 'data' in getClientProFiles result parsing (4dbc620)
+
 ## 1.36.0 (2026-10-20)
 
 ### Bug Fixes
