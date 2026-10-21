@@ -149,7 +149,7 @@ class TcSellsyConnectorV2(TcSellsyConnectorBase):
 
     def getClientProFiles(self, clientId: str) -> list:
         results = self._get(f"companies/{clientId}/files")
-        return [i["id"] for i in results]
+        return [i["id"] for i in results["data"]]
 
     # === SmartTags
 
