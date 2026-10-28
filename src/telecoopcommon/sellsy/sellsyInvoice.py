@@ -286,6 +286,16 @@ class SellsyInvoice:
         }
         connector.api(method="Document.updateStep", params=params)
 
+    def cancel(self, connector):
+        params = {
+            "docid": self.id,
+            "document": {
+                "doctype": self.docType,
+                "step": "cancelled",
+            },
+        }
+        connector.api(method="Document.updateStep", params=params)
+
     def sendByMail(self, email, connector, templateId=None):
         if email:
             method = "Mails.sendOne"
