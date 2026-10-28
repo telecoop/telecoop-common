@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.37.0 (2026-10-28)
+
+### Features
+
+- **sellsy:** add cancel function (b4ffe12)
+
 ## 1.36.2 (2026-10-28)
 
 ### Bug Fixes
