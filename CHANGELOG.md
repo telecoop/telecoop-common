@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.36.2 (2026-10-28)
+
+### Bug Fixes
+
+- **sellsy:** add tests on getTaxId (14a99d8)
+- **sellsy:** add E_PARAM_MISSING to retry exclude list (c6401a5)
+- **sellsy:** don't retry on E_OBJ_NOT_LOADABLE (1d00294)
+
 ## 1.36.1 (2026-10-21)
 
 ### Bug Fixes
