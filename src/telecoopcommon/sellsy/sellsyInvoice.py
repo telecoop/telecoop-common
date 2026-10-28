@@ -5,6 +5,7 @@ from decimal import Decimal
 import phpserialize
 import pytz
 
+from .sellsyConnector import TcSellsyConnector
 from .sellsyConnectorBase import TcSellsyConnectorBase
 from .sellsyError import SellsyError
 
@@ -135,7 +136,7 @@ class SellsyInvoice:
         return result
 
     @classmethod
-    def generate(cls, invoiceId, data, connector, logger):
+    def generate(cls, invoiceId, data, connector: TcSellsyConnector, logger):
         logger.info(f"[Invoice #{invoiceId}] Generating in Sellsy")
 
         modelIds = connector.getModelIds()

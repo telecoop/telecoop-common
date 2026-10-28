@@ -223,7 +223,7 @@ class TcSellsyConnectorBase(ABC):
         self.serviceCategories = None
         self.itemIds = None
         self.modelIds = None
-        self.taxId = None
+        self.taxId: int | None = None
         self.payMediums = None
         self.rateCategories = None
 

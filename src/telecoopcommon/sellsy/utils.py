@@ -96,6 +96,10 @@ sellsyValues = {
             "rio_request": 90447,
         },
         "paydate_id": 3691808,
+        "payment_medium_virement": 3691812,
+        "payment_medium_carte": 3691814,
+        "payment_medium_prelevement": 3691815,
+        "tax_id": 3691817,
         "new_client_mail_template_id": 62573,
         "custom_fields": {
             "operateur": 232923,
@@ -301,6 +305,10 @@ sellsyValues = {
             "rio_request": 126605,
         },
         "paydate_id": 3527781,
+        "payment_medium_virement": 3691812,
+        "payment_medium_carte": 3691814,
+        "payment_medium_prelevement": 3691815,
+        "tax_id": 3527790,
         "new_client_mail_template_id": 62591,
         "custom_fields": {
             "operateur": 232874,

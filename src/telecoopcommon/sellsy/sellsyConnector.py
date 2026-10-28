@@ -850,6 +850,7 @@ class TcSellsyConnector(TcSellsyConnectorBase):
         return self.serviceCategories
 
     def getServices(self):
+        """Get service and products (items) from Sellysy"""
         if self.services is None:
             params = {
                 "type": "service",

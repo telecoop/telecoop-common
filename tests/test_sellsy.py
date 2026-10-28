@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 import pytz
@@ -20,7 +21,7 @@ def test_connector(test_config, test_logger):
 
 
 @pytest.mark.skipif("Sellsy" not in TcConfig(), reason="Sellsy not in config")
-class TestSellyV1:
+class TestSellsyV1:
     def test_get_opportunity(self, test_connector):
         id = opportunityIdPG
         cf = sellsy.sellsyValues["DEV"]["custom_fields"]
@@ -248,3 +249,9 @@ class TestSellyV1:
             "dateDelta": {"days": 0},
         }
         test_connector.createTask(data)
+
+    def test_getTaxId(self, test_connector: TcSellsyConnector):
+        TAX_RATE = Decimal(0.2)
+        TAX_RATE_STR = f"{TAX_RATE * 100:.2f}"
+        taxId = test_connector.getTaxId(TAX_RATE_STR)
+        assert taxId == 1
