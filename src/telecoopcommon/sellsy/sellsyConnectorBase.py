@@ -223,7 +223,7 @@ class TcSellsyConnectorBase(ABC):
         self.serviceCategories = None
         self.itemIds = None
         self.modelIds = None
-        self.taxId: int | None = None
+        self._taxes: dict[str, float] | None = None
         self.payMediums = None
         self.rateCategories = None
 

@@ -254,4 +254,7 @@ class TestSellsyV1:
         TAX_RATE = Decimal(0.2)
         TAX_RATE_STR = f"{TAX_RATE * 100:.2f}"
         taxId = test_connector.getTaxId(TAX_RATE_STR)
-        assert taxId == 1
+        assert taxId == "3691817"
+
+    def test_getServices(self, test_connector: TcSellsyConnector):
+        assert test_connector.getServices() != {}

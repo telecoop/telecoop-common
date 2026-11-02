@@ -868,9 +868,18 @@ class TcSellsyConnector(TcSellsyConnectorBase):
             data = {}
             for _id, service in services.items():
                 if "name" in service:
+                    if service["unitAmountIsTaxesFree"] == "Y":
+                        unitAmountTaxFree = float(service["unitAmountTaxesInc"])
+                    else:
+                        unitAmountTaxFree = round(
+                            float(service["unitAmountTaxesInc"])
+                            / (1 + float(self.taxes[service["taxid"]]["value"]) / 100),
+                            2,
+                        )
+
                     data[service["name"]] = {
                         "id": service["id"],
-                        "unitAmount": service["unitAmountTaxesInc"],
+                        "unitAmountTaxFree": unitAmountTaxFree,
                         "taxId": service["taxid"],
                         "notes": service["notes"],
                         "tradename": service["tradename"],
@@ -910,15 +919,19 @@ class TcSellsyConnector(TcSellsyConnectorBase):
 
         return self.modelIds
 
-    def getTaxId(self, taxRateString):
-        if self.taxId is None:
-            taxes = self.api(method="AccountDatas.getTaxes")
-            for taxId, tax in taxes.items():
-                if "value" in tax and tax["value"] == taxRateString:
-                    self.taxId = taxId
-                    break
+    @property
+    def taxes(self) -> dict:
+        if self._taxes is None:
+            self._taxes = self.api(method="AccountDatas.getTaxes")
 
-        return self.taxId
+        return self._taxes
+
+    def getTaxId(self, taxRateString) -> str:
+        for taxId, tax in self.taxes.items():
+            if "value" in tax and tax["value"] == taxRateString:
+                return taxId
+
+        raise TcSellsyError(f"Could not find taxId for str={taxRateString}")
 
     def getPayMediums(self):
         if self.payMediums is None:
