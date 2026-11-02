@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.37.1 (2026-11-02)
+
+### Bug Fixes
+
+- **sellsy:** Catalog, return amount in taxfree value (ceb8656)
+
 ## 1.37.0 (2026-10-28)
 
 ### Features
