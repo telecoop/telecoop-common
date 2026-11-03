@@ -14,6 +14,7 @@ import requests_oauthlib
 from .sellsyClient import SellsyClient
 from .sellsyConnectorBase import TcSellsyConnectorBase
 from .sellsyError import (
+    SellsyApiError,
     SellsyAuthenticateError,
     SellsyError,
     TcSellsyError,
@@ -920,9 +921,13 @@ class TcSellsyConnector(TcSellsyConnectorBase):
         return self.modelIds
 
     @property
-    def taxes(self) -> dict:
-        if self._taxes is None:
-            self._taxes = self.api(method="AccountDatas.getTaxes")
+    def taxes(self) -> dict[str, dict]:
+        if not self._taxes:
+            result = self.api(method="AccountDatas.getTaxes")
+            if "result" in result:
+                self._taxes = result["result"]
+            else:
+                raise SellsyApiError("'result' argument not present in response")
 
         return self._taxes
 
