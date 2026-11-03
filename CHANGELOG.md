@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.37.2 (2026-11-03)
+
+### Bug Fixes
+
+- **sellsy:** better error handling in getTaxes (cfae9ea)
+
 ## 1.37.1 (2026-11-02)
 
 ### Bug Fixes
