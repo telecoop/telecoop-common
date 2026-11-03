@@ -870,17 +870,16 @@ class TcSellsyConnector(TcSellsyConnectorBase):
             for _id, service in services.items():
                 if "name" in service:
                     if service["unitAmountIsTaxesFree"] == "Y":
-                        unitAmountTaxFree = float(service["unitAmountTaxesInc"])
+                        unitAmountTaxesFree = float(service["unitAmount"])
                     else:
-                        unitAmountTaxFree = round(
-                            float(service["unitAmountTaxesInc"])
-                            / (1 + float(self.taxes[service["taxid"]]["value"]) / 100),
-                            2,
+                        unitAmountTaxesFree = float(service["unitAmountTaxesInc"]) / (
+                            1 + float(self.taxes[service["taxid"]]["value"]) / 100
                         )
+                    unitAmountTaxesFree = round(unitAmountTaxesFree, 4)
 
                     data[service["name"]] = {
                         "id": service["id"],
-                        "unitAmountTaxFree": unitAmountTaxFree,
+                        "unitAmountTaxesFree": unitAmountTaxesFree,
                         "taxId": service["taxid"],
                         "notes": service["notes"],
                         "tradename": service["tradename"],
@@ -924,10 +923,10 @@ class TcSellsyConnector(TcSellsyConnectorBase):
     def taxes(self) -> dict[str, dict]:
         if not self._taxes:
             result = self.api(method="AccountDatas.getTaxes")
-            if "result" in result:
-                self._taxes = result["result"]
+            if result:
+                self._taxes = result
             else:
-                raise SellsyApiError("'result' argument not present in response")
+                raise SellsyApiError("Got empty response from Sellsy getTaxes")
 
         return self._taxes
 
