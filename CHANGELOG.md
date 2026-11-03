@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.37.3 (2026-11-03)
+
+### Bug Fixes
+
+- **sellsy:** use right field to get service amountTaxFree (4422c6f)
+
 ## 1.37.2 (2026-11-03)
 
 ### Bug Fixes
