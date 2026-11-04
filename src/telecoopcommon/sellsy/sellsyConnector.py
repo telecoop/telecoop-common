@@ -87,6 +87,7 @@ class TcSellsyConnector(TcSellsyConnectorBase):
                     if e.sellsy_code_error not in [
                         "E_OBJ_NOT_LOADABLE",
                         "E_PARAM_MISSING",
+                        "E_OBJ_NOT_EDITABLE",
                     ]:
                         if retry < 1:
                             self.logger.warning(f"{e} params={params}")
