@@ -13,8 +13,8 @@ dependencies = [
     "nats-py[nkeys] (>=2.9.0,<3.0.0)",
     "python-dateutil (>=2.9.0.post0,<3.0.0)",
     "inflection (>=0.5.1,<0.6.0)",
-    "oauthlib>=3.3.1",
-    "requests-oauthlib>=2.0.0",
+    "oauthlib (>=3.3.1, <4.0.0)",
+    "requests-oauthlib(>=2.0.0, <3.0.0)",
 ]
 
 [dependency-groups]
