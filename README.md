@@ -37,3 +37,16 @@ uv run pytest --color=yes
 # Run command
 uv run --env-file .env ./src/cli.py submodule:command-name arg
 ```
+## Mainetenance
+
+A NATS worker can receive the signals USR1 and USR2 to raise and lower its log level. Raising means more verbosity.
+```bash
+# Fetch pid
+ps -Af | grep nats
+
+# Raise log-level
+kill -s USR1 PID
+
+# Lower log-level
+kill -s USR2 PID
+```

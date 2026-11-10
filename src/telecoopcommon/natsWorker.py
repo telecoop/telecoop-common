@@ -149,17 +149,32 @@ async def worker(
         await asyncio.sleep(1)
         asyncio.get_running_loop().stop()
 
-    def signalHandler():
+    def stopSignalHandler():
         if nCli.is_closed:
             return
         print("Disconnecting...")
         asyncio.create_task(nCli.close())
         asyncio.create_task(stop())
 
-    for sig in ("SIGINT", "SIGTERM"):
-        asyncio.get_running_loop().add_signal_handler(
-            getattr(signal, sig), signalHandler
-        )
+    def logLevelUp():
+        logLevel = logger.getEffectiveLevel()
+        logger.log(logLevel, "Increasing verbosity")
+        newLogLevel = max(10, logLevel - 10)
+        logger.setLevel(newLogLevel)
+        logger.log(newLogLevel, "Done")
+
+    def logLevelDown():
+        logLevel = logger.getEffectiveLevel()
+        logger.log(logLevel, "Decreasing verbosity")
+        newLogLevel = min(50, logLevel + 10)
+        logger.setLevel(newLogLevel)
+        logger.log(newLogLevel, "Done")
+
+    loop = asyncio.get_running_loop()
+    loop.add_signal_handler(signal.SIGINT, stopSignalHandler)
+    loop.add_signal_handler(signal.SIGTERM, stopSignalHandler)
+    loop.add_signal_handler(signal.SIGUSR1, logLevelUp)
+    loop.add_signal_handler(signal.SIGUSR2, logLevelDown)
 
     async def disconnectedCb():
         print("Got disconnected...")
