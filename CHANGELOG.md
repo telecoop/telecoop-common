@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.38.1 (2026-11-10)
+
+### Bug Fixes
+
+- **nats:** also change log level of handlers (7a02e75)
+
 ## 1.38.0 (2026-11-10)
 
 ### Bug Fixes
