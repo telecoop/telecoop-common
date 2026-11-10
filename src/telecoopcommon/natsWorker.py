@@ -161,6 +161,8 @@ async def worker(
         logger.log(logLevel, "Increasing verbosity")
         newLogLevel = max(10, logLevel - 10)
         logger.setLevel(newLogLevel)
+        for handler in logger.handlers:
+            handler.setLevel(newLogLevel)
         logger.log(newLogLevel, "Done")
 
     def logLevelDown():
@@ -168,6 +170,8 @@ async def worker(
         logger.log(logLevel, "Decreasing verbosity")
         newLogLevel = min(50, logLevel + 10)
         logger.setLevel(newLogLevel)
+        for handler in logger.handlers:
+            handler.setLevel(newLogLevel)
         logger.log(newLogLevel, "Done")
 
     loop = asyncio.get_running_loop()
