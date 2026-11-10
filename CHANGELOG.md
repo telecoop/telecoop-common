@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.38.0 (2026-11-10)
+
+### Bug Fixes
+
+- **sellsy:** add E_OBJ_NOT_EDITABLE to known sellsy errors (5851a93)
+
+### Features
+
+- **nats:** added logLevelUp and logLevelDown on worker (686c59b)
+
 ## 1.37.3 (2026-11-03)
 
 ### Bug Fixes
